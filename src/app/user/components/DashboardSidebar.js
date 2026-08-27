@@ -277,10 +277,12 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
   };
 
   const copyRef = async () => {
-    const refLink = referralLink || `https://xoxofx.com/user/register?ref=${userID || "XO5599007"}&Position=L`;
+    const refLink = referralLink || `https://roventar.com/user/register?ref=${userID || "XO5599007"}`;
 
     try {
-      await navigator.clipboard.writeText(refLink);
+      // Remove Position parameter from the link if present
+      const cleanLink = refLink.split('&Position=')[0];
+      await navigator.clipboard.writeText(cleanLink);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
@@ -289,16 +291,18 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
   };
 
   const shareOn = (platform) => {
-    const refLink = referralLink || `https://xoxofx.com/user/register?ref=${userID || "XO5599007"}&Position=L`;
-    const text = `Join me on XOXO AI Engine - earn up to 8% commission! My ID: ${userID}`;
+    const refLink = referralLink || `https://roventar.com/user/register?ref=${userID || "XO5599007"}`;
+    // Remove Position parameter from the link if present
+    const cleanLink = refLink.split('&Position=')[0];
+    const text = `Join me on Roventar - earn up to 8% commission! My ID: ${userID}`;
 
     let url = "";
     switch (platform) {
       case "WhatsApp":
-        url = `https://wa.me/?text=${encodeURIComponent(text + " " + refLink)}`;
+        url = `https://wa.me/?text=${encodeURIComponent(text + " " + cleanLink)}`;
         break;
       case "Facebook":
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(refLink)}`;
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(cleanLink)}`;
         break;
       case "Instagram":
         window.open(
@@ -308,7 +312,7 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
         return;
 
       case "Telegram":
-        url = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(text)}`;
+        url = `https://t.me/share/url?url=${encodeURIComponent(cleanLink)}&text=${encodeURIComponent(text)}`;
         break;
     }
     if (url) window.open(url, "_blank");
@@ -694,7 +698,7 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
                 Your Unique Referral Link {leftUrl && rightUrl ? `(${selectedPosition === "L" ? "Left" : "Right"} Position)` : ""}
               </div>
               <div className="ref-link">
-                {refrelLoading ? "Loading..." : (referralLink || `https://xoxofx.com/user/register?ref=${userID || "XO5599007"}&Position=L`)}
+                {refrelLoading ? "Loading..." : (referralLink || `https://roventar.com/user/register?ref=${userID || "XO5599007"}`)}
               </div>
               <button className="copy-btn" onClick={copyRef} disabled={refrelLoading}>
                 {copySuccess ? "✓ Copied!" : "Copy Referral Link"}

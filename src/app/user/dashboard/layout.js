@@ -48,7 +48,6 @@ export default function RootLayout({ children }) {
         </Head>
         <link rel="stylesheet" href="/assets/css/dashboard.css" />
         
-        {/* Full screen loader container - perfectly centered */}
         <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
              style={{ 
                background: "linear-gradient(135deg, #060918 0%, #0a0f2a 100%)",
@@ -58,7 +57,6 @@ export default function RootLayout({ children }) {
              }}>
           
           <div className="text-center">
-            {/* Animated SVG Loader */}
             <svg
               width="80"
               height="80"
@@ -77,7 +75,6 @@ export default function RootLayout({ children }) {
                 </linearGradient>
               </defs>
               
-              {/* Outer rotating circle */}
               <circle
                 cx="50"
                 cy="50"
@@ -87,7 +84,6 @@ export default function RootLayout({ children }) {
                 strokeWidth="4"
               />
               
-              {/* Animated arc 1 */}
               <circle
                 cx="50"
                 cy="50"
@@ -110,7 +106,6 @@ export default function RootLayout({ children }) {
                 />
               </circle>
               
-              {/* Animated arc 2 - opposite direction */}
               <circle
                 cx="50"
                 cy="50"
@@ -133,7 +128,6 @@ export default function RootLayout({ children }) {
                 />
               </circle>
               
-              {/* Pulsing center dot */}
               <circle cx="50" cy="50" r="5" fill="#8b5cf6">
                 <animate
                   attributeName="r"
@@ -150,7 +144,6 @@ export default function RootLayout({ children }) {
               </circle>
             </svg>
 
-            {/* Loading text with animation */}
             <div style={{ 
               color: "#8b5cf6", 
               fontFamily: "monospace", 
@@ -161,7 +154,6 @@ export default function RootLayout({ children }) {
               LOADING
             </div>
             
-            {/* Loading dots animation */}
             <div style={{ 
               display: "flex", 
               gap: "8px", 
@@ -228,21 +220,25 @@ export default function RootLayout({ children }) {
       <div className="grid-bg"></div>
       <div id="pts"></div>
 
-      <div className="layout" data-sidebar-open={sidebarOpen ? "1" : "0"}>
-        {/* <button
-          type="button"
-          className="sidebar-hamburger"
-          aria-label="Toggle sidebar"
-          onClick={() => setSidebarOpen((v) => !v)}
-        >
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-        </button> */}
-
+      {/* FIX: Layout ko 100vh and overflow hidden do */}
+      <div 
+        className="layout" 
+        data-sidebar-open={sidebarOpen ? "1" : "0"}
+        style={{
+          height: "100vh",
+          overflow: "hidden",
+          display: "flex"
+        }}
+      >
+        {/* Sidebar - fixed width, no scroll */}
         <div
           className="sidebar-wrap"
           aria-hidden={sidebarOpen ? "false" : "true"}
+          style={{
+            flexShrink: 0,
+            height: "100vh",
+            overflow: "hidden"
+          }}
         >
           <DashboardSidebar
             sidebarOpen={sidebarOpen}
@@ -250,12 +246,39 @@ export default function RootLayout({ children }) {
           />
         </div>
 
-        <div className="main">
-          <DashboardTopbar
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}
-          />
-          <main className="content">{children}</main>
+        {/* Main section - flex column, takes remaining space */}
+        <div 
+          className="main"
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            height: "100vh",
+            overflow: "hidden",
+            minWidth: 0
+          }}
+        >
+          {/* Topbar - fixed height, no scroll */}
+          <div style={{ flexShrink: 0 }}>
+            <DashboardTopbar
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+            />
+          </div>
+
+          {/* Content - ONLY this part will scroll */}
+          <main 
+            className="content" 
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              overflowX: "hidden",
+              padding: "20px",
+              minHeight: 0 // Important for flex scrolling
+            }}
+          >
+            {children}
+          </main>
         </div>
       </div>
     </>

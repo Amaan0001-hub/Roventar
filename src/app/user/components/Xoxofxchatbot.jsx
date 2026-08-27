@@ -302,7 +302,7 @@ export default function XoxoFxChatbot() {
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: colors.text1, lineHeight: 1.2 }}>🧠 AI Companion</div>
-            <div style={{ fontSize: 10, color: colors.text2 }}>XOXO FX Assistant</div>
+            <div style={{ fontSize: 10, color: colors.text2 }}>Roventar Assistant</div>
           </div>
         </div>
         <div style={{

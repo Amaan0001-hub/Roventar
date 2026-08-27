@@ -1048,20 +1048,7 @@ export default function DashboardPage() {
         )}
 
         <div className="container-fluid px-0">
-          {/* ANNOUNCEMENT SECTION */}
-          {showAnnouncement && dashboardData?.[0]?.News && (() => {
-            const newsText = dashboardData[0].News.replace(/<[^>]*>/g, '');
-            return (
-              <div className="dx-ann mb-3" id="annEl">
-                <span className="dx-ann-badge">📢 LIVE</span>
-                <div className="dx-ann-ticker"><div className="dx-ann-track">
-                  <span className="dx-ann-item">{newsText}</span>
-                  <span className="dx-ann-item">{newsText}</span>
-                </div></div>
-                <button type="button" className="dx-ann-close" onClick={closeAnnouncement} aria-label="Dismiss">✕</button>
-              </div>
-            );
-          })()}
+          
 
       
           <RankProgress activeRank={dashboardData?.[0]?.UserRank} NextRank={dashboardData?.[0]?.NextRank} totQualifyRnk={dashboardData?.[0]?.totQualifyRnk} />

@@ -405,7 +405,7 @@ function SearchModal({ onClose, onSearch }) {
 function SignupModal({ parentId, side, onClose }) {
   const positionCode = side === "left" ? "L" : "R";
   // Replace with your actual registration URL
-  const link = `http://localhost:3000/user/register?ref=${parentId}&Position=${positionCode}`;
+  const link = `http://localhost:3000/user/register?ref=${parentId}`;
   const [copied, setCopied] = useState(false);
 
   const copy = () => {

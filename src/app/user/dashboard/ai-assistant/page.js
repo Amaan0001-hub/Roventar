@@ -934,7 +934,7 @@ function AIAssistant() {
                         }}
                       >
                         Generated <span id="rpt-time">just now</span> &nbsp;·&nbsp;{" "}
-                        via XOXO FX AI Engine
+                        via Roventar AI Engine
                       </div>
                     </div>
                     <div
@@ -1341,7 +1341,7 @@ function AIAssistant() {
                         <div className="ata-reasoning-avatar">AI</div>
                         <div>
                           <div style={{ fontSize: "13px", fontWeight: "600" }}>
-                            XOXO FX AI Reasoning
+                            Roventar AI Reasoning
                           </div>
                           <div
                             style={{ fontSize: "11px", color: "var(--text-secondary)" }}

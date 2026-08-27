@@ -262,7 +262,7 @@ export default function App() {
   const getLogoEmoji = (name) => {
     const emojis = {
       "SONIC": "⚡",
-      "XOXOFX": "🔮",
+      "Roventar": "🔮",
       "PHANTOM": "👻",
       "PIP SNIPER": "🎯",
       "GOLD RUSH": "🏆",
@@ -315,7 +315,7 @@ const downloadPDFInvoice = async (orderData) => {
     <html>
     <head>
         <meta charset="UTF-8" />
-        <title>XOXOFX Invoice ${invoiceNo}</title>
+        <title>Roventar Invoice ${invoiceNo}</title>
         <style>
             * {
                 margin: 0;
@@ -865,9 +865,9 @@ const downloadPDFInvoice = async (orderData) => {
             <!-- ===== TOP BAR ===== -->
             <div class="top-bar">
                 <div class="brand">
-                    <img src="/logo.png" alt="XOXOFX Logo" class="logo-img" />
+                    <img src="/logo.png" alt="Roventar Logo" class="logo-img" />
                     <div class="brand-text">
-                        <h1>XOXOFX</h1>
+                        <h1>Roventar</h1>
                         <span>Smart Trading · Better Future</span>
                     </div>
                 </div>
@@ -884,7 +884,7 @@ const downloadPDFInvoice = async (orderData) => {
                         <div class="greeting">
                             Hello, <span>${userName}</span>
                         </div>
-                        <div class="sub">Thank you for investing with XOXOFX</div>
+                        <div class="sub">Thank you for investing with Roventar</div>
                     </div>
                     <div class="header-right">
                         <div class="amount-label">Total Investment</div>
@@ -971,13 +971,13 @@ const downloadPDFInvoice = async (orderData) => {
                     </div>
                     <div class="company-address">
                         <div class="address-text">
-                            <strong>XOXO CAPITAL MANAGEMENT LLC</strong><br />
+                            <strong>Roventar CAPITAL MANAGEMENT LLC</strong><br />
                             Northwest Registered Agent Service, Inc.<br />
                             117 S Lexington St Ste 100<br />
                             Harrisonville, MO 64701-2444
                         </div>
                         <div class="address-text" style="text-align: right;">
-                            <strong>Email:</strong> support@xoxofx.com<br />
+                            <strong>Email:</strong> support@roventar.com<br />
                             <strong>Phone:</strong> +1 (800) 555-0199
                         </div>
                     </div>
@@ -987,7 +987,7 @@ const downloadPDFInvoice = async (orderData) => {
                 <div class="stamp-section">
                     <div class="stamp-box">
                         <span class="stamp-label">Company Stamp</span>
-                        <img src="/stamp.png" alt="XOXO CAPITAL MANAGEMENT LLC Stamp" class="stamp-image" />
+                        <img src="/stamp.png" alt="Roventar CAPITAL MANAGEMENT LLC Stamp" class="stamp-image" />
                     </div>
                 </div>
 
@@ -995,14 +995,14 @@ const downloadPDFInvoice = async (orderData) => {
 
             <!-- ===== FOOTER ===== -->
             <div class="footer">
-                <div class="brand-name">✦ XOX<span>OFX</span></div>
+                <div class="brand-name">✦ Rove<span>ntar</span></div>
                 <div class="divider"></div>
                 <p>
-                    Thank you for trusting XOXOFX with your investment.<br />
+                    Thank you for trusting Roventar with your investment.<br />
                     Our AI-driven strategies are working to grow your wealth.
                 </p>
                 <div class="note">
-                    © ${new Date().getFullYear()} XOXOFX · All Rights Reserved · Computer Generated Invoice
+                    © ${new Date().getFullYear()} Roventar · All Rights Reserved · Computer Generated Invoice
                 </div>
             </div>
 
@@ -1018,7 +1018,7 @@ const downloadPDFInvoice = async (orderData) => {
 
     const opt = {
         margin: 0,
-        filename: `XOXOFX_Invoice_${d.CategoryName || d.bot || "Bot"}_${d.OrderDate || d.date || "Date"}.pdf`,
+        filename: `Roventar_Invoice_${d.CategoryName || d.bot || "Bot"}_${d.OrderDate || d.date || "Date"}.pdf`,
         image: { type: "jpeg", quality: 1 },
         html2canvas: {
             scale: 2,
@@ -1989,7 +1989,7 @@ const downloadPDFInvoice = async (orderData) => {
                 marginBottom: 8,
                 textShadow: "0 0 20px rgba(59, 130, 246, 0.5)"
               }}>
-                Welcome to XOXOFX Family!
+                Welcome to Roventar Family!
               </h2>
               <div style={{
                 height: 3,
@@ -2009,20 +2009,20 @@ const downloadPDFInvoice = async (orderData) => {
                 <strong>Dear {userID},</strong>
               </p>
               <p style={{ margin: "0 0 16px 0" }}>
-                Welcome to the XOXOFX Family! We are delighted to have you join our growing community. Thank you for choosing our Online Education Academy and XOXOFX as your trusted learning and investment partner. Your journey toward smarter investing and professional forex education begins today.
+                Welcome to the Roventar Family! We are delighted to have you join our growing community. Thank you for choosing our Online Education Academy and Roventar as your trusted learning and investment partner. Your journey toward smarter investing and professional forex education begins today.
               </p>
               <p style={{ margin: "0 0 16px 0" }}>
                 Our dedicated team, expert mentors, and AI-powered strategies are here to support your learning and financial goals. We are committed to providing high-quality education, innovation, transparency, and professional service at every step of your journey.
               </p>
               <p style={{ margin: "0 0 16px 0" }}>
-                We wish you success, prosperity, and long-term growth with XOXOFX. Together, let's build a brighter financial future through knowledge, discipline, and smart investing.
+                We wish you success, prosperity, and long-term growth with Roventar. Together, let's build a brighter financial future through knowledge, discipline, and smart investing.
               </p>
               <p style={{ margin: "0 0 16px 0" }}>
                 Once again, welcome aboard—we're excited to have you with us!
               </p>
               <p style={{ margin: "0 0 24px 0" }}>
                 <strong>Best Wishes,</strong><br />
-                <img src="/stampbackremove.png" alt="XOXOFX Team" style={{ maxWidth: "120px", height: "auto", borderRadius: "8px", background: "transparent", marginLeft: "-20px" }} />
+                <img src="/stampbackremove.png" alt="Roventar Team" style={{ maxWidth: "120px", height: "auto", borderRadius: "8px", background: "transparent", marginLeft: "-20px" }} />
               </p>
             </div>
             <button

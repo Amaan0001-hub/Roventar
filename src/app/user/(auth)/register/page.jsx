@@ -385,13 +385,13 @@ export default function SignupPage() {
 
   const [errors, setErrors] = useState({
     firstName: "", lastName: "", email: "",
-    password: "", phoneNo: "", countryId: "", captcha: "", referralId: "", introSide: "",
+    password: "", phoneNo: "", countryId: "", captcha: "", referralId: "",
   })
 
-  const introSideOptions = [
-    { value: "L", label: "Team Left" },
-    { value: "R", label: "Team Right" },
-  ]
+  // const introSideOptions = [
+  //   { value: "L", label: "Team Left" },
+  //   { value: "R", label: "Team Right" },
+  // ]
 
   // ========== CANVAS ANIMATION ==========
   useEffect(() => {
@@ -657,7 +657,7 @@ export default function SignupPage() {
   }
 
   const validateForm = () => {
-    let newErrors = { firstName: "", lastName: "", email: "", password: "", phoneNo: "", countryId: "", captcha: "", referralId: "", introSide: "" }
+    let newErrors = { firstName: "", lastName: "", email: "", password: "", phoneNo: "", countryId: "", captcha: "", referralId: "" }
 
     if (!formData.firstName?.trim()) newErrors.firstName = "First name is required"
     else if (formData.firstName.trim().length < 2) newErrors.firstName = "At least 2 characters"
@@ -679,8 +679,6 @@ export default function SignupPage() {
     if (!formData.referralId?.trim()) newErrors.referralId = "Referral ID is required"
     else if (referralError) newErrors.referralId = referralError
 
-    if (!formData.introSide) newErrors.introSide = "Please select Intro Side"
-
     if (!captchaVerified) newErrors.captcha = "Please complete the puzzle captcha"
 
     setErrors(newErrors)
@@ -689,7 +687,11 @@ export default function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validateForm()) return
+    console.log("Form submitted", formData)
+    if (!validateForm()) {
+      console.log("Form validation failed", errors)
+      return
+    }
 
     if (!referralData && formData.referralId.trim()) {
       const isValid = await validateReferralId(formData.referralId)
@@ -710,10 +712,13 @@ export default function SignupPage() {
         email: formData.email,
         countryId: parseInt(formData.countryId),
         address: "",
-        introSide: formData.introSide,
+        introSide: formData.introSide || "L",
+        otPregpage: ""
       }
+      console.log("Sending registration payload:", payload)
 
       const res = await dispatch(userRegistration(payload)).unwrap()
+      console.log("Registration response:", res)
 
       if (res?.statusCode !== 200) throw new Error(res?.message || "Signup failed")
 
@@ -736,6 +741,7 @@ export default function SignupPage() {
       setCaptchaVerified(false)
       setTimeout(() => router.push("/user/welcome"), 1500)
     } catch (err) {
+      console.error("Registration error:", err)
       toast.error(err.message || err || "Signup failed")
       setCaptchaVerified(false)
     } finally {
@@ -1060,65 +1066,7 @@ export default function SignupPage() {
                 )}
               </div>
 
-              <div className="col-12 col-sm-6">
-                <label className="login-label">Team Positions</label>
-                <div className="position-relative intro-side-container">
-                  <span className="intro-side-icon">
-                    <Users size={15} /></span>
-                  <Select
-                    options={introSideOptions}
-                    onChange={handleIntroSideChange}
-                    placeholder="Select"
-                    isSearchable={false}
-                    styles={{
-                      control: (base, state) => ({
-                        ...base,
-                        backgroundColor: "rgba(139,92,246,0.05)",
-                        borderColor: state.isFocused ? "rgb(255 255 255 / 70%)" : "rgba(139,92,246,0.15)",
-                        borderRadius: "0.75rem",
-                        minHeight: "48px",
-                        boxShadow: "none",
-                        transition: "all 0.2s",
-                        cursor: "pointer",
-                        paddingLeft: "32px",
-                        "&:hover": { borderColor: "rgba(139,92,246,0.35)" },
-                      }),
-                      menu: (base) => ({
-                        ...base,
-                        backgroundColor: "#0c0f1e",
-                        border: "1px solid rgba(139,92,246,0.15)",
-                        borderRadius: "0.75rem",
-                        overflow: "hidden",
-                        zIndex: 9999,
-                        width: "120px",
-                      }),
-                      menuList: (base) => ({ ...base, padding: "4px", maxHeight: "200px" }),
-                      option: (base, state) => ({
-                        ...base,
-                        backgroundColor: state.isFocused ? "rgba(139,92,246,0.1)" : "transparent",
-                        color: "#e8e0fa",
-                        fontSize: "13px",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        padding: "8px 10px",
-                      }),
-                      singleValue: (base) => ({ ...base, color: "#e8e0fa", fontSize: "13px", marginLeft: "0" }),
-                      placeholder: (base) => ({ ...base, color: "rgba(139,92,246,0.3)", fontSize: "12px", marginLeft: "0" }),
-                      valueContainer: (base) => ({ ...base, paddingLeft: "0" }),
-                      input: (base) => ({ ...base, color: "#e8e0fa", fontSize: "13px" }),
-                      indicatorSeparator: () => ({ display: "none" }),
-                      dropdownIndicator: (base) => ({
-                        ...base,
-                        color: "rgba(139,92,246,0.4)",
-                        padding: "4px",
-                        "&:hover": { color: "rgba(139,92,246,0.8)" },
-                      }),
-                    }}
-                    value={introSideOptions.find((o) => o.value === formData.introSide) || null}
-                  />
-                </div>
-                {errors.introSide && <div className="error-message" style={errorStyle}>{errors.introSide}</div>}
-              </div>
+              
             </div>
 
             <div className="row g-3 mb-4">

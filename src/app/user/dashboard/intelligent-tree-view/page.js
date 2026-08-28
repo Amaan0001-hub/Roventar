@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Tree from "react-d3-tree";
 import { useDispatch, useSelector } from "react-redux";
 import { getNetworkTree } from "@/app/redux/slices/walletSlice";
-import { getEncryptedLocalData } from "@/app/api/auth";
+import { AuthLogin } from "@/app/api/auth";
 
 import toast from "react-hot-toast";
 import Loader from "@/app/common/loading";
@@ -13,61 +13,129 @@ import Loader from "@/app/common/loading";
 const buildTreeData = (data, collapsedMap) => {
   if (!Array.isArray(data) || data.length === 0) return [];
 
+  // Remove duplicates based on Loginid, keeping the first occurrence
   const unique = data.filter(
     (n, i, arr) => i === arr.findIndex((x) => x.Loginid === n.Loginid)
   );
 
-  const nodeMap = new Map();
+  if (unique.length === 0) return [];
 
+  // Create a map for quick lookup
+  const nodeMap = new Map();
+  
+  // First pass: create all nodes
   unique.forEach((node) => {
-    const children = unique.filter(
-      (child) => child.SponsorId === node.Loginid
-    );
     nodeMap.set(node.Loginid, {
-      name: node.Name,
+      name: node.Name || node.Loginid,
       loginid: node.Loginid,
       attributes: {
-        sponsor: node.SponsorId,
-        downline: children.length,
-        email: node.Email,
-        regDate: node.RegDate,
-        leaseAmount: node.Package,
-        urank: node.Urank,
-        teamBusiness: node.TeamBusiness,
-        activeTeam: node.ActiveTeam,
-        directBusiness: node.DirectBusiness,
-        topupDate: node.TopupDate,
-        totalTeam: node.TotalActiveDirect,
-        mobile: node.Mobile,
-        uLvl: node.uLvl,
-        ActivationDate: node.ActivationDate,
-        leftTeam: node.LeftTeam,
-        rightTeam: node.RightTeam,
-        leftAvtive:node.LeftActiveTeam,
-        RightAvtive:node.RightActiveTeam,
-        leftBusiness: node.LeftBussiness,
-        rightBusiness: node.RightBussiness,
+        sponsor: node.SponsorId || "",
+        downline: 0,
+        email: node.Email || "",
+        regDate: node.RegDate || "",
+        leaseAmount: node.Package || 0,
+        urank: node.uLvl || 0,
+        teamBusiness: node.Teambusiness || 0,
+        activeTeam: node.ActiveTeam || 0,
+        directBusiness: node.DirectBusiness || 0,
+        topupDate: node.TopupDate || "",
+        totalTeam: node.TotalActiveDirect || 0,
+        mobile: node.Mobile || "",
+        uLvl: node.uLvl || 0,
+        ActivationDate: node.ActivationDate || "",
+        leftTeam: node.TotalTeam || 0,
+        rightTeam: node.ActiveTeam || 0,
+        leftAvtive: node.Teambusiness || 0,
+        RightAvtive: node.RightActiveTeam || 0,
+        leftBusiness: node.LeftBussiness || 0,
+        rightBusiness: node.RightBussiness || 0,
+        status: node.status || "",
+        level: node.uLvl || 0
       },
       children: [],
       __rd3t: {
-        collapsed: collapsedMap.get(node.Loginid) ?? true,
+        collapsed: collapsedMap.get(node.Loginid) ?? (node.uLvl !== 0),
       },
     });
   });
 
-  const roots = [];
-
+  // Find the root node (uLvl: 0)
+  let rootLoginId = null;
   unique.forEach((node) => {
-    if (node.SponsorId && nodeMap.has(node.SponsorId)) {
-      nodeMap.get(node.SponsorId).children.push(
-        nodeMap.get(node.Loginid)
-      );
-    } else {
-      roots.push(nodeMap.get(node.Loginid));
+    if (node.uLvl === 0) {
+      rootLoginId = node.Loginid;
     }
   });
 
-  return roots;
+  // If no root found with uLvl: 0, find the one with no parent
+  if (!rootLoginId) {
+    const allIds = new Set(unique.map(n => n.Loginid));
+    unique.forEach((node) => {
+      if (!allIds.has(node.SponsorId)) {
+        rootLoginId = node.Loginid;
+      }
+    });
+  }
+
+  // If still no root, use the first node
+  if (!rootLoginId && unique.length > 0) {
+    rootLoginId = unique[0].Loginid;
+  }
+
+  // Build tree starting from root, avoiding circular references
+  const visited = new Set();
+  const buildTree = (loginId, depth = 0) => {
+    // Prevent infinite recursion
+    if (visited.has(loginId) || depth > 50) {
+      return null;
+    }
+    visited.add(loginId);
+
+    const node = nodeMap.get(loginId);
+    if (!node) return null;
+
+    // Find children (nodes where SponsorId === loginId)
+    const children = [];
+    unique.forEach((childNode) => {
+      if (childNode.SponsorId === loginId && childNode.Loginid !== loginId) {
+        const childLoginId = childNode.Loginid;
+        // Avoid circular reference
+        if (!visited.has(childLoginId)) {
+          const child = buildTree(childLoginId, depth + 1);
+          if (child) {
+            children.push(child);
+          }
+        }
+      }
+    });
+
+    // Sort children by uLvl
+    children.sort((a, b) => (a.attributes?.uLvl || 0) - (b.attributes?.uLvl || 0));
+    
+    node.children = children;
+    node.attributes.downline = children.length;
+    
+    return node;
+  };
+
+  const rootNode = buildTree(rootLoginId);
+  
+  // If root node exists, return it as an array
+  if (rootNode) {
+    return [rootNode];
+  }
+
+  // Fallback: return all nodes that have no parent
+  const allIds = new Set(unique.map(n => n.Loginid));
+  const roots = [];
+  unique.forEach((node) => {
+    if (!allIds.has(node.SponsorId)) {
+      const n = nodeMap.get(node.Loginid);
+      if (n) roots.push(n);
+    }
+  });
+
+  return roots.length > 0 ? roots : [nodeMap.values().next().value];
 };
 
 const CustomNode = ({ nodeDatum, toggleNode }) => {
@@ -80,7 +148,7 @@ const CustomNode = ({ nodeDatum, toggleNode }) => {
 
   const formatAmount = (amount) => {
     const num = parseFloat(amount);
-    return num % 1 === 0 ? num.toString() : num.toString();
+    return num % 1 === 0 ? num.toString() : num.toFixed(2);
   };
 
   const handleMouseEnter = () => {
@@ -209,22 +277,18 @@ const CustomNode = ({ nodeDatum, toggleNode }) => {
               >
                 
                 <p style={{ margin: "4px 0",color:'var(--text-2)' }}>SponsorId: {nodeDatum.attributes?.sponsor || "None"}</p>
-                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Avtivated Date: {nodeDatum.attributes?.ActivationDate || ""}</p>
-                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Left Team:{formatAmount(nodeDatum.attributes?.leftTeam || 0)}
+                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Activated Date: {nodeDatum.attributes?.ActivationDate || ""}</p>
+                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Level: {nodeDatum.attributes?.level || 0}</p>
+                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Total Team: {formatAmount(nodeDatum.attributes?.leftTeam || 0)}
                 </p>
-                 <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Right Team:{formatAmount(nodeDatum.attributes?.rightTeam || 0)}
+                 <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Active Team: {formatAmount(nodeDatum.attributes?.rightTeam || 0)}
                 </p>
-                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Left Active:{formatAmount(nodeDatum.attributes?.leftAvtive || 0)}
+                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Team Business: ${formatAmount(nodeDatum.attributes?.leftAvtive || 0)}
                 </p>
-                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Right Active:{formatAmount(nodeDatum.attributes?.RightAvtive || 0)}
-                </p>
-                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Left Buss.: ${nodeDatum.attributes?.leftBusiness || 0}</p>
-                <p style={{ margin: "4px 0",color:'var(--text-2)' }}>Right Buss.: ${nodeDatum.attributes?.rightBusiness || 0}</p>
-               
               </div>,
               document.body
             )}
-        </div>
+        </div> 
       </foreignObject>
     </g>
   );
@@ -233,7 +297,6 @@ const CustomNode = ({ nodeDatum, toggleNode }) => {
 // Global styles as a style tag
 const GlobalStyles = () => (
   <style>{`
- 
     .tree-content {
       padding: 16px 24px;
       flex-grow: 1;
@@ -319,7 +382,7 @@ export default function IntelligentTreeView() {
   const [treeKey, setTreeKey] = useState(0);
 
   useEffect(() => {
-    const auth = getEncryptedLocalData("AuthLogin");
+    const auth = AuthLogin();
     dispatch(getNetworkTree(auth));
   }, [dispatch]);
 
@@ -327,11 +390,34 @@ export default function IntelligentTreeView() {
     if (!Array.isArray(getNetworkTreeData) || !getNetworkTreeData.length)
       return;
 
-    const ids = new Set(getNetworkTreeData.map((n) => n.Loginid));
-    const map = new Map();
+    // Deduplicate data
+    const unique = getNetworkTreeData.filter(
+      (n, i, arr) => i === arr.findIndex((x) => x.Loginid === n.Loginid)
+    );
 
-    getNetworkTreeData.forEach((node) => {
-      const isRoot = !node.SponsorId || !ids.has(node.SponsorId);
+    // Set collapsed state: only root (uLvl: 0) is expanded, others are collapsed
+    const map = new Map();
+    
+    // Find root
+    let rootId = null;
+    unique.forEach((node) => {
+      if (node.uLvl === 0) {
+        rootId = node.Loginid;
+      }
+    });
+    
+    // If no root with uLvl: 0, find node with no parent
+    if (!rootId) {
+      const allIds = new Set(unique.map(n => n.Loginid));
+      unique.forEach((node) => {
+        if (!allIds.has(node.SponsorId)) {
+          rootId = node.Loginid;
+        }
+      });
+    }
+
+    unique.forEach((node) => {
+      const isRoot = node.Loginid === rootId;
       map.set(node.Loginid, !isRoot);
     });
 

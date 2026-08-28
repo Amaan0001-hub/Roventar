@@ -14,11 +14,11 @@ const Reward = () => {
   const { PerformanceRewardListData } = useSelector((state) => state.wallet);
 
   const salaryStrongLeg = PerformanceRewardListData?.performanceReward?.[0]?.RewardAchvd || "";
-  const salarystrongLegBusines = PerformanceRewardListData?.performanceReward?.[0]?.LeftBuss || "";
+  const salarystrongLegBusines = PerformanceRewardListData?.performanceReward?.[0]?.PowerTeamBusines || "";
   const salaryweakerLegBusines = PerformanceRewardListData?.performanceReward?.[0]?.SalaryweakerLegBusines || "";
-  const salarystrongLegBusinesId = PerformanceRewardListData?.performanceReward?.[0]?.RightBuss || "";
-  const salaryweakerLegBusinesId = PerformanceRewardListData?.performanceReward?.[0]?.PendingRight || "";
-  const legwisefreshbus = PerformanceRewardListData?.performanceReward?.[0]?.PendingLeft || "";
+  const salarystrongLegBusinesId = PerformanceRewardListData?.performanceReward?.[0]?.WeakerTeamBusines || "";
+  const salaryweakerLegBusinesId = PerformanceRewardListData?.performanceReward?.[0]?.PendingWeakerTeam || "";
+  const legwisefreshbus = PerformanceRewardListData?.performanceReward?.[0]?.PendingPowerTeam || "";
   const remainingDirectBus = PerformanceRewardListData?.performanceReward?.[0]?.RemainingDirectBus || "";
   const NextReleaseDate = PerformanceRewardListData?.performanceReward?.[0]?.NextReleaseDate || "";
 
@@ -77,7 +77,7 @@ const Reward = () => {
         <div className="it bg-p gl gl-p">
           <div className="stat-card-content">
             <div className="stat-text-wrapper">
-              <p className="stat-label">Left/Right Business</p>
+              <p className="stat-label">Power Team / Weaker Team Business</p>
               <p className="it-val">{formatCurrency(salarystrongLegBusines || "—")}/ {formatCurrency(salarystrongLegBusinesId)}</p>
           
             </div>
@@ -91,8 +91,21 @@ const Reward = () => {
         <div className="it bg-p gl gl-p">
           <div className="stat-card-content">
             <div className="stat-text-wrapper">
-              <p className="stat-label">Business Needed For Next Rank (L/R)</p>
+              <p className="stat-label">Pending Power / Weaker Team Business</p>
               <p className="it-val">{formatCurrency(legwisefreshbus || "—")} / {formatCurrency(salaryweakerLegBusinesId)}</p>
+         
+            </div>
+            <div className="stat-icon red-bg">
+              <RiMoneyDollarCircleLine className="stat-icon-svg red" />
+            </div>
+          </div>
+        </div>
+
+        <div className="it bg-p gl gl-p">
+          <div className="stat-card-content">
+            <div className="stat-text-wrapper">
+              <p className="stat-label">Next Release Date</p>
+              <p className="it-val">{NextReleaseDate || "—"}</p>
          
             </div>
             <div className="stat-icon red-bg">

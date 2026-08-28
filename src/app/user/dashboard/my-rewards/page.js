@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { fundDirectorTabs } from "@/app/constants/funddirector.js";
 import Reward from "./reward/page";
 import Achievement from "./achievement/page";
 import { usePathname } from "next/navigation";

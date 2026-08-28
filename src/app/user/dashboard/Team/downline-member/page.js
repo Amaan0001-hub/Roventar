@@ -1,58 +1,63 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronRight, ChevronLeft, Search } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AuthLogin } from "@/app/api/auth";
-import { LeftRightDownline } from "@/app/redux/slices/fundManagerSlice";
+import { getPersonalTeamList } from "@/app/redux/slices/walletSlice";
+
 
 const DownlineMember = ({ isDownline = false }) => {
     const dispatch = useDispatch();
     const authLogin = AuthLogin();
 
-    const { LeftRightDownlineData, loading, error } = useSelector(
-        (state) => state?.fund || {}
+    const { personalTeamList, loading, error } = useSelector(
+        (state) => state?.wallet || {}
     );
 
-    const teamMembersRaw = LeftRightDownlineData?.data?.leftRightdownline || [];
+    const teamMembersRaw = personalTeamList || [];
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedSide, setSelectedSide] = useState("All");
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedLevel, setSelectedLevel] = useState("");
     const itemsPerPage = 10;
 
-    const [teamParams, setTeamParams] = useState({
-        side: "",
-        kid: 0,
-        fromdate: "",
-        toDate: ""
-    });
 
-    const fetchDownline = async (sideValue) => {
+    const levelOptions = useMemo(() => {
+        const levels = [];
+        for (let i = 1; i <= 15; i++) {
+            levels.push({ value: i.toString(), label: `${i}` });
+        }
+        return levels;
+    }, []);
+
+    const fetchDownline = async (level = "") => {
         try {
-            const params = {
-                side: sideValue,
-                kid: 0,
-                fromdate: "",
-                toDate: ""
+            const authLoginValue = authLogin || authLogin?.urid || "";
+
+            const requestBody = {
+                authLogin: authLoginValue,
+                lvl: level,
+                statusId: ""
             };
-      
-            await dispatch(LeftRightDownline(params));
+
+            await dispatch(getPersonalTeamList(requestBody));
         } catch (error) {
             console.error("Error fetching downline:", error);
         }
     };
 
     useEffect(() => {
-        fetchDownline("");
-    }, [dispatch, authLogin]);
 
-    const handleSideChange = (side) => {
-        setSelectedSide(side);
+        fetchDownline(selectedLevel);
+
+    }, [authLogin, selectedLevel]);
+
+    // Handle level change
+    const handleLevelChange = (e) => {
+        const level = e.target.value;
+        setSelectedLevel(level);
         setCurrentPage(1);
-        setSearchTerm(""); 
-        if (side === "All") fetchDownline("");
-        else if (side === "Left") fetchDownline("L");
-        else if (side === "Right") fetchDownline("R");
+        fetchDownline(level);
     };
 
     // Filter members based on search term
@@ -60,7 +65,7 @@ const DownlineMember = ({ isDownline = false }) => {
         if (!searchTerm.trim()) {
             return teamMembersRaw;
         }
-        
+
         const searchLower = searchTerm.toLowerCase().trim();
         return teamMembersRaw.filter((member) => {
             return (
@@ -87,15 +92,13 @@ const DownlineMember = ({ isDownline = false }) => {
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
-        setCurrentPage(1); // Reset to first page when searching
+        setCurrentPage(1);
     };
 
     const clearSearch = () => {
         setSearchTerm("");
         setCurrentPage(1);
     };
-
-    const allCount = teamMembersRaw.length;
 
     return (
         <div className="downline-member-wrapper">
@@ -104,15 +107,19 @@ const DownlineMember = ({ isDownline = false }) => {
                     <div className="downline-member-title">
                         {isDownline ? "Downline Team" : "Direct Referral Team"}
                     </div>
-                    <div className="downline-member-filter">
+                    {/* Level Dropdown - Right Corner */}
+                    <div className="team-referral-main-filter-select-wrapper">
                         <select
-                            value={selectedSide}
-                            onChange={(e) => handleSideChange(e.target.value)}
-                            className="downline-member-select"
+                            value={selectedLevel}
+                            onChange={handleLevelChange}
+                            className="team-referral-main-filter-select"
                         >
-                            <option value="All">All Team</option>
-                            <option value="Left">Left Team</option>
-                            <option value="Right">Right Team</option>
+                            <option value="">Select Level</option>
+                            {levelOptions.map((level) => (
+                                <option key={level.value} value={level.value}>
+                                    {level.label}
+                                </option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -120,8 +127,7 @@ const DownlineMember = ({ isDownline = false }) => {
 
             {/* Search Box */}
             <div className="downline-member-search-container">
-                <div>
-                    
+                <div className="downline-member-search-box">
                     <input
                         type="text"
                         placeholder="Search by Name, Login ID, or Sponsor ID..."
@@ -129,7 +135,11 @@ const DownlineMember = ({ isDownline = false }) => {
                         onChange={handleSearchChange}
                         className="search-input"
                     />
-                   
+                    {searchTerm && (
+                        <button onClick={clearSearch} className="downline-member-clear-search">
+                            Clear
+                        </button>
+                    )}
                 </div>
                 {searchTerm && (
                     <div className="downline-member-search-results-info">
@@ -160,71 +170,75 @@ const DownlineMember = ({ isDownline = false }) => {
                                         <thead className="downline-member-thead">
                                             <tr>
                                                 <th className="downline-member-th">Sr No</th>
+
                                                 <th className="downline-member-th">Name</th>
+                                                <th className="downline-member-th">Country Flag</th>
                                                 <th className="downline-member-th">Login ID</th>
                                                 <th className="downline-member-th">Reg. Date</th>
-                                                <th className="downline-member-th">Sponser ID</th>
-                                                <th className="downline-member-th">Position</th>
+
                                                 <th className="downline-member-th downline-member-hide-xl">Package</th>
+                                                <th className="downline-member-th">Team Business</th>
                                                 <th className="downline-member-th downline-member-hide-lg">Topup Date</th>
-                                                <th className="downline-member-th downline-member-hide-xl">Left Business</th>
-                                                <th className="downline-member-th downline-member-hide-xl">Right Business</th>
                                                 <th className="downline-member-th">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody className="downline-member-tbody">
                                             {currentMembers && currentMembers?.length > 0 ? (
                                                 currentMembers.map((member, index) => (
-                                                    <tr key={member.Urid || index} className="downline-member-row">
+                                                    <tr key={index} className="downline-member-row">
                                                         <td className="downline-member-td">
                                                             {startIndex + index + 1}
                                                         </td>
                                                         <td className="downline-member-td downline-member-name">
-                                                            {member.Name}
+                                                            {member.name || "-"}
+                                                        </td>
+
+
+                                                        <td className="downline-member-td">
+                                                            <img
+                                                                src={member.countryFlag || "/default-avatar.png"}
+                                                                alt="User Avatar"
+                                                                width="40"
+                                                                height="40"
+                                                                style={{
+                                                                    width: "40px",
+                                                                    height: "40px",
+                                                                    borderRadius: "50%",
+                                                                    objectFit: "cover"
+                                                                }}
+                                                            />
+                                                        </td>
+
+                                                        <td className="downline-member-td">
+                                                            {member.loginid || "-"}
                                                         </td>
                                                         <td className="downline-member-td">
-                                                            {member.loginid}
+                                                            {member.regDate || "-"}
                                                         </td>
-                                                        <td className="downline-member-td">
-                                                            {member.RegDate || "Null"}
-                                                        </td>
-                                                        <td className="downline-member-td">
-                                                            {member.SponserId}
-                                                        </td>
-                                                        <td className="downline-member-td">
-                                                            <span className={`downline-member-side ${
-                                                                member.introSide === "L" || member.introSide === "L" 
-                                                                    ? "side-left" 
-                                                                    : "side-right"
-                                                            }`}>
-                                                                {member.introSide || member.introSide || "N/A"}
-                                                            </span>
-                                                        </td>
+
                                                         <td className="downline-member-td downline-member-hide-xl">
-                                                            ${parseFloat(member.Package).toLocaleString()}
+                                                            {member.package ? `$${parseFloat(member.package).toLocaleString()}` : "$0"}
+                                                        </td>
+                                                        <td className="downline-member-td">
+                                                            ${Number(member.teambusiness || 0).toFixed(2)}
                                                         </td>
                                                         <td className="downline-member-td downline-member-hide-lg">
-                                                            {member.TopupDate || "Null"}
-                                                        </td>
-                                                        <td className="downline-member-td downline-member-hide-xl">
-                                                            ${member.LBuss?.toLocaleString()}
-                                                        </td>
-                                                        <td className="downline-member-td downline-member-hide-xl">
-                                                            ${member.RBuss?.toLocaleString()}
+                                                            {member.topupDate || "-"}
                                                         </td>
                                                         <td className="downline-member-td">
-                                                            <span className="downline-member-status-badge">
-                                                                Active
+                                                            <span className={`downline-member-status-badge ${member.Status === "Active" ? "status-active" : "status-inactive"
+                                                                }`}>
+                                                                {member.status || "Active"}
                                                             </span>
                                                         </td>
                                                     </tr>
                                                 ))
                                             ) : (
                                                 <tr>
-                                                    <td colSpan="11" className="downline-member-no-data">
-                                                        {searchTerm 
-                                                            ? `No results found for "${searchTerm}"` 
-                                                            : `No team members found for ${selectedSide} side`}
+                                                    <td colSpan="8" className="downline-member-no-data">
+                                                        {searchTerm
+                                                            ? `No results found for "${searchTerm}"`
+                                                            : "No team members found"}
                                                     </td>
                                                 </tr>
                                             )}
@@ -250,7 +264,7 @@ const DownlineMember = ({ isDownline = false }) => {
                                             <span>Previous</span>
                                         </button>
                                         <div className="downline-member-page-current">
-                                            {currentPage} / {totalPages}
+                                            Page {currentPage} of {totalPages}
                                         </div>
                                         <button
                                             onClick={handleNext}

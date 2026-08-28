@@ -28,7 +28,7 @@ const TeamReferral = () => {
     const tabLabels = {
         Summary: "Summary",
         team: "Direct Team",
-        binarytree: "Tree View",
+        // binarytree: "Tree View",
         Downline: "Downline Team",
         AffiliateTree: "Affiliate Tree",
     };
@@ -116,7 +116,7 @@ const TeamReferral = () => {
 
             <div className="tabs-container">
                 <div className="tabs">
-                    {["Summary", "team", "binarytree", "Downline", "AffiliateTree"].map((tab) => (
+                    {["Summary", "team", "Downline", "AffiliateTree"].map((tab) => (
                         <button
                             key={tab}
                             className={`tab-btn ${activeTab === tab ? "active" : ""}`}
@@ -464,15 +464,7 @@ const TeamReferral = () => {
                                                         </th>
 
 
-                                                        <th className="team-referral-main-table-th text-center">
-                                                            Position
-                                                        </th>
-                                                        <th className="team-referral-main-table-th text-center">
-                                                            Left Bussiness
-                                                        </th>
-                                                        <th className="team-referral-main-table-th text-center">
-                                                            Right Bussiness
-                                                        </th>
+                                                      
                                                     </tr>
                                                 </thead>
                                                 <tbody className="team-referral-main-table-body-content">
@@ -519,23 +511,7 @@ const TeamReferral = () => {
                                                                         {member.topupDate || "Null"}
                                                                     </span>
                                                                 </td>
-
-
-                                                                <td className="team-referral-main-table-td hidden-lg text-center">
-                                                                    <span className="team-referral-main-mobile">
-                                                                        {member.position || "N/A"}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="team-referral-main-table-td text-center">
-                                                                    <span className="team-referral-main-team-business">
-                                                                        ${member.leftbusiness ? Number(member.leftbusiness).toFixed(2) : "0.000"}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="team-referral-main-table-td text-center">
-                                                                    <span className="team-referral-main-total-team">
-                                                                        {member.rightbusiness ? Number(member.rightbusiness).toFixed(2) : "0.000"}
-                                                                    </span>
-                                                                </td>
+                                                               
                                                             </tr>
                                                         ))
                                                     ) : (

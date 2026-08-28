@@ -828,9 +828,11 @@ export default function DashboardPage() {
   const rightBiz = Number(dashboardData?.[0]?.RightBussiness ?? dashboardData?.[0]?.RightBusiness ?? 0);
   const totalTeam = dashboardData?.[0]?.TotalTeam ?? ((dashboardData?.[0]?.LeftTeam || 0) + (dashboardData?.[0]?.RightTeam || 0));
   const activeTeam = dashboardData?.[0]?.ActiveTeam ?? 0;
-  const teamBusiness = dashboardData?.[0]?.TeamBusiness ?? (leftBiz + rightBiz);
-  const strongTeamBusiness = dashboardData?.[0]?.StrongTeamBusiness ?? Math.max(leftBiz, rightBiz);
-  const otherLegBusiness = dashboardData?.[0]?.OtherLegBusiness ?? Math.min(leftBiz, rightBiz);
+  const teamBusiness = dashboardData?.[0]?.Teambusiness ?? (leftBiz + rightBiz);
+  const strongTeamBusiness = dashboardData?.[0]?.StrongLegID ?? Math.max(leftBiz, rightBiz);
+  const otherLegBusiness = dashboardData?.[0]?.StrongLegBus ?? Math.min(leftBiz, rightBiz);
+  const weakTeamBussiness = dashboardData?.[0]?.OtherLegBus ?? Math.min(leftBiz, rightBiz);
+  
 
   const recentTransactions = [
     { id: '#TRX10291', date: '24 Aug 2026', type: 'Daily Trading Income', wallet: 'Income Wallet', amount: '+₹5,250', status: 'Completed', tone: 'success' },
@@ -1083,20 +1085,22 @@ export default function DashboardPage() {
           <div className="row g-3 mb-4">
             <div className="col-lg-6"> 
               <div className="dx-card h-100">
-                <div className="dx-card-title mb-1">Your Rank Journey</div>
+                <div className="dx-card-title mb-1">Your Growth Reward Journey</div>
                 <div className="dx-card-sub mb-3">Your premium rank achievement system</div>
                 <div className="d-flex align-items-center gap-4 flex-wrap">
                   <CircularGauge
                     percent={rankLevels.find(r => r.status === 'current')?.progress || 0}
                     size={110} stroke={9} colorFrom="#5eead4" colorTo="#0d9488" gradId="rankGrad"
+                    
                     centerTop={dashboardData?.[0]?.UserRank || 'V1'}
                     centerBottom={`${rankLevels.find(r => r.status === 'current')?.progress || 0}%`}
                   />
                   <div className="flex-grow-1">
-                    <div className="dx-row"><div className="dx-row-label">Current Business</div><div className="dx-row-value">₹{Number(dashboardData?.[0]?.TeamBusiness || 0).toLocaleString('en-IN')}</div></div>
+                    
                     <div className="dx-row"><div className="dx-row-label">Next Rank</div><div className="dx-row-value">{dashboardData?.[0]?.NextRank || 'V2'}</div></div>
-                    <div className="dx-row"><div className="dx-row-label">Required Business</div><div className="dx-row-value">₹10,00,000</div></div>
-                    <div className="dx-row"><div className="dx-row-label">Remaining</div><div className="dx-row-value">₹2,50,000</div></div>
+                    <div className="dx-row"><div className="dx-row-label">Next Rank Business</div><div className="dx-row-value">${Number(dashboardData?.[0]?.NextRewardBusReq || 0).toLocaleString('en-IN')}</div></div>
+                    <div className="dx-row"><div className="dx-row-label">Remaining Power</div><div className="dx-row-value">${Number(dashboardData?.[0]?.RewardPendingPowerTeam || 0).toLocaleString('en-IN')}</div></div>
+                    <div className="dx-row"><div className="dx-row-label">Remaining Weaker</div><div className="dx-row-value">${Number(dashboardData?.[0]?.RewardPendingWeakerTeam || 0).toLocaleString('en-IN')}</div></div>
                   </div>
                 </div> 
             </div>
@@ -1116,7 +1120,7 @@ export default function DashboardPage() {
                 <div className="row text-center g-2">
                   <div className="col-4">
                     <div className="dx-mini-stat-label">Total Income</div>
-                    <div className="fw-bold" style={{ color: "#14b8a6" }}>${(dashboardData?.[0]?.TotalIncome || 0).toFixed(2) || "0.00"}</div>
+                    <div className="fw-bold" style={{ color: "#14b8a6" }}>${(dashboardData?.[0]?.totatRoiLevelIncome || 0).toFixed(2) || "0.00"}</div>
                   </div>
                   <div className="col-4">
                     <div className="dx-mini-stat-label">Max Limit</div>
@@ -1150,10 +1154,10 @@ export default function DashboardPage() {
                       <path d="M14 10.5c2 .4 3.5 2 3.5 4" strokeLinecap="round" />
                     </svg>
                   </StatIcon>
-                  <span className="dx-badge-up">↗ ${dashboardData?.[0]?.SingleSpillIncomeToday || "0.00"}</span>
+                  <span className="dx-badge-up">↗ View</span>
                 </div>
-                <div className="dx-stat-label">Single Leg Income</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.SingleSpillIncome || "0.00"}</div>
+                <div className="dx-stat-label">Trading Profit</div>
+                <div className="dx-stat-value">${dashboardData?.[0]?.DailyTradingProfit || "0.00"}</div>
                
               </div>
             </div>
@@ -1168,10 +1172,10 @@ export default function DashboardPage() {
                       <path d="M14 3h4v4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </StatIcon>
-                  <span className="dx-badge-up">↗ ${dashboardData?.[0]?.PairVolumeIncomeToday || "0.00"}</span>
+                  <span className="dx-badge-up">↗ View</span>
                 </div>
-                <div className="dx-stat-label">Pair Volume Income</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.PairVolumeIncome || "0.00"}</div>
+                <div className="dx-stat-label">Direct  Income</div>
+                <div className="dx-stat-value">${dashboardData?.[0]?.DirectIncome || "0.00"}</div>
                 
               </div>
             </div>
@@ -1186,10 +1190,10 @@ export default function DashboardPage() {
                       <path d="M10 11V8M8 9.5h4" strokeLinecap="round" />
                     </svg>
                   </StatIcon>
-                  <span className="dx-badge-up">↗ ${dashboardData?.[0]?.TradingBotIncomeToday || "0.00"}</span>
+                  <span className="dx-badge-up">↗ View</span>
                 </div>
-                <div className="dx-stat-label">Trading Bot Income</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.TradingBotIncome || "0.00"}</div>
+                <div className="dx-stat-label">Tier Reward</div>
+                <div className="dx-stat-value">${dashboardData?.[0]?.TierLevelIncome || "0.00"}</div>
                 
               </div>
             </div>
@@ -1205,50 +1209,15 @@ export default function DashboardPage() {
                       <path d="M10 8v2l1.5 1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </StatIcon>
-                  <span className="dx-badge-up">↗ ${dashboardData?.[0]?.LeadershipTradingIncomeToday || "0.00"}</span>
+                  <span className="dx-badge-up">↗ View</span>
                 </div>
-                <div className="dx-stat-label">Leadership Recurring Income</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.LeadershipTradingIncome || "0.00"}</div>
-               
-              </div>
-            </div>
-
-            <div className="col-6 col-md-4 col-xl-3">
-              <div className="dx-card dx-stat-card h-100" role="button"
-                onClick={() => router.push('/user/dashboard/income-statement?tab=PowerBoostIncome')}>
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <StatIcon tone="blue">
-                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-                      <circle cx="7" cy="5.5" r="3" /><circle cx="14" cy="6.5" r="2.5" />
-                      <path d="M1 17c0-2.8 2.7-5 6-5s6 2.2 6 5" strokeLinecap="round" />
-                      <path d="M14 10.5c2 .4 3.5 2 3.5 4" strokeLinecap="round" />
-                    </svg>
-                  </StatIcon>
-                  <span className="dx-badge-up">↗ ${dashboardData?.[0]?.PowerBoostIncomeToday || "0.00"}</span>
-                </div>
-                <div className="dx-stat-label">Power Boost Income</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.PowerBoostIncome || "0.00"}</div>
-                 
-              </div>
-            </div>
-
-            <div className="col-6 col-md-4 col-xl-3">
-              <div className="dx-card dx-stat-card h-100" role="button"
-                onClick={() => router.push('/user/dashboard/income-statement?tab=RewardIncome')}>
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <StatIcon tone="blue">
-                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-                      <polyline points="2,14 6,8 10,11 14,5 18,8" />
-                      <path d="M14 3h4v4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </StatIcon>
-                  <span className="dx-badge-up">↗ ${dashboardData?.[0]?.RewardIncomeToday || "0.00"}</span>
-                </div>
-                <div className="dx-stat-label">Reward Income</div>
+                <div className="dx-stat-label">Growth Reward</div>
                 <div className="dx-stat-value">${dashboardData?.[0]?.RewardIncome || "0.00"}</div>
                
               </div>
             </div>
+
+            
           </div>
 
           {/* WALLET OVERVIEW — NEW */}
@@ -1420,9 +1389,21 @@ export default function DashboardPage() {
                     <polyline points="3,17 9,11 13,15 21,7" /><path d="M15 7h6v6" />
                   </svg>
                 </StatIcon>
-                <div className="dx-biz-value mt-3">{'₹'} {inr(teamBusiness)}</div>
+                <div className="dx-biz-value mt-3">${(teamBusiness)}</div>
                 <div className="dx-biz-label">Team Business</div>
                 <MiniBars seed={3} />
+              </div>
+            </div>
+             <div className="col-6 col-md-4 col-xl">
+              <div className="dx-card dx-biz-card h-100">
+                <StatIcon tone="teal">
+                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" width="19" height="19" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="8" />
+                  </svg>
+                </StatIcon>
+                <div className="dx-biz-value mt-3">${(otherLegBusiness)}</div>
+                <div className="dx-biz-label">Power Team Business</div>
+                <MiniBars seed={5} />
               </div>
             </div>
             <div className="col-6 col-md-4 col-xl">
@@ -1432,20 +1413,21 @@ export default function DashboardPage() {
                     <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
                   </svg>
                 </StatIcon>
-                <div className="dx-biz-value mt-3">{'₹'} {inr(strongTeamBusiness)}</div>
-                <div className="dx-biz-label">Strong Team Business</div>
+                <div className="dx-biz-value mt-3"> {(strongTeamBusiness || '0' )}</div>
+                <div className="dx-biz-label">Power Team ID</div>
                 <MiniBars seed={4} />
               </div>
             </div>
-            <div className="col-6 col-md-4 col-xl">
+           
+             <div className="col-6 col-md-4 col-xl">
               <div className="dx-card dx-biz-card h-100">
                 <StatIcon tone="teal">
                   <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" width="19" height="19" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="8" />
                   </svg>
                 </StatIcon>
-                <div className="dx-biz-value mt-3">{'₹'} {inr(otherLegBusiness)}</div>
-                <div className="dx-biz-label">Other Leg Business</div>
+                <div className="dx-biz-value mt-3">${(weakTeamBussiness)}</div>
+                <div className="dx-biz-label">Weaker Team Business</div>
                 <MiniBars seed={5} />
               </div>
             </div>

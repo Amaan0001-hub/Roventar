@@ -268,7 +268,7 @@ export default function RootLayout({ children }) {
 
           {/* Content - ONLY this part will scroll */}
           <main 
-            className="content" 
+            className="" 
             style={{
               flex: 1,
               overflowY: "auto",

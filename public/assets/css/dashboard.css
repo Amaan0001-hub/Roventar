@@ -13793,8 +13793,54 @@ option:hover {
   align-items: center;
 }
 
-.tabs-container {
+/* .tabs-container {
   overflow: auto;
+} */
+
+/* Ensure tabs are always visible */
+.tabs-container {
+  display: block !important;
+  width: 100%;
+  overflow: visible !important;
+}
+
+.tabs {
+  display: flex !important;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.tab-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 44px;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-1);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--brand-purple), var(--brand-violet));
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
 }
 
 .pending-bg {

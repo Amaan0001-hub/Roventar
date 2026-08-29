@@ -15,8 +15,8 @@ const API_ENDPOINTS = {
   GET_DIRECT_MEMBER_ADMIN: "/Community/getdirectMemberAdmin",
   GET_PERSONAL_TEAM_LIST: "/Community/getPersonalTeam",
   GET_PERSONAL_TEAM_LIST_ADMIN: '/Community/getPersonalTeamAdmin',
-  GET_REWARDS: "/WalletReport/getPerformanceRewardListByURID",
-  GET_RANK_ACHIEVEMENT: "/WalletReport/getRankAchievementbyURID"
+  GET_REWARDS: "/WalletReport/getRewardStatus",
+  GET_RANK_ACHIEVEMENT: "/WalletReport/getAccelerateReward"
 };
 
 export const getAllWalletTransType = createAsyncThunk(
@@ -281,10 +281,10 @@ export const getPersonalTeamListAdmin = createAsyncThunk(
 );
 export const getPerformanceRewardListByURID = createAsyncThunk(
   "wallet/getPerformanceRewardListByURID",
-  async (urid, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await postRequestWithToken(
-        `${API_ENDPOINTS.GET_REWARDS}?URID=${urid}`
+        `${API_ENDPOINTS.GET_REWARDS}`
       );
       return response.data;
     } catch (error) {
@@ -298,10 +298,10 @@ export const getPerformanceRewardListByURID = createAsyncThunk(
 
 export const getrankAchivement = createAsyncThunk(
   "wallet/getrankAchivement",
-  async (urid, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await postRequestWithToken(
-        `${API_ENDPOINTS.GET_RANK_ACHIEVEMENT}?URID=${urid}`
+        `${API_ENDPOINTS.GET_RANK_ACHIEVEMENT}`
       );
       return response.data;
     } catch (error) {

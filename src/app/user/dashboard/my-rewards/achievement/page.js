@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useEffect } from "react";
 import { 
@@ -21,33 +20,30 @@ const Achievement = () => {
   const dispatch = useDispatch();
   const { AchivementListData } = useSelector((state) => state.wallet);
 
-
-  // Get the first object (MANAGER) for stats - or find the qualified one
-  const firstRank = AchivementListData?.leaderShip?.[0] || {};
-  
   // Find the current qualified rank (Statusx === "Qualify")
-  const currentQualifiedRank = AchivementListData?.leaderShip?.find(
+  const currentQualifiedRank = AchivementListData?.reward?.find(
     (rank) => rank.Statusx === "Qualify"
-  ) || firstRank;
+  );
   
   // Find the next rank (first "Not Qualify" after qualified ranks)
-  const nextRank = AchivementListData?.leaderShip?.find(
+  const nextRank = AchivementListData?.reward?.find(
     (rank) => rank.Statusx === "Not Qualify"
   );
 
-  const achievedReward = firstRank?.YourRank || "—";
-  const leftBusiness = firstRank?.LeftBuss || 0;
-  const rightBusiness = firstRank?.RightBuss || 0;
+  // Get the highest achieved rank (RewardAchvd)
+  const achievedReward = currentQualifiedRank?.RewardAchvd || "V1";
   
-  // For next rank requirement - show MatchingBussReq from next rank
-  const nextRankRequired = nextRank?.MatchingBussReq || "—";
-  const currentBusiness = Math.max(leftBusiness, rightBusiness);
-  const businessNeeded = nextRankRequired !== "—" 
-    ? Math.max(0, parseFloat(nextRankRequired.replace(/,/g, '')) - currentBusiness)
-    : "—";
-
-  const salaryweakerLegBusinesId = AchivementListData?.leaderShip?.[0]?.PendingRight || "";
-  const legwisefreshbus = AchivementListData?.leaderShip?.[0]?.PendingLeft || "";
+  // Get current business values from the first qualified rank
+  const strongTeamBusiness = currentQualifiedRank?.PowerTeamBusines || 0;
+  const weakerTeamBusiness = currentQualifiedRank?.WeakerTeamBusines || 0;
+  
+  // For next rank requirement
+  const nextRankRequired = nextRank?.RequiredBusiness || "—";
+  const currentBusiness = Math.max(strongTeamBusiness, weakerTeamBusiness);
+  
+  // Get pending business for next rank
+  const pendingStrongTeam = currentQualifiedRank?.PendingPowerTeam || 0;
+  const pendingWeakerTeam = currentQualifiedRank?.PendingWeakerTeam || 0;
   
   useEffect(() => {
     const data = getUserId();
@@ -56,7 +52,7 @@ const Achievement = () => {
 
   const formatCurrency = (value) => {
     if (!value && value !== 0) return "$0";
-    const num = typeof value === "string" ? parseFloat(value) : value;
+    const num = typeof value === "string" ? parseFloat(value.replace(/,/g, '')) : value;
     if (isNaN(num)) return "$0";
     return `$${num.toLocaleString()}`;
   };
@@ -75,19 +71,19 @@ const Achievement = () => {
     };
     
     switch(rankTitle?.toUpperCase()) {
-      case "MANAGER":
+      case "V1":
         return <RiMedalLine {...iconProps} />;
-      case "BRONZE":
+      case "V2":
         return <RiShieldStarLine {...iconProps} />;
-      case "SILVER":
+      case "V3":
         return <RiStarLine {...iconProps} />;
-      case "GOLD":
+      case "V4":
         return <RiTrophyLine {...iconProps} />;
-      case "RUBY":
+      case "V5":
         return <RiGeminiLine {...iconProps} />;
-      case "PLATINUM":
+      case "V6":
         return <RiAwardLine {...iconProps} />;
-      case "DIAMOND":
+      case "V7":
         return <RiDiamondLine {...iconProps} />;
       default:
         return <RiMedalLine {...iconProps} />;
@@ -110,13 +106,13 @@ const Achievement = () => {
           </div>
         </div>
 
-        {/* Left/Right Business Card */}
+        {/* Strong/Weak Team Business Card */}
         <div className="it bg-p gl gl-p">
           <div className="stat-card-content">
             <div className="stat-text-wrapper">
-              <p className="stat-label">Left / Right Business</p>
+              <p className="stat-label">Strong / Weak Team Business</p>
               <p className="it-val">
-                {formatCurrency(leftBusiness)} / {formatCurrency(rightBusiness)}
+                {formatCurrency(strongTeamBusiness)} / {formatCurrency(weakerTeamBusiness)}
               </p>
             </div>
             <div className="stat-icon pink-bg">
@@ -129,8 +125,8 @@ const Achievement = () => {
         <div className="it bg-p gl gl-p">
           <div className="stat-card-content">
             <div className="stat-text-wrapper">
-              <p className="stat-label">Business Needed For Next Rank (L/R)</p>
-              <p className="it-val">{formatCurrency(legwisefreshbus)} / {formatCurrency(salaryweakerLegBusinesId)}</p>
+              <p className="stat-label">Business Needed For Next Rank (Strong/Weak)</p>
+              <p className="it-val">{formatCurrency(pendingStrongTeam)} / {formatCurrency(pendingWeakerTeam)}</p>
             </div>
             <div className="stat-icon red-bg">
               <RiMoneyDollarCircleLine className="stat-icon-svg red" />
@@ -140,35 +136,35 @@ const Achievement = () => {
       </div>
 
       {/* Ranks Table */}
-     <div className="card">
+      <div className="card">
         <table className="data-table">
           <thead className="table-header">
             <tr>
               <th className="table-header-cell">#</th>
               <th className="table-header-cell">Title</th>
               <th className="table-header-cell">Required Business</th>
+              <th className="table-header-cell">Self Training Pack</th>
+              <th className="table-header-cell">Boost</th>
+              <th className="table-header-cell">Strong Team</th>
+              <th className="table-header-cell">Weak Team</th>
               <th className="table-header-cell">Status</th>
             </tr>
           </thead>
           <tbody>
-            {AchivementListData?.leaderShip?.length > 0 ? (
-              AchivementListData.leaderShip.map((rank, index) => (
+            {AchivementListData?.reward?.length > 0 ? (
+              AchivementListData.reward.map((rank, index) => (
                 <tr key={index} className="table-row">
-                  <td className="td-cell">{index + 1}</td>
+                  <td className="td-cell">{rank.statusCode}</td>
                   <td className="td-cell rank-name">
                     <div className="rank-title-container">
-                      {rank.RankIcon && (
-                        <img 
-                          src={rank.RankIcon} 
-                          alt={rank.LRank} 
-                          className="rank-icon-img"
-                          style={{ width: '30px', height: '30px' }}
-                        />
-                      )}
-                      <span>{rank.LRank}</span>
+                      <span>{rank.RewardTitle}</span>
                     </div>
                   </td>
-                  <td className="td-cell">${rank.MatchingBussReq}</td>
+                  <td className="td-cell">${rank.RequiredBusiness}</td>
+                  <td className="td-cell">{rank.SelfTraingPackReq}</td>
+                  <td className="td-cell">{rank.Boost}</td>
+                  <td className="td-cell">${rank.PowerTeamBusines?.toLocaleString()}</td>
+                  <td className="td-cell">${rank.WeakerTeamBusines?.toLocaleString()}</td>
                   <td className="td-cell">
                     <span className={`status-badge ${rank.Statusx === "Qualify" ? "qualify" : "not-qualify"}`}>
                       {rank.Statusx}
@@ -178,7 +174,7 @@ const Achievement = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="empty-row">
+                <td colSpan="8" className="empty-row">
                   No rank achievement data available
                 </td>
               </tr>

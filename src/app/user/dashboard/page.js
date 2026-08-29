@@ -725,9 +725,7 @@ export default function DashboardPage() {
     );
   };
 
-  // ---- Static config for NEW presentational sections ----
-  // NOTE: these read from dashboardData with safe fallbacks; wire real API fields
-  // into the bracketed keys below whenever the backend exposes them.
+
   const quickActions = [
     {
       key: 'Deposit', label: 'Deposit', active: true, path: '/user/dashboard/fund-director', icon: (
@@ -741,7 +739,7 @@ export default function DashboardPage() {
     },
     {
       key: 'BuyPackage', label: 'Buy Package', path: '/user/dashboard/AI-Trading-Bots', icon: (
-        <svg viewBox="0 0 20 20" fill="none" stroke="curentColor" strokeWidth="1.6" width="18" height="18"><path d="M3 7l7-4 7 4-7 4-7-4z" /><path d="M3 7v6l7 4 7-4V7" /></svg>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><path d="M3 7l7-4 7 4-7 4-7-4z" /><path d="M3 7v6l7 4 7-4V7" /></svg>
       )
     },
     {
@@ -1140,82 +1138,80 @@ export default function DashboardPage() {
           </div>
 
           <div className="row g-3 mb-4">
-            <div className="col-6 col-md-4 col-xl-3">
-              <div className="dx-card dx-stat-card h-100" role="button"
-                onClick={() => router.push('/user/dashboard/income-statement?tab=SingleLegIncome')}>
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <StatIcon tone="blue">
-                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-                      <circle cx="7" cy="5.5" r="3" /><circle cx="14" cy="6.5" r="2.5" />
-                      <path d="M1 17c0-2.8 2.7-5 6-5s6 2.2 6 5" strokeLinecap="round" />
-                      <path d="M14 10.5c2 .4 3.5 2 3.5 4" strokeLinecap="round" />
-                    </svg>
-                  </StatIcon>
-                  <span className="dx-badge-up">↗ View</span>
-                </div>
-                <div className="dx-stat-label">Trading Profit</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.DailyTradingProfit || "0.00"}</div>
-               
-              </div>
-            </div>
+  {/* Trading Profit */}
+  <div className="col-6 col-md-4 col-xl-3">
+    <div className="dx-card dx-stat-card h-100" role="button"
+      onClick={() => router.push('/user/dashboard/income-statement?tab=TradingProfit')}>  {/* ✅ Changed */}
+      <div className="d-flex justify-content-between align-items-start mb-3">
+        <StatIcon tone="blue">
+          <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
+            <circle cx="7" cy="5.5" r="3" /><circle cx="14" cy="6.5" r="2.5" />
+            <path d="M1 17c0-2.8 2.7-5 6-5s6 2.2 6 5" strokeLinecap="round" />
+            <path d="M14 10.5c2 .4 3.5 2 3.5 4" strokeLinecap="round" />
+          </svg>
+        </StatIcon>
+        <span className="dx-badge-up">↗ View</span>
+      </div>
+      <div className="dx-stat-label">Trading Profit</div>
+      <div className="dx-stat-value">${dashboardData?.[0]?.DailyTradingProfit || "0.00"}</div>
+    </div>
+  </div>
 
-            <div className="col-6 col-md-4 col-xl-3">
-              <div className="dx-card dx-stat-card h-100" role="button"
-                onClick={() => router.push('/user/dashboard/income-statement?tab=PairVolumeIncome')}>
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <StatIcon tone="blue">
-                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-                      <polyline points="2,14 6,8 10,11 14,5 18,8" />
-                      <path d="M14 3h4v4" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </StatIcon>
-                  <span className="dx-badge-up">↗ View</span>
-                </div>
-                <div className="dx-stat-label">Direct  Income</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.DirectIncome || "0.00"}</div>
-                
-              </div>
-            </div>
+  {/* Direct Income */}
+  <div className="col-6 col-md-4 col-xl-3">
+    <div className="dx-card dx-stat-card h-100" role="button"
+      onClick={() => router.push('/user/dashboard/income-statement?tab=DirectIncome')}>  {/* ✅ Changed */}
+      <div className="d-flex justify-content-between align-items-start mb-3">
+        <StatIcon tone="blue">
+          <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
+            <polyline points="2,14 6,8 10,11 14,5 18,8" />
+            <path d="M14 3h4v4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </StatIcon>
+        <span className="dx-badge-up">↗ View</span>
+      </div>
+      <div className="dx-stat-label">Direct Income</div>
+      <div className="dx-stat-value">${dashboardData?.[0]?.DirectIncome || "0.00"}</div>
+    </div>
+  </div>
 
-            <div className="col-6 col-md-4 col-xl-3">
-              <div className="dx-card dx-stat-card h-100" role="button"
-                onClick={() => router.push('/user/dashboard/income-statement?tab=TradingBotIncome')}>
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <StatIcon tone="blue">
-                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-                      <path d="M10 2L3 6.5v7L10 18l7-4.5v-7z" strokeLinejoin="round" />
-                      <path d="M10 11V8M8 9.5h4" strokeLinecap="round" />
-                    </svg>
-                  </StatIcon>
-                  <span className="dx-badge-up">↗ View</span>
-                </div>
-                <div className="dx-stat-label">Tier Reward</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.TierLevelIncome || "0.00"}</div>
-                
-              </div>
-            </div>
+  {/* Tier Reward */}
+  <div className="col-6 col-md-4 col-xl-3">
+    <div className="dx-card dx-stat-card h-100" role="button"
+      onClick={() => router.push('/user/dashboard/income-statement?tab=TierReward')}>  {/* ✅ Changed */}
+      <div className="d-flex justify-content-between align-items-start mb-3">
+        <StatIcon tone="blue">
+          <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
+            <path d="M10 2L3 6.5v7L10 18l7-4.5v-7z" strokeLinejoin="round" />
+            <path d="M10 11V8M8 9.5h4" strokeLinecap="round" />
+          </svg>
+        </StatIcon>
+        <span className="dx-badge-up">↗ View</span>
+      </div>
+      <div className="dx-stat-label">Tier Reward</div>
+      <div className="dx-stat-value">${dashboardData?.[0]?.TierLevelIncome || "0.00"}</div>
+    </div>
+  </div>
 
-            <div className="col-6 col-md-4 col-xl-3">
-              <div className="dx-card dx-stat-card h-100" role="button"
-                onClick={() => router.push('/user/dashboard/income-statement?tab=LeadershipRecurringIncome')}>
-                <div className="d-flex justify-content-between align-items-start mb-3">
-                  <StatIcon tone="blue">
-                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-                      <circle cx="10" cy="10" r="4" />
-                      <path d="M10 2v2M10 16v2M2 10h2M16 10h2" strokeLinecap="round" />
-                      <path d="M10 8v2l1.5 1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </StatIcon>
-                  <span className="dx-badge-up">↗ View</span>
-                </div>
-                <div className="dx-stat-label">Growth Reward</div>
-                <div className="dx-stat-value">${dashboardData?.[0]?.RewardIncome || "0.00"}</div>
-               
-              </div>
-            </div>
-
-            
-          </div>
+  {/* Growth Reward */}
+  <div className="col-6 col-md-4 col-xl-3">
+    <div className="dx-card dx-stat-card h-100" role="button"
+      onClick={() => router.push('/user/dashboard/income-statement?tab=GrowthReward')}>  {/* ✅ Changed */}
+      <div className="d-flex justify-content-between align-items-start mb-3">
+        <StatIcon tone="blue">
+          <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
+            <circle cx="10" cy="10" r="4" />
+            <path d="M10 2v2M10 16v2M2 10h2M16 10h2" strokeLinecap="round" />
+            <path d="M10 8v2l1.5 1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </StatIcon>
+        <span className="dx-badge-up">↗ View</span>
+      </div>
+      <div className="dx-stat-label">Growth Reward</div>
+      <div className="dx-stat-value">${dashboardData?.[0]?.RewardIncome || "0.00"}</div>
+    </div>
+  </div>
+</div>
 
           {/* WALLET OVERVIEW — NEW */}
           <div className="dx-section-head mb-3">

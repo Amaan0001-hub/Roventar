@@ -1207,7 +1207,6 @@ const downloadPDFInvoice = async (orderData) => {
         padding: "16px 28px",
         borderBottom: "1px solid var(--border)",
         background: "var(--bg-1)",
-        position: "sticky",
         top: 0,
       }}>
         <div>

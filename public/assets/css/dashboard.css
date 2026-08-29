@@ -2592,8 +2592,7 @@ button {
   background: rgba(255, 255, 255, .03);
   border: 1px solid var(--b1);
   border-radius: var(--r8);
-  padding: 3px;
-  margin-bottom: 18px
+  padding: 3px; 
 }
 
 .tab {
@@ -2715,12 +2714,7 @@ select.fi option {
 .btn-success:hover {
   transform: translateY(-1px)
 }
-
-.btn-danger {
-  background: var(--rd);
-  color: var(--r) !important;
-  border: 1px solid rgba(239, 68, 68, .3)
-}
+ 
 
 /* ── APP SHELL ── */
 .app {
@@ -4130,7 +4124,7 @@ svg.svg-size {
   inset: 0;
   background: rgba(3, 3, 12, .88);
   backdrop-filter: blur(10px);
-  z-index: 900;
+  z-index:9999999;
   display: none;
   align-items: center;
   justify-content: center;
@@ -5191,10 +5185,8 @@ input:checked+.toggle-track+.toggle-thumb {
 /* Tabs */
 .tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 10px;
+  gap: 8px; 
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
 }
 
 .tab {
@@ -5953,7 +5945,7 @@ input:checked+.toggle-track+.toggle-thumb {
   width: 40px;
   height: 40px;
   border-radius: 11px;
-  background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+  background: linear-gradient(135deg, #6d28d9, #07dbc7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5990,8 +5982,7 @@ input:checked+.toggle-track+.toggle-thumb {
   background: rgba(100, 60, 220, 0.05);
   border: 1px solid var(--b1);
   border-radius: var(--r8);
-  padding: 3px;
-  margin-bottom: 18px
+  padding: 3px; 
 }
 
 .tab {
@@ -6100,13 +6091,7 @@ select.fi option {
 .btn-success:hover {
   transform: translateY(-1px)
 }
-
-.btn-danger {
-  background: var(--rd);
-  color: var(--r) !important;
-  border: 1px solid rgba(239, 68, 68, 0.30)
-}
-
+ 
 /* ── APP SHELL ── */
 .app {
   display: none;
@@ -6155,7 +6140,7 @@ select.fi option {
   height: 34px;
   min-width: 34px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+  background: linear-gradient(135deg, #6d28d9, #07dbc7);
   display: flex;
   align-items: center;
   justify-content: center
@@ -8474,7 +8459,7 @@ input[type=number] {
 }
 
 .bdep {
-  background: linear-gradient(135deg, var(--brand-purple), var(--brand-violet));
+  background: linear-gradient(135deg, #2fd9d3, #2fd9d3);
   border: none;
   color: white;
   padding: 12px 16px;
@@ -10682,6 +10667,7 @@ input[type=number] {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin: 12px;
 }
 
 @media (min-width: 640px) {
@@ -13801,14 +13787,13 @@ option:hover {
 .tabs-container {
   display: block !important;
   width: 100%;
-  overflow: visible !important;
+  overflow: auto !important;
+  margin-bottom: 15px;
 }
 
 .tabs {
   display: flex !important;
-  gap: 8px;
-  margin-bottom: 18px;
-  padding-bottom: 10px;
+  gap: 8px; 
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   visibility: visible !important;
   opacity: 1 !important;
@@ -13818,10 +13803,8 @@ option:hover {
   display: inline-flex !important;
   align-items: center;
   gap: 8px;
-  padding: 8px 20px;
-  background: none;
-  border: none;
-  color: var(--text-2);
+  padding: 8px 20px; 
+  border: none; 
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -13831,17 +13814,7 @@ option:hover {
   opacity: 1 !important;
   min-height: 44px;
 }
-
-.tab-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-1);
-}
-
-.tab-btn.active {
-  background: linear-gradient(135deg, var(--brand-purple), var(--brand-violet));
-  color: #fff !important;
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
-}
+ 
 
 .pending-bg {
   background: #03bdad !important;
@@ -14423,13 +14396,13 @@ html.dark body {
   --brand-teal: #7bfff0;
   --brand-accent: #2fd9d3;
   --brand-green: #2ed99a;
-  --brand-gold: #f4b740;
-  --brand-purple: #f4b740;
+  --brand-gold: #2fd9d2;
+  --brand-purple: #2fd9d2;
   --brand-violet: #2fd9d3;
   --brand-red: #f0708a;
   --c: #2fd9d3;
   --p: #2fd9d3;
-  --a: #f4b740;
+  --a: #2fd9d2;
   --r: #f0708a;
   --t3: #2fd9d3;
   --g1: #9db4be;
@@ -18065,4 +18038,7 @@ html[data-theme="dark"] .dx-ann-item {
   .dx-growth-title {
     font-size: 18px;
   }
+}
+.main-content {
+    padding: 15px;
 }

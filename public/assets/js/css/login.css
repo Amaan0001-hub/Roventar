@@ -1229,7 +1229,7 @@
 
 /* Colors */
 :root {
-    --purple: #8b5cf6;
+    --purple: #07dbc7;
     --cyan: #22d3ee;
     --dark-bg: #060918;
     --card-bg: rgba(10, 14, 35, 0.95);
@@ -1503,7 +1503,7 @@
     background: rgba(139, 92, 246, 0.05);
     border: 1px solid rgba(139, 92, 246, 0.15);
     color: #e8e0fa;
-    caret-color: #8b5cf6;
+    caret-color: #07dbc7;
     border-radius: 12px;
     font-size: 14px;
     outline: none;
@@ -1877,13 +1877,13 @@ html.dark body {
   --brand-teal: #7bfff0;
   --brand-accent: #2fd9d3;
   --brand-green: #2ed99a;
-  --brand-gold: #f4b740;
-  --brand-purple: #f4b740;
+  --brand-gold: #2fd9d2;
+  --brand-purple: #2fd9d2;
   --brand-violet: #2fd9d3;
   --brand-red: #f0708a;
   --c: #2fd9d3;
   --p: #2fd9d3;
-  --a: #f4b740;
+  --a: #2fd9d2;
   --r: #f0708a;
   --t3: #2fd9d3;
   --g1: #9db4be;

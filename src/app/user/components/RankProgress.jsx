@@ -138,7 +138,7 @@ export default function RankProgress({
       className="rpc-hero card"
       style={styles.hero}
     >
-      <div className="card-body" style={styles.body}>
+      <div>
         <div
           className="row align-items-center"
           style={styles.row}

@@ -36,6 +36,7 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
 
   const [notificationsDropDown, setNotificationsDropDown] = useState(false);
   const [seenNotifications, setSeenNotifications] = useState(new Set());
+  const [isPhoneView, setIsPhoneView] = useState(false);
   const notifyRef = useRef(null);
   const notificationPollingRef = useRef(null);
 
@@ -163,6 +164,13 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
   }, [selectedPosition, leftUrl, rightUrl]);
 
  
+  useEffect(() => {
+    const updatePhoneView = () => setIsPhoneView(window.innerWidth <= 1024);
+    updatePhoneView();
+    window.addEventListener('resize', updatePhoneView);
+    return () => window.removeEventListener('resize', updatePhoneView);
+  }, []);
+
   useEffect(() => {
     const savedSeenNotifications = localStorage.getItem("seenNotifications");
     if (savedSeenNotifications) setSeenNotifications(new Set(JSON.parse(savedSeenNotifications)));
@@ -389,16 +397,18 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
               <div
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  position: "absolute",
-                  right: 0,
-                  top: "calc(100% + 10px)",
-                  width: "250px",
-                  maxWidth: "calc(100vw - 20px)",
+                  position: isPhoneView ? "fixed" : "absolute",
+                  right: isPhoneView ? "auto" : 0,
+                  left: isPhoneView ? "45%" : "auto",
+                  top: isPhoneView ? "110px" : "calc(100% + 10px)",
+                  width: isPhoneView ? "min(88vw, 300px)" : "250px",
+                  maxWidth: isPhoneView ? "calc(100vw - 16px)" : "calc(100vw - 20px)",
+                  transform: isPhoneView ? "translateX(-50%)" : "none",
                   background: "linear-gradient(135deg, var(--bg-2) 0%, var(--bg-1) 100%)",
                   border: "1px solid rgba(255,255,255,0.08)",
                   borderRadius: "14px",
                   boxShadow: "0 18px 40px rgba(0,0,0,0.25)",
-                  zIndex: 999,
+                  zIndex: 9999,
                   overflow: "hidden",
                 }}
               >
@@ -409,15 +419,19 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
                     justifyContent: "space-between",
                     padding: "14px 16px",
                     borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    gap: "10px",
                   }}
                 >
-                  <div>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#00000" }}>Notifications</div>
-                    {actualUnseenCount > 0 && (
-                      <div style={{ fontSize: "11px", color: "#60a5fa" }}>{actualUnseenCount} unread</div>
-                    )}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                    <FaBell size={14} style={{ color: "#60a5fa", flexShrink: 0 }} />
+                    <div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#00000", lineHeight: 1.3 }}>Notifications</div>
+                      {actualUnseenCount > 0 && (
+                        <div style={{ fontSize: "11px", color: "#60a5fa", lineHeight: 1.3 }}>{actualUnseenCount} unread</div>
+                      )}
+                    </div>
                   </div>
-                  <div onClick={handleCloseNotifications} style={{ cursor: "pointer", color: "var(--t2)", fontSize: "13px" }}>
+                  <div onClick={handleCloseNotifications} style={{ cursor: "pointer", color: "var(--t2)", fontSize: "13px", flexShrink: 0 }}>
                     ✕
                   </div>
                 </div>

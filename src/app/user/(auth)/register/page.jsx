@@ -842,7 +842,7 @@ export default function SignupPage() {
             width: 60px;
             height: 60px;
             border: 3px solid rgba(139, 92, 246, 0.2);
-            border-top: 3px solid #8b5cf6;
+            border-top: 3px solid #07dbc7;
             border-right: 3px solid #22d3ee;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -853,7 +853,7 @@ export default function SignupPage() {
           }
           .loader-text {
             margin-top: 20px;
-            color: #8b5cf6;
+            color: #07dbc7;
             font-family: monospace;
             font-size: 14px;
             letter-spacing: 2px;

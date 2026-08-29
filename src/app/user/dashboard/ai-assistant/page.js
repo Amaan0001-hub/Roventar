@@ -176,25 +176,25 @@ function AIAssistant() {
 
     const news = isBull
       ? [
-          {
-            text: "<strong>US Dollar Index</strong> weakened following softer-than-expected inflation data, boosting risk appetite.",
-            sentiment: "Positive",
-          },
-          {
-            text: `<strong>${assetName}</strong> gaining strength supported by institutional buying and declining treasury yields.`,
-            sentiment: "Positive",
-          },
-        ]
+        {
+          text: "<strong>US Dollar Index</strong> weakened following softer-than-expected inflation data, boosting risk appetite.",
+          sentiment: "Positive",
+        },
+        {
+          text: `<strong>${assetName}</strong> gaining strength supported by institutional buying and declining treasury yields.`,
+          sentiment: "Positive",
+        },
+      ]
       : [
-          {
-            text: "<strong>Federal Reserve</strong> hawkish commentary renewed USD strength, weighing on risk assets.",
-            sentiment: "Negative",
-          },
-          {
-            text: `<strong>${assetName}</strong> facing headwinds from profit-taking at key resistance levels.`,
-            sentiment: "Negative",
-          },
-        ];
+        {
+          text: "<strong>Federal Reserve</strong> hawkish commentary renewed USD strength, weighing on risk assets.",
+          sentiment: "Negative",
+        },
+        {
+          text: `<strong>${assetName}</strong> facing headwinds from profit-taking at key resistance levels.`,
+          sentiment: "Negative",
+        },
+      ];
 
     const cal = [
       { time: "15:30", event: "US CPI (MoM)", impact: "high" },
@@ -204,11 +204,11 @@ function AIAssistant() {
 
     const reasoning = isBull
       ? `Our AI identified a <strong>bullish continuation setup</strong> after detecting weakening USD strength, positive institutional order flow and a confirmed breakout above the key $${sup} support-turned-resistance level. Momentum indicators (RSI at ${Math.floor(
-          52 + Math.random() * 12
-        )}, MACD bullish crossover) support further upside. Smart money positioning data shows net-long accumulation for the third consecutive session. The upcoming economic events may increase short-term volatility — recommended risk per trade remains at 1% of account capital. Suggested to <strong>trail stop to breakeven</strong> once TP1 is reached.`
+        52 + Math.random() * 12
+      )}, MACD bullish crossover) support further upside. Smart money positioning data shows net-long accumulation for the third consecutive session. The upcoming economic events may increase short-term volatility — recommended risk per trade remains at 1% of account capital. Suggested to <strong>trail stop to breakeven</strong> once TP1 is reached.`
       : `Our AI identified a <strong>bearish reversal signal</strong> following deteriorating order flow and a confirmed rejection at the $${res} resistance zone. MACD shows bearish crossover on H4, RSI overbought at ${Math.floor(
-          68 + Math.random() * 10
-        )}. Institutional data reflects increased short positioning. News sentiment is negative, reinforcing downside probability. Monitor upcoming economic releases for volatility spikes. Recommended risk per trade: 1% of account capital.`;
+        68 + Math.random() * 10
+      )}. Institutional data reflects increased short positioning. News sentiment is negative, reinforcing downside probability. Monitor upcoming economic releases for volatility spikes. Recommended risk per trade: 1% of account capital.`;
 
     return {
       instrument: assetName,
@@ -365,12 +365,12 @@ function AIAssistant() {
 
     // Simulate loading with steps
     const totalSteps = loadingSteps.length;
-    
+
     for (let i = 0; i < totalSteps; i++) {
       setCurrentStep(i);
       const progress = Math.round(((i + 1) / totalSteps) * 100);
       setLoadingProgress(progress);
-      
+
       // Random delay between 600-1200ms for realistic feel
       const delay = 600 + Math.random() * 600;
       await new Promise((r) => setTimeout(r, delay));
@@ -407,7 +407,7 @@ function AIAssistant() {
 
   function copyReport() {
     const text = reportRef.current?.innerText || "No report";
-    navigator.clipboard?.writeText(text).catch(() => {});
+    navigator.clipboard?.writeText(text).catch(() => { });
   }
 
   function loadHistory(index) {
@@ -436,14 +436,12 @@ function AIAssistant() {
   return (
     <div
       style={{
-        background: "#f5f7fa",
-        color: "#1a1a2e",
         minHeight: "100vh",
         fontFamily: "Inter, sans-serif",
       }}
     >
       <style>{`
-        :root{--bg:#f5f7fa;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e8eaed;--glass:rgba(255,255,255,0.7);--glass-hover:rgba(255,255,255,0.9);--accent:#07dbc7;--accent-dim:rgb(0 123 184 / 12%);--accent-glow:rgba(0,184,90,0.25);--text-primary:#1a1a2e;--text-secondary:#6b7280;--text-muted:#9ca3af;--border:rgba(0,0,0,0.08);--border-hover:rgba(0,0,0,0.15);--red:#EF4444;--gold:#F59E0B;--blue:#3B82F6;--purple:#8B5CF6;}
+        :root{--bg:#f5f7fa;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e8eaed;--glass:rgba(255,255,255,0.7);--glass-hover:rgba(255,255,255,0.9);--accent:#07dbc7;--accent-dim:rgb(0 123 184 / 12%);--accent-glow:rgba(0,184,90,0.25);--text-primary:#1a1a2e;--text-secondary:#6b7280;--text-muted:#9ca3af;--border:rgba(0,0,0,0.08);--border-hover:rgba(0,0,0,0.15);--red:#EF4444;--gold:#F59E0B;--blue:#3B82F6;--purple:#07dbc7;}
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primary);}
         .topbar{padding:13px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);position:sticky;top:0;z-index:50;}
@@ -464,11 +462,17 @@ function AIAssistant() {
         .ata-credits-card{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(0,184,90,0.08),rgba(255,255,255,0.5));border:1px solid rgba(0,184,90,0.2);border-radius:14px;padding:14px 20px;position:relative;overflow:hidden;}
         .ata-credits-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgb(0 138 184 / 40%),transparent);}
         .ata-cred-icon{width:38px;height:38px;border-radius:10px;background:rgb(0 123 184 / 12%);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-        .ata-cred-lbl{font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:2px;}
+        .ata-cred-lbl{
+        font-size:10.5px;
+        color:#0ab9a9;
+        text-transform:uppercase;
+        letter-spacing:0.7px;
+        margin-bottom:2px;}
         .ata-cred-val{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--accent);line-height:1;transition:all 0.4s;}
-        .ata-cred-sub{font-size:10.5px;color:var(--text-secondary);margin-top:2px;}
+        .ata-cred-sub{font-size:10.5px;color:#07dbc7;margin-top:2px;}
         .ata-buy-btn{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#fff;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
-        .ata-buy-btn:hover{background:#008844;box-shadow:0 4px 20px rgba(0,184,90,0.35);}
+        .ata-buy-btn:hover{    background: #06d1c5;
+    box-shadow: 0 4px 20px rgb(0 184 148 / 35%);}
         .ata-clock{margin-left:auto;font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;}
         .ata-main{display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start;}
         .ata-left{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;position:sticky;top:76px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
@@ -603,10 +607,10 @@ function AIAssistant() {
         @media(max-width:680px){.ata-levels,.ata-indicators{grid-template-columns:repeat(3,1fr)}.ata-2col{grid-template-columns:1fr}.ata-cats{grid-template-columns:repeat(3,1fr)}}
       `}</style>
 
-      
+
 
       {/* MAIN CONTENT */}
-      <div className="ata-wrap">
+      <div className="ata-wrap p-0">
         {/* CREDITS BAR */}
         <div className="ata-topbar">
           <div className="ata-credits-card">
@@ -655,9 +659,8 @@ function AIAssistant() {
                   (cat) => (
                     <div
                       key={cat}
-                      className={`ata-cat ${
-                        selectedCategory === cat ? "sel" : ""
-                      }`}
+                      className={`ata-cat ${selectedCategory === cat ? "sel" : ""
+                        }`}
                       onClick={(e) => handleCategory(e.currentTarget, cat)}
                     >
                       <span className="ata-cat-icon">
@@ -727,9 +730,8 @@ function AIAssistant() {
                 ].map((r) => (
                   <div
                     key={r.id}
-                    className={`ata-risk ${
-                      selectedRisk === r.id ? `sel-${r.id}` : ""
-                    }`}
+                    className={`ata-risk ${selectedRisk === r.id ? `sel-${r.id}` : ""
+                      }`}
                     onClick={() => handleRisk(r.id)}
                   >
                     {r.emoji}
@@ -882,13 +884,12 @@ function AIAssistant() {
                   {loadingSteps.map((label, i) => (
                     <div
                       key={i}
-                      className={`ata-load-step ${
-                        i < currentStep
+                      className={`ata-load-step ${i < currentStep
                           ? "done"
                           : i === currentStep
-                          ? "active"
-                          : ""
-                      }`}
+                            ? "active"
+                            : ""
+                        }`}
                     >
                       <span className="ata-load-dot"></span>
                       {label}
@@ -1002,11 +1003,10 @@ function AIAssistant() {
                           AI Recommendation
                         </div>
                         <span
-                          className={`ata-signal-badge ${
-                            reportData.signal === "BUY"
+                          className={`ata-signal-badge ${reportData.signal === "BUY"
                               ? "ata-signal-buy"
                               : "ata-signal-sell"
-                          }`}
+                            }`}
                         >
                           {reportData.signal}
                         </span>
@@ -1178,8 +1178,8 @@ function AIAssistant() {
                             reportData.indicators.rsi > 70
                               ? "var(--red)"
                               : reportData.indicators.rsi < 30
-                              ? "var(--accent)"
-                              : "var(--gold)",
+                                ? "var(--accent)"
+                                : "var(--gold)",
                         },
                         {
                           label: "MACD",
@@ -1286,11 +1286,10 @@ function AIAssistant() {
                               reportData.signal === "BUY"
                                 ? "var(--accent)"
                                 : "var(--red)",
-                            border: `1px solid ${
-                              reportData.signal === "BUY"
+                            border: `1px solid ${reportData.signal === "BUY"
                                 ? "rgba(0,184,90,0.2)"
                                 : "rgba(239,68,68,0.2)"
-                            }`,
+                              }`,
                           }}
                         >
                           {reportData.signal === "BUY" ? "● Positive" : "● Negative"}{" "}
@@ -1318,11 +1317,10 @@ function AIAssistant() {
                         <div key={i} className="ata-cal-item">
                           <span className="ata-cal-time">{c.time}</span>
                           <span
-                            className={`ata-cal-impact ${
-                              c.impact === "high"
+                            className={`ata-cal-impact ${c.impact === "high"
                                 ? "ata-high-impact"
                                 : "ata-med-impact"
-                            }`}
+                              }`}
                           >
                             {c.impact === "high" ? "HIGH" : "MED"}
                           </span>

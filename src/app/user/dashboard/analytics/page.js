@@ -587,7 +587,7 @@ export default function ArbionEngine() {
           border-radius: 6px;
           font-weight: 500;
         }
-        .mkt-forex { background:#8b5cf626; color: #3500ff; }
+        .mkt-forex { background:#07dbc726; color: #3500ff; }
         .mkt-metals { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
         .mkt-crypto { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
         .mkt-indices { background: rgba(20, 184, 166, 0.15); color: #5eead4; }
@@ -658,8 +658,8 @@ export default function ArbionEngine() {
           cursor: pointer;
         }
         .th-page-btn.active {
-          background: #8b5cf6;
-          border-color: #8b5cf6;
+          background: #07dbc7;
+          border-color: #07dbc7;
         }
         .th-page-btn:disabled {
           opacity: 0.4;

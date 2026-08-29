@@ -32,9 +32,14 @@ export default function DashboardHeader({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Close Sidebar Function
   const closeSidebar = () => {
-    setSidebarOpen(false);
+    if (window.matchMedia("(max-width: 1024px)").matches) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleNavClick = () => {
+    closeSidebar();
   };
 
   const handleSignOut = () => {
@@ -62,20 +67,20 @@ export default function DashboardHeader({
       <div className="nb">
         <div className="nlbl">Platform</div>
 
-        <Link href="/user/dashboard" className={"ni " + (pathname === '/user/dashboard' ? 'on' : '')}>
+        <Link href="/user/dashboard" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard' ? 'on' : '')}>
           <span className="ic">
             <FiGrid />
           </span>
           <span>Dashboard</span>
         </Link>
-        <Link href="/user/dashboard/AI-Trading-Bots" className={"ni " + (pathname === '/user/dashboard/AI-Trading-Bots' ? 'on' : '')}>
+        <Link href="/user/dashboard/AI-Trading-Bots" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/AI-Trading-Bots' ? 'on' : '')}>
           <span className="ic">
             <FiZap />
           </span>
           <span>AI Trading Bots</span>
           <span className="npip pg"></span>
         </Link>
-        <Link href="/user/dashboard/engine" className={"ni " + (pathname === '/user/dashboard/engine' ? 'on' : '')}>
+        <Link href="/user/dashboard/engine" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/engine' ? 'on' : '')}>
           <span className="ic">
             <FiZap />
           </span>
@@ -83,7 +88,7 @@ export default function DashboardHeader({
           <span className="npip pg"></span>
         </Link>
 
-        <Link href="/user/dashboard/analytics" className={"ni " + (pathname === '/user/dashboard/analytics' ? 'on' : '')}>
+        <Link href="/user/dashboard/analytics" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/analytics' ? 'on' : '')}>
           <span className="ic">
             <FiBarChart2 />
           </span>
@@ -107,13 +112,13 @@ export default function DashboardHeader({
         </Link> */}
 
         {/* Fund Director Menu Item - Added here */}
-        <Link href="/user/dashboard/fund-director" className={"ni " + (pathname === '/user/dashboard/fund-director' ? 'on' : '')}>
+        <Link href="/user/dashboard/fund-director" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/fund-director' ? 'on' : '')}>
           <span className="ic">
             <FiTrendingUp />
           </span>
           <span>Fund Director</span>
         </Link>
-        <Link href="/user/dashboard/Team" className={"ni " + (pathname === '/user/dashboard/Team' ? 'on' : '')}>
+        <Link href="/user/dashboard/Team" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/Team' ? 'on' : '')}>
           <span className="ic">
             <FiUsers />
           </span>
@@ -143,7 +148,7 @@ export default function DashboardHeader({
           </span>
           <span>Community</span>
         </Link> */}
-        <Link href="/user/dashboard/income-statement" className={"ni " + (pathname === '/user/dashboard/income-statement' ? 'on' : '')}>
+        <Link href="/user/dashboard/income-statement" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/income-statement' ? 'on' : '')}>
           <span className="ic">
             <FiCreditCard />
           </span>
@@ -151,20 +156,20 @@ export default function DashboardHeader({
         </Link>
 
 
-        <Link href="/user/dashboard/wallet-statement" className={"ni " + (pathname === '/user/dashboard/wallet-statement' ? 'on' : '')}>
+        <Link href="/user/dashboard/wallet-statement" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/wallet-statement' ? 'on' : '')}>
           <span className="ic">
             <FiFileText />
           </span>
           <span>Wallet Statement</span>
         </Link>
 
-        <Link href="/user/dashboard/my-rewards" className={"ni " + (pathname === '/user/dashboard/my-rewards' ? 'on' : '')}>
+        <Link href="/user/dashboard/my-rewards" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/my-rewards' ? 'on' : '')}>
           <span className="ic">
             <FiAward />
           </span>
           <span>Rank Progress</span>
         </Link>
-         <Link href="/user/dashboard/ai-assistant" className={"ni " + (pathname === '/user/dashboard/ai-assistant' ? 'on' : '')}>
+         <Link href="/user/dashboard/ai-assistant" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/ai-assistant' ? 'on' : '')}>
           <span className="ic">
             <FiCpu />
           </span>
@@ -175,7 +180,7 @@ export default function DashboardHeader({
       <div className="nb">
         <div className="nlbl">Account</div>
 
-        <Link href="/user/dashboard/profile" className={"ni " + (pathname === '/user/dashboard/profile' ? 'on' : '')}>
+        <Link href="/user/dashboard/profile" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/profile' ? 'on' : '')}>
           <span className="ic">
             <FiUser />
           </span>
@@ -183,7 +188,10 @@ export default function DashboardHeader({
         </Link>
         <Link
           href="/user/login"
-          onClick={doUserLogout}
+          onClick={() => {
+            doUserLogout();
+            handleNavClick();
+          }}
           className="ni"
         >
           <span className="ic">

@@ -20,7 +20,7 @@
 
 /* Dark Mode */
 [data-theme="dark"] {
-  --primary: #8b5cf6;
+  --primary: #07dbc7;
   --primary-dark: #7c3aed;
   --primary-light: rgba(139, 92, 246, 0.2);
   --text-primary: #eef2ff;
@@ -39,7 +39,7 @@
   /* Additional brand colors */
   --brand-cyan: #00d4ff;
   --brand-cyan2: #0099cc;
-  --brand-purple: #8b5cf6;
+  --brand-purple: #07dbc7;
   --brand-violet: #4b0eff;
   --brand-green: #10d98a;
   --brand-gold: #f6b93b;
@@ -153,29 +153,24 @@
   font-size: 14px;
   font-weight: 500;
 }
-
-.tab-btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary);
-  color: var(--primary);
-}
+ 
 
 .active-tab {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-  box-shadow: 0 2px 6px rgba(113, 51, 219, 0.3);
+color: #fff;
+    background: #07dbc7;
 }
 
 [data-theme="dark"] .active-tab {
-  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 2px 6px rgba(9, 235, 186, 0.3);
 }
 
 /* Dropdown wrapper */
 .wallet-actions {
   position: relative;
   display: inline-block;
-  min-width: 160px;margin-bottom: 12px;
+  min-width: 160px;
+  margin-bottom: 12px;
+  margin-top: 12px;
 }
 
 .range-select {

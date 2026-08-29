@@ -2,10 +2,30 @@
 import { useState, useEffect } from "react";
 import Reward from "./reward/page";
 import Achievement from "./achievement/page";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function MyRewards() {
-  const [activeTab, setActiveTab] = useState("myRewards");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  
+  // Initialize activeTab from URL parameter
+  const [activeTab, setActiveTab] = useState(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'rankAchievement') {
+      return 'rankAchievement';
+    }
+    return "myRewards";
+  });
+
+  // Update activeTab when URL changes
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'rankAchievement') {
+      setActiveTab('rankAchievement');
+    } else if (tabParam === 'myRewards') {
+      setActiveTab('myRewards');
+    }
+  }, [searchParams]);
 
   function getPName(pathname) {
     if (!pathname) return "";
@@ -17,36 +37,32 @@ export default function MyRewards() {
       .join(" ");
   }
 
-  const pathname = usePathname();
   const pageName = getPName(pathname);
 
- const RewardsTab = [
-  { img: "https://imagedelivery.net/nq9qT5FHZv9Sg48UUnD1-A/bd85e7b8-c7c1-4ab2-10fa-2893f5027900/public", id: "myRewards", label: "My Rewards" },
-  { img: "https://imagedelivery.net/nq9qT5FHZv9Sg48UUnD1-A/bd85e7b8-c7c1-4ab2-10fa-2893f5027900/public", id: "rankAchievement", label: "Rank Achievements" },
-];
+  const RewardsTab = [
+    { img: "https://imagedelivery.net/nq9qT5FHZv9Sg48UUnD1-A/bd85e7b8-c7c1-4ab2-10fa-2893f5027900/public", id: "myRewards", label: "Growth Reward" },
+    { img: "https://imagedelivery.net/nq9qT5FHZv9Sg48UUnD1-A/bd85e7b8-c7c1-4ab2-10fa-2893f5027900/public", id: "rankAchievement", label: "Accelerator Reward" },
+  ];
 
   return (
     <>
       <div className="tabs-container">
         <div className="tabs mb-0">
-        {RewardsTab.map((tab) => (
-          <button
-            key={tab.statusCode}
-            onClick={() => setActiveTab(tab.id)}
-            className={`tab-btn  ${activeTab === tab.id ? 'active' : ''}`}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-          >
-            {tab.label}
-          </button>
-        ))}
+          {RewardsTab.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
-  </div>
-        {activeTab === "myRewards" && <Reward />}
-        
-        {activeTab === "rankAchievement" && <Achievement />}
-       
-
+      {activeTab === "myRewards" && <Reward />}
+      {activeTab === "rankAchievement" && <Achievement />}
     </>
   );
 }

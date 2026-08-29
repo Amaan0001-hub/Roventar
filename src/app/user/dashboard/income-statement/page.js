@@ -115,7 +115,7 @@ export default function IncomeStatement() {
 
   return (
     <div className="app-container">
-      <div className="main-content">
+      <div className="">
 
         {/* Tabs Navigation */}
         <div className="tabs-container">

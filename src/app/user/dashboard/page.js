@@ -528,7 +528,7 @@ export default function DashboardPage() {
           labels: ['Trading', 'Level', 'Affiliate', 'Compound'],
           datasets: [{
             data: [4286, 1841, 841, 1274],
-            backgroundColor: ['#14b8a6', '#34d399', '#8b5cf6', '#f59e0b'],
+            backgroundColor: ['#14b8a6', '#34d399', '#07dbc7', '#f59e0b'],
             borderWidth: 0
           }]
         },
@@ -925,11 +925,11 @@ export default function DashboardPage() {
         {showCongratsPopup && (
           <div className="dx-overlay" style={{ zIndex: 10000 }} onClick={(e) => { if (e.target === e.currentTarget) closeCongratsPopup(); }}>
             <div className="dx-modal dx-modal-celebrate">
-              <div className="dx-modal-bar" style={{ background: "linear-gradient(90deg, #10b981, #34d399, #f59e0b, #8b5cf6)" }}></div>
+              <div className="dx-modal-bar" style={{ background: "linear-gradient(90deg, #10b981, #34d399, #f59e0b, #07dbc7)" }}></div>
               <button type="button" className="dx-modal-close" onClick={closeCongratsPopup} aria-label="Close">✕</button>
 
               <div className="p-4 text-center">
-                <div className="dx-icon-circle mx-auto mb-3" style={{ width: 84, height: 84, background: "linear-gradient(135deg,#10b981,#34d399,#8b5cf6)" }}>
+                <div className="dx-icon-circle mx-auto mb-3" style={{ width: 84, height: 84, background: "linear-gradient(135deg,#10b981,#34d399,#07dbc7)" }}>
                   <span style={{ fontSize: 42 }}>🤖</span>
                 </div>
                 <div className="fs-2 fw-bold dx-gradient-text mb-1">🎉 Woo Hoo! 🎉</div>
@@ -1034,7 +1034,7 @@ export default function DashboardPage() {
                 <div className="row g-2 mb-3 text-center">
                   <div className="col-4"><div className="dx-level-box" style={{ background: "rgba(16,185,129,.08)", borderColor: "rgba(16,185,129,.25)" }}><div className="fw-bold" style={{ color: "#10b981" }}>8%</div><div className="dx-mini-stat-label">Level 1</div></div></div>
                   <div className="col-4"><div className="dx-level-box" style={{ background: "rgba(14,165,233,.08)", borderColor: "rgba(14,165,233,.25)" }}><div className="fw-bold" style={{ color: "#0ea5e9" }}>5%</div><div className="dx-mini-stat-label">Level 2</div></div></div>
-                  <div className="col-4"><div className="dx-level-box" style={{ background: "rgba(139,92,246,.08)", borderColor: "rgba(139,92,246,.25)" }}><div className="fw-bold" style={{ color: "#8b5cf6" }}>3%</div><div className="dx-mini-stat-label">Level 3</div></div></div>
+                  <div className="col-4"><div className="dx-level-box" style={{ background: "rgba(139,92,246,.08)", borderColor: "rgba(139,92,246,.25)" }}><div className="fw-bold" style={{ color: "#07dbc7" }}>3%</div><div className="dx-mini-stat-label">Level 3</div></div></div>
                 </div>
 
                 <div className="dx-eyebrow mb-2">Share on Social Media</div>
@@ -1049,13 +1049,9 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="container-fluid px-0">
+        <div className="container-fluid p-0">
           
-
-      
           <RankProgress activeRank={dashboardData?.[0]?.UserRank} NextRank={dashboardData?.[0]?.NextRank} totQualifyRnk={dashboardData?.[0]?.totQualifyRnk} />
-
-
 
           {/* QUICK ACTIONS */}
           <div className="dx-section-head mt-4 mb-3">

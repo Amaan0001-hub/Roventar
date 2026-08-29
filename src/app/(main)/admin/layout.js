@@ -113,7 +113,8 @@ export default function AdminLayout({ children }) {
             {/* Right Side Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Notifications */}
-              <button className="relative p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer touch-manipulation">
+              <button className="relative p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
+               transition-colors cursor-pointer touch-manipulation">
                 <RiNotification3Line className="text-xl text-gray-600 dark:text-gray-300" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>

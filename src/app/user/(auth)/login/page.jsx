@@ -490,7 +490,7 @@ export default function LoginPage() {
             width: 60px;
             height: 60px;
             border: 3px solid rgba(139, 92, 246, 0.2);
-            border-top: 3px solid #8b5cf6;
+            border-top: 3px solid #07dbc7;
             border-right: 3px solid #22d3ee;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -501,7 +501,7 @@ export default function LoginPage() {
           }
           .loader-text {
             margin-top: 20px;
-            color: #8b5cf6;
+            color: #07dbc7;
             font-family: monospace;
             font-size: 14px;
             letter-spacing: 2px;
@@ -728,7 +728,7 @@ export default function LoginPage() {
                         width: 32,
                         height: 32,
                         border: "3px solid rgba(139,92,246,0.25)",
-                        borderTop: "3px solid #8b5cf6",
+                        borderTop: "3px solid #07dbc7",
                         borderRight: "3px solid #22d3ee",
                         borderRadius: "50%",
                         animation: "puzzleSpin 0.7s linear infinite",
@@ -859,7 +859,7 @@ export default function LoginPage() {
                     justifyContent: "center",
                     color: "#fff",
                     cursor: isImageLoading ? "not-allowed" : isVerified ? "default" : "grab",
-                    background: isVerified ? "#22d3ee" : isFailed ? "#ef4444" : "#8b5cf6",
+                    background: isVerified ? "#22d3ee" : isFailed ? "#ef4444" : "#07dbc7",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
                     opacity: isImageLoading ? 0.5 : 1,
                     transform: `translateX(${sliderX}px)`,

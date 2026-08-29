@@ -14,8 +14,19 @@ export default function RootLayout({ children }) {
 
   useEffect(() => {
     const isPhoneView = window.matchMedia("(max-width: 1024px)").matches;
-    setSidebarOpen(!isPhoneView);
+    if (isPhoneView) {
+      setSidebarOpen(false);
+    } else {
+      setSidebarOpen(true);
+    }
   }, []);
+
+  useEffect(() => {
+    const isPhoneView = window.matchMedia("(max-width: 1024px)").matches;
+    if (isPhoneView) {
+      setSidebarOpen(false);
+    }
+  }, [window.location.pathname]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -66,12 +77,12 @@ export default function RootLayout({ children }) {
             >
               <defs>
                 <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style={{ stopColor: "#8b5cf6", stopOpacity: 1 }} />
+                  <stop offset="0%" style={{ stopColor: "#07dbc7", stopOpacity: 1 }} />
                   <stop offset="100%" style={{ stopColor: "#22d3ee", stopOpacity: 1 }} />
                 </linearGradient>
                 <linearGradient id="gradient2" x1="100%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" style={{ stopColor: "#22d3ee", stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: "#8b5cf6", stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: "#07dbc7", stopOpacity: 1 }} />
                 </linearGradient>
               </defs>
               
@@ -128,7 +139,7 @@ export default function RootLayout({ children }) {
                 />
               </circle>
               
-              <circle cx="50" cy="50" r="5" fill="#8b5cf6">
+              <circle cx="50" cy="50" r="5" fill="#07dbc7">
                 <animate
                   attributeName="r"
                   values="3;6;3"
@@ -145,7 +156,7 @@ export default function RootLayout({ children }) {
             </svg>
 
             <div style={{ 
-              color: "#8b5cf6", 
+              color: "#07dbc7", 
               fontFamily: "monospace", 
               fontSize: "13px", 
               letterSpacing: "3px",
@@ -164,7 +175,7 @@ export default function RootLayout({ children }) {
                 width: "6px", 
                 height: "6px", 
                 borderRadius: "50%", 
-                background: "#8b5cf6",
+                background: "#07dbc7",
                 animation: "bounce 1.4s ease-in-out infinite 0s"
               }}></div>
               <div style={{ 

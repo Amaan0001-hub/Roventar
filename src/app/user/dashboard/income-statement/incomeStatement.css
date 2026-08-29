@@ -183,12 +183,7 @@
   transition: all 0.2s ease;
   white-space: nowrap;
 }
-
-.tab-btn:hover {
-  color: var(--text-primary);
-  background: rgba(59, 130, 246, 0.1);
-}
-
+ 
 .tab-btn.active {
   background: #07dbc7;
   color: white;

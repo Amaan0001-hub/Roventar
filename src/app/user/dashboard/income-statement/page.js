@@ -9,21 +9,17 @@ import { getUserId } from '@/app/api/auth';
 
 
 const TABS = [
-  'Trading Bot Income',
-  'Power Boost Income',
-  'Leadership Recurring Income',
-  'Single Leg Income',
-  'Pair Volume Income',
-  'Reward Income'
+  'Trading Profit',
+  'Direct Income',
+  'Tier Reward',
+  'Growth Reward',
 ];
 
 const KEY_TO_LABEL = {
-  SingleLegIncome: 'Single Leg Income',
-  PairVolumeIncome: 'Pair Volume Income',
-  TradingBotIncome: 'Trading Bot Income',
-  LeadershipRecurringIncome: 'Leadership Recurring Income',
-  RewardIncome: 'Reward Income',
-  PowerBoostIncome: 'Power Boost Income' 
+  GrowthReward: 'Growth Reward',
+  TradingProfit: 'Trading Profit',
+  TierReward: 'Tier Reward',
+  DirectIncome: 'Direct Income' 
 };
 
 export default function IncomeStatement() {

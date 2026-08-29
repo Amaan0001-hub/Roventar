@@ -51,16 +51,8 @@ export default function UserLoginPage() {
     if (authData && authData.AuthLogin && authData.AuthPass) {
       let usernameToEncrypt = authData.AuthLogin;
 
-      // XO sirf ek baar add hoga
-      if (!usernameToEncrypt.startsWith("XO")) {
-        usernameToEncrypt = "XO" + usernameToEncrypt;
-      }
-
       const encryptedUsername = encryptData(usernameToEncrypt);
       const encryptedPassword = encryptData(authData.AuthPass);
-
-      console.log("🔐 Original Username:", usernameToEncrypt);
-      console.log("🔐 Encrypted Username:", encryptedUsername);
 
       const baseUrl = `${window.location.origin}/user/login`;
 

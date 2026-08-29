@@ -730,43 +730,44 @@ export default function DashboardPage() {
   // into the bracketed keys below whenever the backend exposes them.
   const quickActions = [
     {
-      key: 'Deposit', label: 'Deposit', active: true, path: '/user/dashboard/deposit', icon: (
+      key: 'Deposit', label: 'Deposit', active: true, path: '/user/dashboard/fund-director', icon: (
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><rect x="3" y="5" width="14" height="11" rx="2" /><path d="M3 8h14" strokeLinecap="round" /></svg>
       )
     },
     {
-      key: 'Withdraw', label: 'Withdraw', path: '/user/dashboard/wallet-statement', icon: (
+      key: 'Withdraw', label: 'Withdraw', path: '/user/dashboard/fund-director?tab=withdraw', icon: (
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><path d="M10 3v11M6 10l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" /><path d="M4 16.5h12" strokeLinecap="round" /></svg>
       )
     },
     {
-      key: 'BuyPackage', label: 'Buy Package', path: '/user/dashboard/analytics', icon: (
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><path d="M3 7l7-4 7 4-7 4-7-4z" /><path d="M3 7v6l7 4 7-4V7" /></svg>
+      key: 'BuyPackage', label: 'Buy Package', path: '/user/dashboard/AI-Trading-Bots', icon: (
+        <svg viewBox="0 0 20 20" fill="none" stroke="curentColor" strokeWidth="1.6" width="18" height="18"><path d="M3 7l7-4 7 4-7 4-7-4z" /><path d="M3 7v6l7 4 7-4V7" /></svg>
       )
     },
     {
-      key: 'MyTeam', label: 'My Team', path: '/user/dashboard/fund-director', icon: (
+      key: 'MyTeam', label: 'My Team', path: '/user/dashboard/Team', icon: (
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><circle cx="7" cy="6" r="2.4" /><circle cx="14" cy="7" r="2" /><path d="M2 17c0-2.6 2.3-4.5 5-4.5s5 1.9 5 4.5" strokeLinecap="round" /><path d="M13 12.8c1.9.3 3.5 1.9 3.5 4.2" strokeLinecap="round" /></svg>
       )
     },
     {
-      key: 'GrowthRewards', label: 'Growth Rewards', path: '/user/dashboard/Team', icon: (
+      key: 'GrowthRewards', label: 'Growth Rewards', path: '/user/dashboard/my-rewards', icon: (
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><circle cx="10" cy="10" r="6.5" /><path d="M10 6.5v3.5l2.3 2.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
       )
     },
     {
-      key: 'Accelerator', label: 'Accelerator', path: '/user/dashboard/income-statement', icon: (
+      key: 'Accelerator', label: 'Accelerator', path: '/user/dashboard/my-rewards?tab=rankAchievement', icon: (
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><path d="M10 2l1.8 4.6L17 8l-4 3.2L14 17l-4-2.7L6 17l1-5.8-4-3.2 5.2-1.4L10 2z" strokeLinejoin="round" /></svg>
       )
     },
     {
-      key: 'Transactions', label: 'Transactions', path: '/user/dashboard/my-rewards', icon: (
+      key: 'Transactions', label: 'Transactions', path: '/user/dashboard/wallet-statement', icon: (
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><path d="M4 6h9l-2.5-2.5" strokeLinecap="round" strokeLinejoin="round" /><path d="M16 14H7l2.5 2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
       )
     },
   ];
 
   const [activeQuickAction, setActiveQuickAction] = useState('Deposit');
+  
 
   const wallets = [
     {

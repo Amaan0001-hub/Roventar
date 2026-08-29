@@ -6,10 +6,27 @@ import FundRequest from "./fund-request/page";
 import InstantTransfer from "./instant-transfer/page";
 import UserTransfer from "./user-transfer/page";
 import WithDrawal from "./with-drawal/page";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export default function FundDirector() {
-  const [activeTab, setActiveTab] = useState("deposit");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  
+  // Initialize activeTab from URL parameter
+  const [activeTab, setActiveTab] = useState(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && fundDirectorTabs.some(tab => tab.id === tabParam)) {
+      return tabParam;
+    }
+    return "deposit";
+  });
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && fundDirectorTabs.some(tab => tab.id === tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   function getPName(pathname) {
     if (!pathname) return "";
@@ -21,7 +38,6 @@ export default function FundDirector() {
       .join(" ");
   }
 
-  const pathname = usePathname();
   const pageName = getPName(pathname);
 
   return (

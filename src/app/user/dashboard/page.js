@@ -17,7 +17,6 @@ import XoxoFxChatbot from '../components/Xoxofxchatbot';
 import RankProgress from '../components/RankProgress';
 import { useTheme } from '@/components/ThemeProvider';
 
-
 export default function DashboardPage() {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -58,6 +57,33 @@ export default function DashboardPage() {
 
   const BOT_SESSION_KEY = 'RoventarBotActive';
   const BOT_START_KEY = 'RoventarBotStartTime';
+
+  const rankOrder = ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13'];
+  const totalRanks = rankOrder.length;
+
+  const rankProgress = () => {
+    const data = dashboardData?.[0] || {};
+    const currentRank = data?.Ac_NextRank || 'V1';
+    
+    const currentIndex = rankOrder.indexOf(currentRank);
+    
+    if (currentIndex === -1) return 0;
+    const percentage = Math.round(((currentIndex + 1) / totalRanks) * 100);
+    
+    return percentage;
+  };
+
+  const rankPct = rankProgress();
+  const currentRank = dashboardData?.[0]?.Ac_BoostRank || 'V1';
+  const currentRankIndex = rankOrder.indexOf(currentRank);
+  const growthLevels = rankOrder.map((rank, index) => ({
+    level: rank,
+    required: (index + 1) * 100000,
+    current: index <= currentRankIndex ? (index + 1) * 100000 : (index) * 100000,
+    reward: (index + 1) * 5000
+  }));
+
+  const activeGrowthIdx = currentRankIndex + 1;
 
   function formatElapsedTime(totalSeconds) {
     const hours = Math.floor(totalSeconds / 3600);
@@ -103,14 +129,12 @@ export default function DashboardPage() {
   const isKidOne = dashboardData?.[0]?.Kid === 1;
 
   useEffect(() => {
-    // if (!userURID) return;
-
     const fetchNotifications = async () => {
       try {
         await dispatch(getallusernotification()).unwrap();
       } catch (err) {
         try {
-          dispatch(Getusernotification());
+          dispatch(getallusernotification());
         } catch (e) {
           console.error('Failed to fetch user notifications:', e || err);
         }
@@ -126,7 +150,6 @@ export default function DashboardPage() {
       if (isKidFive) {
         setShowBuyPackagePopup(true);
       } else if (isKidOne) {
-        // Show simple message popup when Kid = 1
         setShowSimplePopup(true);
       }
     }
@@ -157,6 +180,7 @@ export default function DashboardPage() {
         }
       } else {
         const storedActive = localStorage.getItem(BOT_SESSION_KEY) === 'true';
+        const storedStart = Number(localStorage.getItem(BOT_START_KEY));
 
         if (storedActive && storedStart && !Number.isNaN(storedStart)) {
           setBotStartTime(storedStart);
@@ -252,8 +276,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchDashboardDetails = async () => {
-      // if (!userURID) return;
-
       setIsLoading(true);
       try {
         const result = await dispatch(getUserDashboardDetails()).unwrap();
@@ -315,8 +337,8 @@ export default function DashboardPage() {
   // Popup Functions
   const openBotFullPopup = () => {
     if (isKidOne && !shouldBotBeActive) {
-      setShowSimplePopup(false); // Close simple popup
-      setShowBotPopup(true); // Open full popup with checkbox
+      setShowSimplePopup(false);
+      setShowBotPopup(true);
     }
   };
 
@@ -437,7 +459,6 @@ export default function DashboardPage() {
       setShowSimplePopup(false);
       setIsCheckboxChecked(false);
 
-      // Show congratulation popup after successful activation
       setShowCongratsPopup(true);
 
       if (timerNumRef.current) {
@@ -449,7 +470,6 @@ export default function DashboardPage() {
         setDashboardData(result.data);
       }
 
-      // Auto close congratulation popup after 5 seconds
       setTimeout(() => {
         setShowCongratsPopup(false);
       }, 5000);
@@ -725,7 +745,6 @@ export default function DashboardPage() {
     );
   };
 
-
   const quickActions = [
     {
       key: 'Deposit', label: 'Deposit', active: true, path: '/user/dashboard/fund-director', icon: (
@@ -765,7 +784,6 @@ export default function DashboardPage() {
   ];
 
   const [activeQuickAction, setActiveQuickAction] = useState('Deposit');
-  
 
   const wallets = [
     {
@@ -801,16 +819,6 @@ export default function DashboardPage() {
     { title: `Rank ${dashboardData?.[0]?.UserRank || 'V1'} Achieved`, sub: 'Rank milestone unlocked' },
   ];
 
-  const growthLevels = [
-    { level: 'G1', required: 100000, current: 100000, reward: 5000 },
-    { level: 'G2', required: 250000, current: 250000, reward: 10000 },
-    { level: 'G3', required: 500000, current: Number(dashboardData?.[0]?.TeamBusiness ?? 425000), reward: 25000 },
-    { level: 'G4', required: 1000000, current: Number(dashboardData?.[0]?.TeamBusiness ?? 425000), reward: 50000 },
-  ];
-  const currentGrowthIdx = Math.max(0, growthLevels.findIndex(g => g.current < g.required));
-  const activeGrowthIdx = currentGrowthIdx === -1 ? growthLevels.length - 1 : currentGrowthIdx;
-  const growthPct = Math.min(100, Math.round((growthLevels[activeGrowthIdx].current / growthLevels[activeGrowthIdx].required) * 100));
-
   const rankLevels = [
     { rank: 'V1', business: '₹5L', status: 'achieved' },
     { rank: 'V2', business: '₹10L', status: 'current', progress: 75 },
@@ -820,8 +828,6 @@ export default function DashboardPage() {
   ];
 
   // Recent wallet activity — replace with API rows when available
-  // Business Overview values — derived from the API fields already in use.
-  // Rename the right-hand side keys if your API uses different names.
   const inr = (n) => Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
   const leftBiz = Number(dashboardData?.[0]?.LeftBussiness ?? dashboardData?.[0]?.LeftBusiness ?? 0);
   const rightBiz = Number(dashboardData?.[0]?.RightBussiness ?? dashboardData?.[0]?.RightBusiness ?? 0);
@@ -831,7 +837,6 @@ export default function DashboardPage() {
   const strongTeamBusiness = dashboardData?.[0]?.StrongLegID ?? Math.max(leftBiz, rightBiz);
   const otherLegBusiness = dashboardData?.[0]?.StrongLegBus ?? Math.min(leftBiz, rightBiz);
   const weakTeamBussiness = dashboardData?.[0]?.OtherLegBus ?? Math.min(leftBiz, rightBiz);
-  
 
   const recentTransactions = [
     { id: '#TRX10291', date: '24 Aug 2026', type: 'Daily Trading Income', wallet: 'Income Wallet', amount: '+₹5,250', status: 'Completed', tone: 'success' },
@@ -1070,8 +1075,6 @@ export default function DashboardPage() {
             ))}
           </div>
 
-
-
           {/* RANK & PACKAGE */}
           <div className="dx-section-head mb-3">
             <h5 className="dx-section-title">Accelerator Rank</h5>
@@ -1102,7 +1105,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="col-lg-6">
-       <div className="dx-card h-100">
+              <div className="dx-card h-100">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <div className="dx-card-title">Trading Package</div>
                   <span className="dx-badge-soft">${dashboardData?.[0]?.TotalInvestment || "0.00"}</span>
@@ -1130,7 +1133,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-
           {/* INCOME OVERVIEW */}
           <div className="dx-section-head mb-3">
             <h5 className="dx-section-title">Income Overview</h5>
@@ -1138,82 +1140,78 @@ export default function DashboardPage() {
           </div>
 
           <div className="row g-3 mb-4">
-  {/* Trading Profit */}
-  <div className="col-6 col-md-4 col-xl-3">
-    <div className="dx-card dx-stat-card h-100" role="button"
-      onClick={() => router.push('/user/dashboard/income-statement?tab=TradingProfit')}>  {/* ✅ Changed */}
-      <div className="d-flex justify-content-between align-items-start mb-3">
-        <StatIcon tone="blue">
-          <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-            <circle cx="7" cy="5.5" r="3" /><circle cx="14" cy="6.5" r="2.5" />
-            <path d="M1 17c0-2.8 2.7-5 6-5s6 2.2 6 5" strokeLinecap="round" />
-            <path d="M14 10.5c2 .4 3.5 2 3.5 4" strokeLinecap="round" />
-          </svg>
-        </StatIcon>
-        <span className="dx-badge-up">↗ View</span>
-      </div>
-      <div className="dx-stat-label">Trading Profit</div>
-      <div className="dx-stat-value">${dashboardData?.[0]?.DailyTradingProfit || "0.00"}</div>
-    </div>
-  </div>
+            <div className="col-6 col-md-4 col-xl-3">
+              <div className="dx-card dx-stat-card h-100" role="button"
+                onClick={() => router.push('/user/dashboard/income-statement?tab=TradingProfit')}>
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <StatIcon tone="blue">
+                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
+                      <circle cx="7" cy="5.5" r="3" /><circle cx="14" cy="6.5" r="2.5" />
+                      <path d="M1 17c0-2.8 2.7-5 6-5s6 2.2 6 5" strokeLinecap="round" />
+                      <path d="M14 10.5c2 .4 3.5 2 3.5 4" strokeLinecap="round" />
+                    </svg>
+                  </StatIcon>
+                  <span className="dx-badge-up">↗ View</span>
+                </div>
+                <div className="dx-stat-label">Trading Profit</div>
+                <div className="dx-stat-value">${dashboardData?.[0]?.DailyTradingProfit || "0.00"}</div>
+              </div>
+            </div>
 
-  {/* Direct Income */}
-  <div className="col-6 col-md-4 col-xl-3">
-    <div className="dx-card dx-stat-card h-100" role="button"
-      onClick={() => router.push('/user/dashboard/income-statement?tab=DirectIncome')}>  {/* ✅ Changed */}
-      <div className="d-flex justify-content-between align-items-start mb-3">
-        <StatIcon tone="blue">
-          <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-            <polyline points="2,14 6,8 10,11 14,5 18,8" />
-            <path d="M14 3h4v4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </StatIcon>
-        <span className="dx-badge-up">↗ View</span>
-      </div>
-      <div className="dx-stat-label">Direct Income</div>
-      <div className="dx-stat-value">${dashboardData?.[0]?.DirectIncome || "0.00"}</div>
-    </div>
-  </div>
+            <div className="col-6 col-md-4 col-xl-3">
+              <div className="dx-card dx-stat-card h-100" role="button"
+                onClick={() => router.push('/user/dashboard/income-statement?tab=DirectIncome')}>
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <StatIcon tone="blue">
+                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
+                      <polyline points="2,14 6,8 10,11 14,5 18,8" />
+                      <path d="M14 3h4v4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </StatIcon>
+                  <span className="dx-badge-up">↗ View</span>
+                </div>
+                <div className="dx-stat-label">Direct Income</div>
+                <div className="dx-stat-value">${dashboardData?.[0]?.DirectIncome || "0.00"}</div>
+              </div>
+            </div>
 
-  {/* Tier Reward */}
-  <div className="col-6 col-md-4 col-xl-3">
-    <div className="dx-card dx-stat-card h-100" role="button"
-      onClick={() => router.push('/user/dashboard/income-statement?tab=TierReward')}>  {/* ✅ Changed */}
-      <div className="d-flex justify-content-between align-items-start mb-3">
-        <StatIcon tone="blue">
-          <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-            <path d="M10 2L3 6.5v7L10 18l7-4.5v-7z" strokeLinejoin="round" />
-            <path d="M10 11V8M8 9.5h4" strokeLinecap="round" />
-          </svg>
-        </StatIcon>
-        <span className="dx-badge-up">↗ View</span>
-      </div>
-      <div className="dx-stat-label">Tier Reward</div>
-      <div className="dx-stat-value">${dashboardData?.[0]?.TierLevelIncome || "0.00"}</div>
-    </div>
-  </div>
+            <div className="col-6 col-md-4 col-xl-3">
+              <div className="dx-card dx-stat-card h-100" role="button"
+                onClick={() => router.push('/user/dashboard/income-statement?tab=TierReward')}>
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <StatIcon tone="blue">
+                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
+                      <path d="M10 2L3 6.5v7L10 18l7-4.5v-7z" strokeLinejoin="round" />
+                      <path d="M10 11V8M8 9.5h4" strokeLinecap="round" />
+                    </svg>
+                  </StatIcon>
+                  <span className="dx-badge-up">↗ View</span>
+                </div>
+                <div className="dx-stat-label">Tier Reward</div>
+                <div className="dx-stat-value">${dashboardData?.[0]?.TierLevelIncome || "0.00"}</div>
+              </div>
+            </div>
 
-  {/* Growth Reward */}
-  <div className="col-6 col-md-4 col-xl-3">
-    <div className="dx-card dx-stat-card h-100" role="button"
-      onClick={() => router.push('/user/dashboard/income-statement?tab=GrowthReward')}>  {/* ✅ Changed */}
-      <div className="d-flex justify-content-between align-items-start mb-3">
-        <StatIcon tone="blue">
-          <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
-            <circle cx="10" cy="10" r="4" />
-            <path d="M10 2v2M10 16v2M2 10h2M16 10h2" strokeLinecap="round" />
-            <path d="M10 8v2l1.5 1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </StatIcon>
-        <span className="dx-badge-up">↗ View</span>
-      </div>
-      <div className="dx-stat-label">Growth Reward</div>
-      <div className="dx-stat-value">${dashboardData?.[0]?.RewardIncome || "0.00"}</div>
-    </div>
-  </div>
-</div>
+            <div className="col-6 col-md-4 col-xl-3">
+              <div className="dx-card dx-stat-card h-100" role="button"
+                onClick={() => router.push('/user/dashboard/income-statement?tab=GrowthReward')}>
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <StatIcon tone="blue">
+                    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" width="19" height="19" stroke="currentColor">
+                      <circle cx="10" cy="10" r="4" />
+                      <path d="M10 2v2M10 16v2M2 10h2M16 10h2" strokeLinecap="round" />
+                      <path d="M10 8v2l1.5 1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </StatIcon>
+                  <span className="dx-badge-up">↗ View</span>
+                </div>
+                <div className="dx-stat-label">Growth Reward</div>
+                <div className="dx-stat-value">${dashboardData?.[0]?.RewardIncome || "0.00"}</div>
+              </div>
+            </div>
+          </div>
 
-          {/* WALLET OVERVIEW — NEW */}
+          {/* WALLET OVERVIEW */}
           <div className="dx-section-head mb-3">
             <h5 className="dx-section-title">Wallet Overview</h5>
             <div className="dx-section-sub">Manage your Roventar wallet balances</div>
@@ -1387,7 +1385,7 @@ export default function DashboardPage() {
                 <MiniBars seed={3} />
               </div>
             </div>
-             <div className="col-6 col-md-4 col-xl">
+            <div className="col-6 col-md-4 col-xl">
               <div className="dx-card dx-biz-card h-100">
                 <StatIcon tone="teal">
                   <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" width="19" height="19" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
@@ -1411,8 +1409,7 @@ export default function DashboardPage() {
                 <MiniBars seed={4} />
               </div>
             </div>
-           
-             <div className="col-6 col-md-4 col-xl">
+            <div className="col-6 col-md-4 col-xl">
               <div className="dx-card dx-biz-card h-100">
                 <StatIcon tone="teal">
                   <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" width="19" height="19" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
@@ -1489,157 +1486,71 @@ export default function DashboardPage() {
             </div>
           </div>
 
-
-          {/* GROWTH REWARDS BANNER — NEW */}
+          {/* GROWTH REWARDS BANNER */}
           <div className="dx-section-head mb-3">
-            <h5 className="dx-section-title">Growth Rewards</h5>
+            <h5 className="dx-section-title">Accelerator Growth</h5>
             <div className="dx-section-sub">Build your business. Unlock your next milestone.</div>
           </div>
           <div className="dx-growth-banner mb-4">
             <div className="row align-items-center g-3">
               <div className="col-lg-8">
-                <div className="dx-eyebrow-light mb-1">Current Milestone</div>
-                <div className="dx-growth-title">{growthLevels[activeGrowthIdx]?.level} — ₹{Number(growthLevels[activeGrowthIdx]?.reward).toLocaleString('en-IN')} Reward</div>
+                <div className="dx-eyebrow-light mb-1">Accelerator Growth Milestone</div>
+                <div className="dx-growth-title">${dashboardData?.[0]?.InvestmenELimit ?? 0} — {dashboardData?.[0]?.ac_totalQualifyBoot ?? 0}X Boost</div>
                 <div className="row g-3 mt-2">
                   <div className="col-4">
-                    <div className="dx-growth-label">Business Requirement</div>
-                    <div className="dx-growth-value">₹{Number(growthLevels[activeGrowthIdx]?.required).toLocaleString('en-IN')}</div>
+                    <div className="dx-growth-label">Total Investment</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.TotalInvestment ?? 0}</div>
                   </div>
                   <div className="col-4">
-                    <div className="dx-growth-label">Current Business</div>
-                    <div className="dx-growth-value">₹{Number(growthLevels[activeGrowthIdx]?.current).toLocaleString('en-IN')}</div>
+                    <div className="dx-growth-label">Total Earning Limit</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.EarningLimit ?? 0}</div>
                   </div>
                   <div className="col-4">
-                    <div className="dx-growth-label">Remaining</div>
-                    <div className="dx-growth-value">₹{Math.max(0, Number(growthLevels[activeGrowthIdx]?.required) - Number(growthLevels[activeGrowthIdx]?.current)).toLocaleString('en-IN')}</div>
+                    <div className="dx-growth-label">Pending Limit</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.RemainingLimit ?? 0}</div>
                   </div>
-                </div>
+                </div> 
               </div>
               <div className="col-lg-4 d-flex justify-content-center">
-                <CircularGauge percent={growthPct} size={132} stroke={10} colorFrom="#5eead4" colorTo="#14b8a6" gradId="growthGrad" centerTop={`${growthPct}%`} centerBottom={`${growthLevels[activeGrowthIdx]?.level} Progress`} />
+                <CircularGauge 
+                  percent={rankPct} 
+                  size={132} 
+                  stroke={10} 
+                  colorFrom="#5eead4" 
+                  colorTo="#14b8a6" 
+                  gradId="growthGrad" 
+                  centerTop={`${rankPct}%`} 
+                  centerBottom={`${dashboardData?.[0]?.Ac_NextRank || 'V1'} Progress`} 
+                />
               </div>
             </div>
           </div>
 
-          {/* GROWTH REWARD JOURNEY — NEW */}
           <div className="row g-3 mb-4">
             <div className="col-12">
               <div className="dx-card">
-                <div className="fw-bold mb-3 dx-ink">Growth Reward Journey</div>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <div className="fw-bold dx-ink">Growth Reward Journey</div>
+                </div>
                 <div className="dx-stepper mb-4">
                   {growthLevels.map((g, i) => (
                     <div className="dx-stepper-item" key={g.level}>
-                      <div className={`dx-stepper-dot ${i < activeGrowthIdx ? 'done' : i === activeGrowthIdx ? 'current' : ''}`}>
+                      <div className={`dx-stepper-dot ${i < activeGrowthIdx ? 'done' : ''}`}>
                         {i < activeGrowthIdx ? (
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polyline points="2,8 5.5,11.5 14,3.5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                            <polyline points="2,8 5.5,11.5 14,3.5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                         ) : g.level}
                       </div>
-                      {i < growthLevels.length - 1 && <div className={`dx-stepper-line ${i < activeGrowthIdx ? 'done' : ''}`}></div>}
+                      {i < growthLevels.length - 1 && <div className={`dx-stepper-line ${i < activeGrowthIdx - 1 ? 'done' : ''}`}></div>}
                     </div>
                   ))}
                 </div>
 
-                <div className="dx-eyebrow mb-2">Milestone Details</div>
-                <div className="table-responsive">
-                  <table className="table dx-table align-middle mb-0">
-                    <thead>
-                      <tr>
-                        <th>Level</th>
-                        <th>Business Required</th>
-                        <th>Current Business</th>
-                        <th>Reward</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {growthLevels.map((g, i) => {
-                        const pct = Math.min(100, Math.round((g.current / g.required) * 100));
-                        const status = i < activeGrowthIdx ? 'Qualified' : i === activeGrowthIdx ? `${pct}%` : 'Upcoming';
-                        const statusClass = i < activeGrowthIdx ? 'qualified' : i === activeGrowthIdx ? 'inprogress' : 'upcoming';
-                        return (
-                          <tr key={g.level}>
-                            <td className="fw-semibold">{g.level}</td>
-                            <td>₹{(g.required / 100000).toFixed(1)}L</td>
-                            <td>₹{(g.current / 100000).toFixed(2)}L</td>
-                            <td>₹{(g.reward / 1000)}K</td>
-                            <td><span className={`dx-status-chip ${statusClass}`}>{status}</span></td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+               
               </div>
             </div>
           </div>
-
-          {/* ACCELERATOR RANK + RANK JOURNEY — NEW */}
-          <div className="row g-3 mb-4">
-            <div className="col-lg-6">
-              <div className="dx-card h-100">
-                <div className="fw-bold mb-3 dx-ink">Your Rank Journey</div>
-                <div className="dx-rank-track mb-3">
-                  {rankLevels.map((r) => (
-                    <div key={r.rank} className={`dx-rank-tile ${r.status}`}>
-                      <div className="dx-rank-tile-name">{r.rank}</div>
-                      <div className="dx-rank-tile-biz">{r.business} Business</div>
-                      <div className={`dx-rank-tile-status ${r.status}`}>
-                        {r.status === 'achieved' ? '✓ Achieved' : r.status === 'current' ? `${r.progress}% Progress` : 'Upcoming'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="dx-next-action">
-                  <div className="dx-eyebrow-light mb-1">Your Next Milestone</div>
-                  <div className="dx-card-title mb-1">Grow your team business by ₹2,50,000</div>
-                  <div className="small dx-muted mb-2">You are only 25% away from Accelerator {dashboardData?.[0]?.NextRank || 'V2'}.</div>
-                  <div className="d-flex flex-wrap gap-2 mb-3">
-                    <span className="dx-tag-pill">Build active team</span>
-                    <span className="dx-tag-pill">Increase direct business</span>
-                    <span className="dx-tag-pill">Improve team volume</span>
-                  </div>
-                  <button type="button" className="btn dx-btn-dark" onClick={() => router.push('/user/dashboard/team')}>View Business</button>
-                </div>
-              </div>
-            </div>
-        
-        <div className="col-lg-6"> 
-          {/* RECENT TRANSACTIONS */}
-          <div className="dx-card mb-4" id="transactions">
-            <div className="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
-              <div className="dx-section-head">
-                <h5 className="dx-section-title">Recent Transactions</h5>
-                <div className="dx-section-sub">Your latest wallet activity</div>
-              </div> 
-            </div>
-            <div className="dx-table-wrap">
-              <table className="dx-table-flat">
-                <thead>
-                  <tr>
-                    <th>Date</th><th>Transaction ID</th><th>Type</th><th>Wallet</th><th>Amount</th><th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentTransactions.map((t) => (
-                    <tr key={t.id}>
-                      <td>{t.date}</td>
-                      <td className="dx-mono">{t.id}</td>
-                      <td>{t.type}</td>
-                      <td>{t.wallet}</td>
-                      <td className={t.amount.startsWith('-') ? 'dx-amount-down' : 'dx-amount-up'}>{t.amount}</td>
-                      <td><span className={`dx-badge ${t.tone}`}>{t.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-          </div>
-
-      
-    
 
           {/* BOTTOM ROW */}
           <div className="dx-section-head mb-3">
@@ -1723,11 +1634,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
-        
         </div>
       </div>
-
     </>
   );
 }

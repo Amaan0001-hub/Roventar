@@ -782,8 +782,8 @@ const TeamReferral = () => {
                                                 color: '#64748b'
                                             }}
                                         >
-                                            <div className="cbs " >
-                                                Direct Ids: <span style={{ color: "var(--base)"  }}>{dashboardData?.[0]?.DirectIds || 0}</span>
+                                            <div className="cbs" >
+                                                Direct Ids: <span>{dashboardData?.[0]?.DirectIds || 0}</span>
                                             </div>
                                             <div className="cbs" >
                                                 Active Direct Ids: <span >{dashboardData?.[0]?.ActiveDirectIds || 0}</span>

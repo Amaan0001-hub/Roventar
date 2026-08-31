@@ -1,135 +1,127 @@
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from '@/components/ThemeProvider';
 
+// ---------- KNOWLEDGE BASE FROM ROVENTAR PDF ----------
 const KB = {
-  // ---------- PLATFORM OVERVIEW ----------
-  "what is xoxo fx": "XOXO FX is a cutting-edge AI bot trading platform built to automate and optimize market performance. It combines fund management, CRM, broker connectivity, and AI into one unified ecosystem.",
-  "xoxo fx kya hai": "XOXO FX ek cutting-edge AI bot trading platform hai jo fund management, CRM, broker connectivity, aur AI ko ek unified ecosystem mein combine karta hai.",
-  "what does xoxo fx do": "XOXO FX automates trading using AI Robotic Bots that process real-time market data to deliver accurate signals, speed of execution, and predictive profits.",
-  "who founded xoxo fx": "XOXO FX was founded by Mr. Chris Luther (Director) to simplify trading by combining fund management, CRM, broker connectivity, and AI into one ecosystem.",
-  "what is the xoxo fx ecosystem": "The XOXO FX Unified Ecosystem combines 4 pillars — Fund Management, CRM, Broker Connectivity, and AI Capabilities — to deliver Clarity, Performance, and Trust.",
-  "what is the unified ecosystem thesis": "The Unified Ecosystem Thesis: XOXO FX combines Fund Management, CRM, Broker Connectivity, and AI Capabilities into one system, producing Clarity, Performance, and Trust for traders.",
-  "what is xoxo fx's tagline": "XOXO FX's tagline is 'Smart Trading. Better Future.'",
-  "what is the official website": "Official website: www.xoxofx.com",
-  "what markets does xoxo fx trade": "XOXO FX trades across 5 asset classes: Crypto, Forex, Stocks, Indices, and Commodities.",
-  "how does xoxo fx combine fund management crm and ai": "XOXO FX unifies Fund Management, CRM, Broker Connectivity, and AI Capabilities into a single ecosystem — enabling professionals to work smarter with more clarity, performance, and trust.",
+  // ---------- ABOUT ROVENTAR ----------
+  "what is roventar": "Roventar is a next-generation trading ecosystem built to empower traders, teams, and partners to grow together. It combines advanced Forex and Crypto trading with a powerful affiliate rewards system.",
+  "roventar kya hai": "Roventar ek next-generation trading ecosystem hai jo traders, teams, aur partners ko ek saath grow karne ke liye banaya gaya hai. Yeh advanced Forex aur Crypto trading ko affiliate rewards system ke saath combine karta hai.",
+  "what does roventar do": "Roventar provides AI-powered trading bots, Forex education, secure wallet systems, and a global affiliate program to help traders grow their wealth.",
+  "what is roventar's vision": "To be a globally trusted trading ecosystem that empowers individuals and businesses to achieve financial freedom and create lasting impact.",
+  "what is roventar's mission": "To provide innovative tools, education, and opportunities that help traders grow, teams build, and communities prosper together.",
+  "what are roventar's core values": "Trust (integrity and transparency), Innovation (embrace change and drive progress), Community (grow together and support each other), Growth (committed to continuous growth).",
+  "what is roventar's tagline": "Roventar's tagline is 'Innovate. Invest. Inspire.'",
+  "what is the official website": "Official website: www.roventar.com",
+  "roventar email": "support@roventar.com",
 
-  // ---------- AI BOTS ----------
-  "which ai bots are available": "7 AI trading bots:\n• Sonic Scalper AI — +131.56% APR, 78.4% win, min $50\n• Sonic Forex AI — +126% APR, 72.1% win, min $500\n• Phantom Stealth AI — +123.59% APR, 65.3% win, min $2,000\n• Pip Sniper AI — +149.05% APR, 58.9% win, min $5,000\n• Gold Rush Pro — +120% APR, 61.2% win, min $5,000\n• Aurum Mind AI — +124.54% APR, 69.8% win, min $5,000\n• Mario Momentum AI — +142.03% APR, 70.5% win, min $5,000",
-  "sonic scalper ai apr and win rate": "Sonic Scalper AI: +131.56% APR, 78.4% win rate, min investment $50–499, 12,840 traders. Ultra-fast scalping engine using RSI & MACD confluence.",
-  "sonic forex ai minimum investment": "Sonic Forex AI minimum investment is $500–1,999. APR +126%, win rate 72.1%, 5,620 traders. AI-driven trend-follower with adaptive neural network pattern recognition.",
-  "what is phantom stealth ai used for": "Phantom Stealth AI is a stealth grid trading bot designed for sideways market conditions. APR +123.59%, win rate 65.3%, min investment $2,000–4,999.",
-  "pip sniper ai performance": "Pip Sniper AI: +149.05% APR (highest of all bots), 58.9% win rate, min investment $5,000+. Precision pip-hunting bot targeting micro breakout price movements.",
-  "what is gold rush pro designed for": "Gold Rush Pro is a specialized gold and commodity trading AI with macroeconomic insights. APR +120%, win rate 61.2%, min investment $5,000+.",
-  "aurum mind ai win rate": "Aurum Mind AI win rate is 69.8%. APR +124.54%, min investment $5,000+. It's a psychologically-calibrated AI mimicking expert trader decision-making.",
-  "mario momentum ai apr": "Mario Momentum AI APR is +142.03%, win rate 70.5%, min investment $5,000+. A momentum bot conquering market levels one pip at a time with Fibonacci mastery.",
-  "best performing bot": "Top 3 by APR:\n1. Pip Sniper AI — +149.05%\n2. Mario Momentum AI — +142.03%\n3. Sonic Scalper AI — +131.56%\nAverage APR: 133.54% | Avg win rate: 68.7%",
-  "which bot has the lowest minimum investment": "Sonic Scalper AI has the lowest minimum investment at just $50.",
-  "average apr across all bots": "Average APR across all 7 bots is 133.54%, with an average win rate of 68.7%.",
-  "how many total active traders": "As of May 2024, XOXO FX has 30,429 active traders across 7 AI bots.",
-  "how many ai bots are active": "XOXO FX currently has 7 active AI trading bots.",
+  // ---------- TRADING PLATFORM ----------
+  "what markets does roventar trade": "Roventar trades in Forex and Crypto markets with advanced AI-powered strategies.",
+  "how does ai trading work": "Roventar's AI-powered trading bots analyze markets, execute trades, and manage risks 24/7. Smart technology working for smarter profits.",
+  "what is the forex education program": "Forex Education empowers traders with knowledge, strategies, and real market insights. Learn, practice, and trade with confidence.",
+  "what is the technology infrastructure": "Built for speed, designed for reliability, engineered for growth. Roventar's technology ensures seamless trading experiences with institutional-grade security, high availability, and ultra-low latency.",
+  "what is the wallet system": "Roventar Wallet makes digital transactions simple, secure, and fast. Send, receive, store, and manage your funds anytime, anywhere.",
+  "is the wallet secure": "Yes, Roventar Wallet has top-tier security for safe and hassle-free transactions. It's a secure, seamless, borderless payment system.",
+  "what are package benefits": "5 package benefits:\n1. Automated Forex & Crypto Trading — 24/7 smart automation\n2. AI-Driven Trading Strategies — advanced algorithms\n3. Daily Trading Reward Distribution — earn daily rewards\n4. Secure Wallet System — top-tier security\n5. Global Business Opportunity — connect, grow, and build your global network",
 
-  // ---------- INVESTMENT PACKAGES ----------
-  "what are the investment packages": "4 AI Bot Packages:\n• BO StartX — $50–$499, 6% daily\n• BO TitanX — $500–$1,999, 7% daily\n• BO QuantumX — $2,000–$4,999, 8% daily\n• BO MegaBullX — $5,000+, 10% daily\n💡 $2,000 in QuantumX unlocks all 30 levels instantly.",
-  "what is bo startx": "BO StartX: $50–$499 investment range, 6% projected daily return, linked to Sonic Scalper AI.",
-  "what is bo titanx": "BO TitanX: $500–$1,999 investment range, 7% projected daily return, linked to Sonic Forex AI.",
-  "what is bo quantumx": "BO QuantumX: $2,000–$4,999 investment range, 8% projected daily return, linked to Phantom Stealth AI. Starting with $2,000 unlocks all 30 levels instantly.",
-  "what is bo megabullx": "BO MegaBullX: $5,000+ investment range, 10% projected daily return, linked to Pip Sniper AI.",
-  "minimum investment": "Minimum investment is $50 (BO StartX). Invest $2,000+ in BO QuantumX to unlock all 30 leadership levels instantly.",
-  "how much to unlock all 30 levels instantly": "Investing a minimum of $2,000 in BO QuantumX unlocks all 30 leadership levels instantly.",
-  "self investment 2x working 3x limit": "Platform limit: Self Investment is capped at 2X, and Working income is capped at 3X of the invested amount.",
+  // ---------- INVESTMENT & RETURNS ----------
+  "investment plans": "Roventar offers trading plans with monthly profit and maximum return structures. If your investment is $100, you can earn a maximum return of 1600X.",
+  "minimum investment": "Minimum investment starts at $100.",
+  "maximum return": "With a $100 investment, you can earn a maximum return of 1600X.",
+  "daily rewards": "Daily trading rewards are distributed based on your trading activity.",
+  "what is the earning limit": "Boost your earning limit to unlock income opportunities of up to +13X. Direct Income and Reward Growth Income are not counted toward your Earning Limit.",
+  "how to unlock 13x earning": "Boost your Earning Limit to unlock and enjoy income opportunities of up to +13X.",
+  
+  // ---------- REFERRAL & INCOME ----------
+  "how does referral income work": "Earn 5% on every referral based on the principal amount. Share the opportunity, help your network grow, and build a sustainable income stream.",
+  "how much is direct referral income": "You earn 5% on every referral, based on the principal amount.",
+  "how many directs needed": "8 directs are required to open all levels.",
+  "what is direct income": "Direct Income is 5% on every referral. You can earn unlimited income based on your direct sales and performance.",
+  "what is the affiliate program": "Roventar's affiliate program offers direct referral rewards and attractive incentives. Share the opportunity, help your network grow, earn 5%, and build wealth.",
+  
+  // ---------- WITHDRAWAL & FEES ----------
+  "what is the withdrawal fee": "A 2% withdrawal fee will be applicable to every withdrawal request.",
+  "withdrawal charges": "A 2% withdrawal fee is applicable to every withdrawal request.",
+  "what is early exit charge": "If you exit or withdraw from the trading plan within 30 days of joining, an Early Exit Charge of 15% will be applicable.",
+  "early exit fee": "15% Early Exit Charge if you withdraw within 30 days of joining.",
+  "can i withdraw anytime": "Yes, but early exit within 30 days incurs a 15% fee. Regular withdrawals have a 2% processing fee.",
 
-  // ---------- REFERRAL & INCOME PLANS ----------
-  "how does referral income work": "3 income engines:\n1. Power Boost — 3 directs = 3% boost (max 40% at 30 referrals)\n2. Direct Income — 5% on every direct except first 2\n3. Leadership Recurring — 30 levels (L1:10%, L2:5%, L3:4%, L4:3%, L5:2%, L6-30:1%)",
-  "what is power boost rewards": "Power Boost Rewards: every 3 direct referrals add a 3% boost to trading income, scaling up to a maximum of 40% at 30 referrals.",
-  "how many referrals for 40 percent boost": "30 direct referrals give the maximum Power Boost of 40% on trading income (note: platform text also shows the boost chart topping at 30% for 30 referrals, so check current terms).",
-  "what is direct income": "Direct Income: you earn 5% on every direct referral's investment, except for your first 2 directs (A & B), which generate no direct income themselves.",
-  "why don't the first 2 directs earn income": "The first 2 directs (A & B) are your root pairing legs used for Pair Volume Bonus and Single Leg Spill — direct income of 5% starts from your 3rd direct onward.",
-  "what is leadership recurring income": "Leadership Recurring Income pays across 30 levels: L1: 10%, L2: 5%, L3: 4%, L4: 3%, L5: 2%, L6–L30: 1% each — maximum distribution capped at 50% of ROI.",
-  "how many levels does leadership plan cover": "The Leadership Recurring Income plan covers 30 levels total.",
-  "level 1 income percentage": "Level 1 Leadership Recurring Income is 10%, and requires 1 direct referral to qualify.",
-  "maximum distribution cap for leadership": "The maximum distribution cap for Leadership Recurring Income is 50% of ROI.",
-  "what is pair volume bonus": "Pair Volume Bonus: 5% per matching pair (Team A & Team B). Bonus on lower volume. Max cap: 20%. Capping limit = package amount.",
-  "maximum cap for pair volume bonus": "The maximum distribution cap for Pair Volume Bonus is 20%, with the capping limit equal to your package amount.",
-  "what is single leg spill income": "Single Leg Spill: 5% at unlimited depth. After your first 2 directs, all downline A & B investments generate 5% income for you forever.",
-  "does single leg spill have unlimited depth": "Yes — Single Leg Spill Income has unlimited depth. After your first 2 direct referrals, every A & B joining in their downline generates 5% income for you at any depth.",
-  "what is the wealth multiplier framework": "The Wealth Multiplier Framework: your passive foundation (AI Bot performance) is scalable up to 2X, while leadership growth potential (network building & spillover) is scalable up to 3X.",
-
-  // ---------- RANKS & MILESTONES ----------
-  "what ranks are available": "7 ranks by business volume:\n1. Manager — $2,500\n2. Bronze — $5,000\n3. Silver — $15,000\n4. Gold — $30,000\n5. Ruby — $50,000\n6. Platinum — $100,000\n7. Diamond — $200,000",
-  "business volume for manager rank": "Manager rank requires $2,500 in business volume.",
-  "business volume for diamond rank": "Diamond rank requires $200,000 in business volume — the highest of the 7 ranks.",
-  "what are the milestone rewards": "Milestone rewards:\n• Visionary Elite $2,500 → $100\n• Titan Circle $5,000 → $250\n• Royal Apex $10,000 → $500 or Thailand Tour\n• Legacy Crown $25,000 → $1,000 or Dubai Tour\n• Diamond Sovereign $50,000 → $2,000\n• Infinity Leader $100,000 → $4,000\n• Empire Master $200,000 → $10,000\n• Prestige Titan $500,000 → $25,000\n• Global Pioneer $1M → $50,000\n• Supreme Ambassador $2M → $100,000",
-  "visionary elite milestone reward": "Visionary Elite: achieve $2,500 matching business volume to earn a $100 reward.",
-  "titan circle milestone reward": "Titan Circle: achieve $5,000 matching business volume to earn a $250 reward.",
-  "royal apex reward": "Royal Apex: achieve $10,000 matching business volume to earn $500 cash or a Thailand Luxury Tour.",
-  "legacy crown reward": "Legacy Crown: achieve $25,000 matching business volume to earn $1,000 cash or a Dubai Luxury Tour.",
-  "diamond sovereign reward": "Diamond Sovereign: achieve $50,000 matching business volume to earn a $2,000 reward.",
-  "infinity leader reward": "Infinity Leader: achieve $100,000 matching business volume to earn a $4,000 leadership reward.",
-  "empire master reward": "Empire Master: achieve $200,000 matching business volume to earn a $10,000 reward.",
-  "prestige titan reward": "Prestige Titan: achieve $500,000 matching business volume to earn a $25,000 reward.",
-  "global pioneer reward": "Global Pioneer: achieve $1,000,000 matching business volume to earn a $50,000 reward.",
-  "supreme ambassador reward": "Supreme Ambassador: achieve $2,000,000 matching business volume to earn a $100,000 reward — the highest milestone.",
-
-  // ---------- WITHDRAWAL & RISK ----------
-  "how does withdrawal work": "Withdrawal: 2% processing fee. Capital remains yours. Fast, secure & transparent system.",
-  "withdrawal processing fee": "The withdrawal processing fee is 2%. Your capital remains yours.",
-  "does capital remain mine": "Yes — your capital remains yours even after investing; only a 2% withdrawal processing fee applies.",
-  "what is risk management": "Risk management:\n1. Stop-Loss — strict entry/exit boundaries\n2. Position Sizing — algorithmic allocation\n3. Drawdown Control — auto pause in extreme volatility\n4. Portfolio Risk Limits — hard caps per asset class",
-  "what is stop loss structure": "Stop-Loss Structures use strict entry-exit boundaries to contain downside risk.",
-  "what is position sizing": "Position Sizing uses algorithmic allocation based on portfolio weight to manage risk.",
-  "what is drawdown control": "Drawdown Control automatically pauses trading during extreme market volatility.",
-  "what are portfolio risk limits": "Portfolio Risk Limits set hard caps on exposure per asset class.",
-
-  // ---------- MARKET COMPARISON ----------
-  "crypto vs forex": "Crypto: trillion-dollar blockchain, 24/7, high volatility.\nForex: $9.5T daily liquidity, tight spreads, macro-driven.",
-  "daily liquidity of forex market": "The forex market mentioned has $9.5 trillion in daily liquidity, with tight spreads and macro-driven trading.",
-  "how many traders": "May 2024: 30,429 active traders, 7 bots, avg APR 133.54%, avg win rate 68.7%.",
-  "website": "Official website: www.xoxofx.com",
+  // ---------- COMMUNITY ----------
+  "what is the roventar community": "Roventar has a global community that grows, learns, and succeeds together. Built on togetherness, knowledge, trust, and global impact.",
+  "why join roventar community": "We're not just a platform, we're a community that grows together and wins together. Endless opportunities, global impact, and mutual support.",
+  "what is togetherness": "We support and uplift each other to grow stronger together.",
+  "what is the knowledge sharing": "We share insights, learn together, and stay ahead.",
+  
+  // ---------- GENERAL ----------
+  "what is roventar about": "Roventar is a next-generation trading ecosystem combining AI-powered trading, Forex education, secure wallets, and a global affiliate program. Innovate. Invest. Inspire.",
+  "why roventar": "Roventar offers smart technology, real rewards, and infinite possibilities. Profit faster and build wealth smarter.",
+  "is roventar legit": "Roventar is built on transparency, integrity, and mutual respect. It's a globally trusted trading ecosystem.",
+  "contact roventar": "Email: support@roventar.com | Website: www.roventar.com",
+  "roventar contact details": "Email: support@roventar.com | Website: www.roventar.com",
 };
 
+// ---------- QUICK BUTTONS ----------
 const QUICK = [
-  { label: "What is XOXO FX?", q: "what is xoxo fx" },
-  { label: "AI bots?", q: "which ai bots are available" },
-  { label: "Packages?", q: "what are the investment packages" },
+  { label: "What is Roventar?", q: "what is roventar" },
+  { label: "Investment plans?", q: "investment plans" },
   { label: "Referral income?", q: "how does referral income work" },
-  { label: "Ranks?", q: "what ranks are available" },
-  { label: "Rewards?", q: "what are the milestone rewards" },
-  { label: "Pair bonus?", q: "what is pair volume bonus" },
-  { label: "Withdrawal?", q: "how does withdrawal work" },
+  { label: "Withdrawal fee?", q: "what is the withdrawal fee" },
+  { label: "AI trading?", q: "how does ai trading work" },
+  { label: "Wallet?", q: "what is the wallet system" },
+  { label: "Community?", q: "what is the roventar community" },
+  { label: "Contact us", q: "contact roventar" },
 ];
 
+// ---------- ANSWER FINDER ----------
 function findAnswer(input) {
   const q = input.toLowerCase().trim();
+  
+  // Exact match
   if (KB[q]) return KB[q];
+  
+  // Partial match (question contains key OR key contains question)
   for (const k in KB) {
     if (q.includes(k) || k.includes(q)) return KB[k];
   }
+  
+  // Word match
   const words = q.split(" ").filter((w) => w.length > 3);
   for (const k in KB) {
     if (words.some((w) => k.includes(w))) return KB[k];
   }
-  if (q.includes("bot") || q.includes("sonic") || q.includes("mario") || q.includes("pip") || q.includes("phantom") || q.includes("gold rush") || q.includes("aurum")) return KB["which ai bots are available"];
-  if (q.includes("package") || q.includes("startx") || q.includes("titanx") || q.includes("quantum") || q.includes("megabull")) return KB["what are the investment packages"];
-  if (q.includes("invest") || q.includes("minimum") || q.includes("plan")) return KB["what are the investment packages"];
-  if (q.includes("rank") || q.includes("manager") || q.includes("bronze") || q.includes("diamond")) return KB["what ranks are available"];
-  if (q.includes("reward") || q.includes("milestone") || q.includes("visionary") || q.includes("titan circle") || q.includes("apex") || q.includes("crown") || q.includes("sovereign") || q.includes("ambassador") || q.includes("pioneer")) return KB["what are the milestone rewards"];
-  if (q.includes("withdraw")) return KB["how does withdrawal work"];
-  if (q.includes("referral") || q.includes("income") || q.includes("direct") || q.includes("boost")) return KB["how does referral income work"];
-  if (q.includes("pair")) return KB["what is pair volume bonus"];
-  if (q.includes("risk") || q.includes("stop loss") || q.includes("drawdown")) return KB["what is risk management"];
-  if (q.includes("crypto") || q.includes("forex")) return KB["crypto vs forex"];
-  if (q.includes("spill") || q.includes("single")) return KB["what is single leg spill income"];
-  if (q.includes("trader") || q.includes("total") || q.includes("apr")) return KB["how many traders"];
-  if (q.includes("site") || q.includes("web") || q.includes("link")) return KB["website"];
-  if (q.includes("founder") || q.includes("chris luther") || q.includes("director")) return KB["who founded xoxo fx"];
-  if (q.includes("ecosystem") || q.includes("thesis")) return KB["what is the unified ecosystem thesis"];
-  return "Try asking about:\n• AI bots & performance\n• Investment packages\n• Referral & income plans\n• Ranks & rewards\n• Withdrawal info";
+
+  // Intent-based fallbacks
+  if (q.includes("bot") || q.includes("ai") || q.includes("trading") || q.includes("trade") || q.includes("automated")) 
+    return KB["how does ai trading work"];
+  
+  if (q.includes("plan") || q.includes("package") || q.includes("invest") || q.includes("return") || q.includes("profit")) 
+    return KB["investment plans"];
+  
+  if (q.includes("referral") || q.includes("direct") || q.includes("commission") || q.includes("earning")) 
+    return KB["how does referral income work"];
+  
+  if (q.includes("withdraw") || q.includes("fee") || q.includes("charge") || q.includes("exit")) 
+    return KB["what is the withdrawal fee"];
+  
+  if (q.includes("wallet") || q.includes("payment") || q.includes("send") || q.includes("receive") || q.includes("store")) 
+    return KB["what is the wallet system"];
+  
+  if (q.includes("community") || q.includes("global") || q.includes("together") || q.includes("group")) 
+    return KB["what is the roventar community"];
+  
+  if (q.includes("vision") || q.includes("mission") || q.includes("value") || q.includes("purpose")) 
+    return KB["what is roventar's vision"];
+  
+  if (q.includes("forex") || q.includes("crypto") || q.includes("market")) 
+    return KB["what markets does roventar trade"];
+  
+  if (q.includes("email") || q.includes("support") || q.includes("contact")) 
+    return KB["contact roventar"];
+
+  return "Try asking about:\n• What is Roventar?\n• Investment plans\n• Referral income\n• Withdrawal fees\n• AI trading\n• Wallet system\n• Community\n• Contact details";
 }
 
-// Dark mode theme with #0b1a24 background
+// ---------- THEME COLORS ----------
 const C = {
-  // Main background
   bgBase: "#0b1a24",
   bg1: "#0f1f2a",
   bg2: "#132430",
@@ -138,71 +130,46 @@ const C = {
   bgCard: "rgba(11, 26, 36, 0.85)",
   bgCard2: "rgba(11, 26, 36, 0.65)",
   bgHover: "rgba(34, 232, 212, 0.06)",
-  
-  // Borders
   border: "rgba(140, 180, 200, 0.14)",
   border2: "rgba(34, 232, 212, 0.28)",
   border3: "rgba(203, 164, 99, 0.28)",
-  
-  // Text
   text1: "#eef3f8",
   text2: "#8ea0b5",
   text3: "#5c6c80",
   text4: "#3d4d60",
-  
-  // Shadows & Glows
   shadow: "rgba(0, 0, 0, 0.6)",
   glowC: "rgba(34, 232, 212, 0.12)",
   glowP: "rgba(203, 164, 99, 0.1)",
-  
-  // Glass effects
   glass: "rgba(255, 255, 255, 0.025)",
   glass2: "rgba(255, 255, 255, 0.06)",
   sidebarBg: "rgba(11, 26, 36, 0.97)",
   inputBg: "rgba(255, 255, 255, 0.04)",
-  
-  // Accent colors
   primary: "#22E8D4",
   primaryLight: "rgba(34, 232, 212, 0.12)",
   primaryBorder: "rgba(34, 232, 212, 0.28)",
   secondary: "#CBA463",
   secondaryLight: "rgba(203, 164, 99, 0.12)",
   secondaryBorder: "rgba(203, 164, 99, 0.28)",
-  
-  // User & Bot messages
   userBg: "#22E8D4",
   userText: "#0b1a24",
   botBg: "rgba(255, 255, 255, 0.06)",
   botBorder: "rgba(140, 180, 200, 0.14)",
-  
-  // Status
   statusBg: "rgba(34, 232, 212, 0.12)",
   statusText: "#22E8D4",
   statusBorder: "rgba(34, 232, 212, 0.28)",
-  
-  // Quick buttons
   quickBtnBg: "rgba(203, 164, 99, 0.12)",
   quickBtnBorder: "rgba(203, 164, 99, 0.28)",
   quickBtnText: "#CBA463",
   quickBtnHoverBg: "rgba(34, 232, 212, 0.12)",
   quickBtnHoverBorder: "rgba(34, 232, 212, 0.28)",
   quickBtnHoverText: "#22E8D4",
-  
-  // Input
   inputBorder: "rgba(140, 180, 200, 0.2)",
-  inputBg: "rgba(255, 255, 255, 0.04)",
-  
-  // Send button
   sendBtnBg: "#22E8D4",
   sendBtnText: "#0b1a24",
-  
-  // Container
   containerBg: "#0b1a24",
   containerBorder: "rgba(140, 180, 200, 0.14)",
   msgsBg: "#0f1f2a",
   headerBg: "rgba(11, 26, 36, 0.97)",
-  
-  // Typing indicator
   typingBg: "rgba(255, 255, 255, 0.06)",
   typingBorder: "rgba(140, 180, 200, 0.14)",
   dotBg: "#5c6c80",
@@ -245,11 +212,12 @@ const LIGHT_C = {
   dotBg: "#8a9ba7",
 };
 
-export default function XoxoFxChatbot() {
+// ---------- MAIN COMPONENT ----------
+export default function RoventarChatbot() {
   const { isDark } = useTheme();
   const colors = isDark ? C : LIGHT_C;
   const [messages, setMessages] = useState([
-    { role: "bot", text: "Namaste! Ask me anything about XOXO FX — bots, packages, income plans, ranks, or rewards!" },
+    { role: "bot", text: "Namaste! Ask me anything about Roventar — AI trading, investment plans, referral income, wallet, or community!" },
   ]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
@@ -278,7 +246,7 @@ export default function XoxoFxChatbot() {
   };
 
   return (
-    <div className="xoxo-fx-assistant-card" style={{
+    <div className="roventar-chatbot-card" style={{
       display: "flex",
       flexDirection: "column",
       height: "520px",
@@ -301,8 +269,8 @@ export default function XoxoFxChatbot() {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: colors.text1, lineHeight: 1.2 }}>🧠 AI Companion</div>
-            <div style={{ fontSize: 10, color: colors.text2 }}>Roventar Assistant</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: colors.text1, lineHeight: 1.2 }}>🧠 AI Assistant</div>
+            <div style={{ fontSize: 10, color: colors.text2 }}>Roventar Support</div>
           </div>
         </div>
         <div style={{
@@ -347,7 +315,7 @@ export default function XoxoFxChatbot() {
               fontWeight: 700,
               color: colors.bgBase,
             }}>
-              {msg.role === "bot" ? "XF" : "U"}
+              {msg.role === "bot" ? "RV" : "U"}
             </div>
             <div style={{
               maxWidth: "76%",
@@ -381,7 +349,7 @@ export default function XoxoFxChatbot() {
               fontSize: 8,
               fontWeight: 700,
               color: colors.bgBase,
-            }}>XF</div>
+            }}>RV</div>
             <div style={{
               padding: "9px 13px",
               borderRadius: 10,
@@ -399,7 +367,7 @@ export default function XoxoFxChatbot() {
                   borderRadius: "50%",
                   background: colors.dotBg,
                   display: "inline-block",
-                  animation: `xfBlink 1.2s ${d * 0.2}s infinite`,
+                  animation: `rvBlink 1.2s ${d * 0.2}s infinite`,
                 }} />
               ))}
             </div>
@@ -461,7 +429,7 @@ export default function XoxoFxChatbot() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Ask about XOXO FX..."
+          placeholder="Ask about Roventar..."
           style={{
             flex: 1,
             fontSize: 11,
@@ -492,16 +460,15 @@ export default function XoxoFxChatbot() {
       </div>
 
       <style>{`
-        .xoxo-fx-assistant-card,
-        .xoxo-fx-assistant-card * {
+        .roventar-chatbot-card,
+        .roventar-chatbot-card * {
           transition: background 0.35s ease, color 0.35s ease,
             border-color 0.35s ease, box-shadow 0.35s ease;
         }
-        @keyframes xfBlink {
+        @keyframes rvBlink {
           0%, 80%, 100% { opacity: 0.25; }
           40% { opacity: 1; }
         }
-        /* Custom scrollbar for dark mode */
         ::-webkit-scrollbar {
           width: 4px;
         }

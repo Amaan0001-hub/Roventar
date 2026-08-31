@@ -14,7 +14,7 @@ const initialForm = {
   password: "",
   noOfId: "",
   countryId: "",
-  position: "",
+  position: "Left",
 };
 
 const BulkRegistration = () => {
@@ -103,7 +103,6 @@ const BulkRegistration = () => {
     else if (Number(form.noOfId) > 50) newErrors.noOfId = "Number not greater than 50";
     else if (Number(form.noOfId) < 0) newErrors.noOfId = "Number must not be negative";
     if (!form.countryId) newErrors.countryId = "Country is required";
-    if (!form.position) newErrors.position = "Position is required";
     return newErrors;
   };
 
@@ -345,23 +344,7 @@ const BulkRegistration = () => {
                     {errors.countryId && <div className="mt-1 text-xs text-red-500">{errors.countryId}</div>}
                   </div>
 
-                  {/* Position Dropdown Field */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                      Position <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="position"
-                      value={form.position}
-                      onChange={handleChange}
-                      className="w-full px-3 py-1.5 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-gray-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200 text-sm cursor-pointer"
-                    >
-                      <option value="">Select Position</option>
-                      <option value="Left">Left</option>
-                      <option value="Right">Right</option>
-                    </select>
-                    {errors.position && <div className="mt-1 text-xs text-red-500">{errors.position}</div>}
-                  </div>
+
                 </div>
               </div>
             )}

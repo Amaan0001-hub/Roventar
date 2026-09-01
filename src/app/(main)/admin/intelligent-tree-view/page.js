@@ -32,13 +32,14 @@ const buildTreeData = (data, collapsedNodes, searchUserId) => {
       attributes: {
         sponsor: node.SponsorId,
         downline: node.TotalTeam || 0,
+        TotalTeam: node.TotalTeam || 0,
         email: node.Email,
         regDate: node.RegDate,
         leaseAmount: node.Package || 0,
         urank: node.Urank,
-        teamBusiness: node.TeamBusiness,
-        activeTeam: node.ActiveTeam,
-        directBusiness: node.DirectBusiness,
+        Teambusiness: node.Teambusiness,
+        ActiveTeam: node.ActiveTeam,
+        DirectBusiness: node.DirectBusiness,
         topupDate: node.TopupDate,
         totalTeam: node.TotalActiveDirect || 0,
         mobile: node.Mobile,
@@ -284,12 +285,11 @@ const CustomNode = ({ nodeDatum, toggleNode }) => {
             <div className="space-y-1">
               <p className="text-gray-300"><span className="font-semibold text-emerald-400">SponsorId:</span> {nodeDatum.attributes?.sponsor || "None"}</p>
               <p className="text-gray-300"><span className="font-semibold text-emerald-400">Activated Date:</span> {nodeDatum.attributes?.ActivationDate || "Not Activated"}</p>
-              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Left Team:</span> {formatAmount(nodeDatum.attributes?.leftTeam || 0)}</p>
-              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Right Team:</span> {formatAmount(nodeDatum.attributes?.rightTeam || 0)}</p>
-              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Left Active:</span> {formatAmount(nodeDatum.attributes?.leftAvtive || 0)}</p>
-              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Right Active:</span> {formatAmount(nodeDatum.attributes?.RightAvtive || 0)}</p>
-              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Left Business:</span> ${nodeDatum.attributes?.leftBusiness || 0}</p>
-              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Right Business:</span> ${nodeDatum.attributes?.rightBusiness || 0}</p>
+              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Total Team:</span> {formatAmount(nodeDatum.attributes?.TotalTeam || 0)}</p>
+              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Active Team:</span> {formatAmount(nodeDatum.attributes?.ActiveTeam || 0)}</p>
+              <p className="text-gray-300"><span className="font-semibold text-emerald-400">Team Business:</span> {formatAmount(nodeDatum.attributes?.Teambusiness || 0)}</p>
+        
+
             </div>
           </div>,
           document.body

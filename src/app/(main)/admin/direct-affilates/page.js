@@ -48,10 +48,7 @@ export default function Affiliate() {
         "Sr.No.": idx + 1,
         Email: member.email,
         Mobile: member.mobile,
-        Position: member.position,
         Package: member.package,
-        "Left Business": member.leftbusiness,
-        "Right Business": member.rightbusiness,
         "Register Date": member.regDate,
         "Topup Date": member.topupDate || "-",
         Topup: member.topup || "-",
@@ -223,10 +220,7 @@ export default function Affiliate() {
                         "Name",
                         "Email",
                         "Mobile",
-                        "Position",
                         "Package ($)",
-                        "Left Bussiness ($)",
-                        "Right Bussiness ($)",
                         "Register Date",
                         "Topup Date",
                         "Topup Status",
@@ -276,16 +270,7 @@ export default function Affiliate() {
                             {member.mobile}
                           </td>
                           <td className="px-4 py-3 border td-wrap-text">
-                            {member.position}
-                          </td>
-                          <td className="px-4 py-3 border td-wrap-text">
                             {member.package}
-                          </td>
-                          <td className="px-4 py-3 border td-wrap-text">
-                            {member.leftbusiness}
-                          </td>
-                          <td className="px-4 py-3 border td-wrap-text">
-                            {member.rightbusiness}
                           </td>
                           <td className="px-4 py-3 border td-wrap-text">
                             {member.regDate}

@@ -725,7 +725,7 @@ export default function DashboardHeader({ sidebarOpen, setSidebarOpen }) {
                   <FaWhatsapp style={{ marginRight: "8px" }} />
                   WhatsApp
                 </button>
-                <a className="soc-btn soc-pdf" href="https://app.xoxofx.com/xoxofs/XoxoFxV5.pdf" target="_blank">
+                <a className="soc-btn soc-pdf" href="https://apis.roventar.com/RoventarV1.pdf" target="_blank">
                   <FaFilePdf />
                   PDF
                 </a>

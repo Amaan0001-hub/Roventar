@@ -819,9 +819,16 @@ export default function DashboardPage() {
     { title: `Rank ${dashboardData?.[0]?.UserRank || 'V1'} Achieved`, sub: 'Rank milestone unlocked' },
   ];
 
+  const userRank = dashboardData?.[0]?.UserRank || 'V1';
+  const normalizedRank = userRank.replace('LT', 'V'); // Convert LT3 to V3
+  const userRankIndex = rankOrder.indexOf(normalizedRank);
+  const totalLevels = 11; // LT1 to LT11
+  const achievedLevels = userRankIndex >= 0 ? userRankIndex + 1 : 1;
+  const rankProgressVal = Math.min(100, Math.round((achievedLevels / totalLevels) * 100));
+
   const rankLevels = [
     { rank: 'V1', business: '₹5L', status: 'achieved' },
-    { rank: 'V2', business: '₹10L', status: 'current', progress: 75 },
+    { rank: 'V2', business: '₹10L', status: 'current', progress: rankProgressVal },
     { rank: 'V3', business: '₹25L', status: 'upcoming' },
     { rank: 'V4', business: '₹50L', status: 'upcoming' },
     { rank: 'V5', business: '₹1Cr', status: 'upcoming' },
@@ -1090,7 +1097,7 @@ export default function DashboardPage() {
                     percent={rankLevels.find(r => r.status === 'current')?.progress || 0}
                     size={110} stroke={9} colorFrom="#5eead4" colorTo="#0d9488" gradId="rankGrad"
                     
-                    centerTop={dashboardData?.[0]?.UserRank || 'V1'}
+                    centerTop={dashboardData?.[0]?.UserRank || 'N/A'}
                     centerBottom={`${rankLevels.find(r => r.status === 'current')?.progress || 0}%`}
                   />
                   <div className="flex-grow-1">
@@ -1315,7 +1322,7 @@ export default function DashboardPage() {
                       <polyline points="2,8 5.5,11.5 14,3.5" stroke="#10b981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <span className="small dx-ink">
-                      <strong>Your Bot is now ACTIVATED!</strong> — Scanning 142+ opportunities/min across SOL, ETH &amp; BSC. First profit expected within 60 seconds.
+                      <strong>Your Bot is now ACTIVATED!</strong> — Scanning 142+ opportunities/min across Forex & Crypto markets,&amp;  continuously analyzing currency pairs and digital assets for potential trading opportunities.
                     </span>
                     <div className="dx-timer-box" id="timerBox2">
                       <div className="dx-timer-num">{formatBotTime(botTime)}</div>
@@ -1438,7 +1445,7 @@ export default function DashboardPage() {
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
                   </svg>
                 </StatIcon>
-                <div className="dx-biz-value mt-3">{dashboardData?.[0]?.TotalDirect ?? 0}</div>
+                <div className="dx-biz-value mt-3">{dashboardData?.[0]?.DirectIds ?? 0}</div>
                 <div className="dx-biz-label">Total Direct</div>
               </div>
             </div>
@@ -1451,7 +1458,7 @@ export default function DashboardPage() {
                     <path d="M19 8v6M22 11h-6" />
                   </svg>
                 </StatIcon>
-                <div className="dx-biz-value mt-3">{dashboardData?.[0]?.ActiveDirect ?? 0}</div>
+                <div className="dx-biz-value mt-3">{dashboardData?.[0]?.ActiveDirectIds ?? 0}</div>
                 <div className="dx-biz-label">Active Direct</div>
               </div>
             </div>
@@ -1488,13 +1495,13 @@ export default function DashboardPage() {
 
           {/* GROWTH REWARDS BANNER */}
           <div className="dx-section-head mb-3">
-            <h5 className="dx-section-title">Accelerator Growth</h5>
+            <h5 className="dx-section-title">Accelerator Reward</h5>
             <div className="dx-section-sub">Build your business. Unlock your next milestone.</div>
           </div>
           <div className="dx-growth-banner mb-4">
             <div className="row align-items-center g-3">
               <div className="col-lg-8">
-                <div className="dx-eyebrow-light mb-1">Accelerator Growth Milestone</div>
+                <div className="dx-eyebrow-light mb-1">Accelerator Boost Milestone</div>
                 <div className="dx-growth-title">${dashboardData?.[0]?.InvestmenELimit ?? 0} — {dashboardData?.[0]?.ac_totalQualifyBoot ?? 0}X Boost</div>
                 <div className="row g-3 mt-2">
                   <div className="col-4">
@@ -1530,7 +1537,7 @@ export default function DashboardPage() {
             <div className="col-12">
               <div className="dx-card">
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                  <div className="fw-bold dx-ink">Growth Reward Journey</div>
+                  <div className="fw-bold dx-ink">Accelerator Reward Journey</div>
                 </div>
                 <div className="dx-stepper mb-4">
                   {growthLevels.map((g, i) => (

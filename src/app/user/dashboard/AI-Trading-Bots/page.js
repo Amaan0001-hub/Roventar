@@ -112,18 +112,42 @@ export default function App() {
     return amount;
   };
 
+  // Calculate max investment based on mininvest range
+  const getMaxInvestment = () => {
+    if (!investBot || !investBot.mininvest) return 999;
+    const minInvest = parseFloat(investBot.mininvest);
+    if (isNaN(minInvest) || minInvest <= 0) return 999;
+    if (minInvest < 1000) return 999;
+    if (minInvest < 10000) return 9999;
+    if (minInvest < 100000) return 99999;
+    return minInvest * 10; // Fallback: 10x of min
+  };
+
   // Validate amount
   const validateAmount = (value) => {
     if (!investBot) return false;
     const numValue = parseFloat(value);
+    const minInvest = parseFloat(investBot.mininvest);
+
     if (isNaN(numValue)) {
       setAmountError("Please enter a valid amount");
       return false;
     }
-    if (numValue < investBot.mininvest) {
-      setAmountError(`Minimum investment amount is $${investBot.mininvest}`);
+    if (isNaN(minInvest) || minInvest <= 0) {
+      setAmountError("Invalid minimum investment amount");
       return false;
     }
+    if (numValue < minInvest) {
+      setAmountError(`Minimum investment amount is $${minInvest}`);
+      return false;
+    }
+
+    const maxInvest = getMaxInvestment();
+    if (numValue > maxInvest) {
+      setAmountError(`Maximum investment amount is $${maxInvest}`);
+      return false;
+    }
+
     if (numValue > walletBalance) {
       setAmountError(`Insufficient balance! Your wallet balance is $${walletBalance.toLocaleString()}`);
       return false;
@@ -969,25 +993,26 @@ const downloadPDFInvoice = async (orderData) => {
                     <div class="section-title">
                         <span class="icon">🏢</span> Company Details
                     </div>
-                    <div class="company-address">
-                        <div class="address-text">
-                            <strong>Roventar CAPITAL MANAGEMENT LLC</strong><br />
-                            Northwest Registered Agent Service, Inc.<br />
-                            117 S Lexington St Ste 100<br />
-                            Harrisonville, MO 64701-2444
-                        </div>
-                        <div class="address-text" style="text-align: right;">
-                            <strong>Email:</strong> support@roventar.com<br />
-                            <strong>Phone:</strong> +1 (800) 555-0199
-                        </div>
-                    </div>
+                <div class="company-address">
+    <div class="address-text">
+        <strong>ROVENTAR TRADING LLC</strong><br />
+        Registered Agent: As per Articles of Organization<br />
+        State of Missouri, USA<br />
+        Date Filed: 08/26/2026
+    </div>
+
+    <div class="address-text" style="text-align: right;">
+        <strong>Email:</strong> support@roventar.com<br />
+        <strong>Phone:</strong> +1 (800) 555-0199
+    </div>
+</div>
                 </div>
 
                 <!-- ===== STAMP ONLY - RIGHT SIDE ===== -->
                 <div class="stamp-section">
                     <div class="stamp-box">
                         <span class="stamp-label">Company Stamp</span>
-                        <img src="/stamp.png" alt="Roventar CAPITAL MANAGEMENT LLC Stamp" class="stamp-image" />
+                        <img src="/stampbackremove.png" alt="Roventar CAPITAL MANAGEMENT LLC Stamp" class="stamp-image" />
                     </div>
                 </div>
 
@@ -1052,10 +1077,18 @@ const downloadPDFInvoice = async (orderData) => {
 
     // Get investment amount (custom amount)
     const investmentAmount = getInvestmentAmount();
+    const minInvest = parseFloat(investBot.mininvest);
 
     // Validate minimum amount
-    if (investmentAmount < investBot.mininvest) {
-      setAmountError(`Minimum investment amount is $${investBot.mininvest}`);
+    if (investmentAmount < minInvest) {
+      setAmountError(`Minimum investment amount is $${minInvest}`);
+      return;
+    }
+
+    // Validate maximum amount
+    const maxInvest = getMaxInvestment();
+    if (investmentAmount > maxInvest) {
+      setAmountError(`Maximum investment amount is $${maxInvest}`);
       return;
     }
 
@@ -1421,7 +1454,7 @@ const downloadPDFInvoice = async (orderData) => {
                           <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-1)" }}>${item.Rkprice.toFixed(2)}</div>
                         </div>
                         <div style={{ marginBottom: 16 }}>
-                          <div style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 4, letterSpacing: "0.05em" }}>XOXO Package</div>
+                          <div style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 4, letterSpacing: "0.05em" }}>Roventar Package</div>
                           <div style={{ fontSize: 15, fontWeight: 700, color: pos ? "var(--brand-green)" : "#f87171" }}>
                             {item.PackageName}
                           </div>
@@ -1559,24 +1592,24 @@ const downloadPDFInvoice = async (orderData) => {
                 <div style={{ fontSize: 9, fontWeight: 700, color: "var(--brand-cyan)", letterSpacing: ".12em", marginBottom: 12 }}>INVESTMENT PLANS</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
                   <div style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 14px", textAlign: "center" }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>BO STARTX</div>
-                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>${selected.startx || selected.mininvest || 0}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>Basic</div>
+                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>$100 - $999</div>
                   </div>
 
                   <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "2px solid rgba(16, 185, 129, 0.4)", borderRadius: 14, padding: "18px 14px", textAlign: "center", position: "relative" }}>
                     <div style={{ position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)", background: "var(--brand-green)", color: "#fff", fontSize: 9, fontWeight: 800, letterSpacing: ".08em", padding: "3px 12px", borderRadius: 20, whiteSpace: "nowrap" }}>⭐ POPULAR</div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>BO TITANX</div>
-                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>${selected.titanX || 0}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>Standard</div>
+                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>$1,000 - $4,999</div>
                   </div>
 
                   <div style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 14px", textAlign: "center" }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>BO QUANTUMX</div>
-                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>${selected.quantumX || 0}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>Elite</div>
+                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>$5,000 - $9,999</div>
                   </div>
 
                   <div style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 14px", textAlign: "center" }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>BO MEGABULLX</div>
-                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>${selected.megaBullx || 0}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>Growth</div>
+                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>$10,000 - $14,999</div>
                   </div>
                 </div>
               </div>
@@ -1715,11 +1748,11 @@ const downloadPDFInvoice = async (orderData) => {
                   fontSize: 15,
                   borderRadius: 14,
                   letterSpacing: ".04em",
-                  opacity: (!uname || isProcessing || isFetchingUser || !customAmount || amountError || customAmount < investBot.mininvest || walletBalance < customAmount) ? 0.5 : 1,
-                  cursor: (!uname || isProcessing || isFetchingUser || !customAmount || amountError || customAmount < investBot.mininvest || walletBalance < customAmount) ? "not-allowed" : "pointer"
+                  opacity: (!uname || isProcessing || isFetchingUser || !customAmount || amountError || parseFloat(customAmount) < parseFloat(investBot.mininvest) || parseFloat(customAmount) > getMaxInvestment() || walletBalance < parseFloat(customAmount)) ? 0.5 : 1,
+                  cursor: (!uname || isProcessing || isFetchingUser || !customAmount || amountError || parseFloat(customAmount) < parseFloat(investBot.mininvest) || parseFloat(customAmount) > getMaxInvestment() || walletBalance < parseFloat(customAmount)) ? "not-allowed" : "pointer"
                 }}
                 onClick={submit}
-                disabled={!uname || isProcessing || isFetchingUser || !customAmount || amountError || customAmount < investBot.mininvest || walletBalance < customAmount}
+                disabled={!uname || isProcessing || isFetchingUser || !customAmount || amountError || parseFloat(customAmount) < parseFloat(investBot.mininvest) || parseFloat(customAmount) > getMaxInvestment() || walletBalance < parseFloat(customAmount)}
               >
                 {isProcessing ? "PROCESSING..." : `🚀 ACTIVATE INVESTMENT`}
               </button>

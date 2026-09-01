@@ -118,6 +118,26 @@ export default function HomePage() {
         className={`mobile-menu fixed inset-0 z-[55] flex flex-col items-center justify-center gap-[34px] [background:rgba(5,8,15,0.98)] backdrop-blur-[20px] transition-[opacity,transform,visibility] duration-400 ${mobileMenuOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-3"}`}
         id="mobileMenu"
       >
+        <button
+          onClick={() => setMobileMenuOpen(false)}
+          className="absolute top-6 right-6 w-12 h-12 flex items-center justify-center text-[#eef3f8] hover:text-[#22e8d4] transition-colors duration-300 bg-white/5 rounded-full hover:bg-white/10"
+          aria-label="Close menu"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
         {["about", "services", "platform", "technology", "global", "vision", "faq"].map((id) => (
           <a
             key={id}
@@ -129,7 +149,7 @@ export default function HomePage() {
           </a>
         ))}
         <a
-          href="#cta"
+          href="/user/login"
           onClick={() => setMobileMenuOpen(false)}
           className="mt-2.5 relative inline-flex items-center justify-center gap-2.5 rounded-full font-semibold py-[15px] px-[30px] text-[0.94rem] text-[#03110f] [background:linear-gradient(135deg,#22e8d4_0%,#17b8a8_100%)]"
         >

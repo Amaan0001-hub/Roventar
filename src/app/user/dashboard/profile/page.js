@@ -109,7 +109,7 @@ export default function Profile() {
         if (result.statusCode === 200) {
           toast.success(result.message);
           passwordFormik.resetForm();
-          
+
         } else if (result.statusCode === 409) {
           toast.error(result.message);
         } else if (result.error) {
@@ -259,7 +259,7 @@ export default function Profile() {
     }
   };
 
- 
+
 
   const saveChanges = async () => {
     const walletChanged = originalWallet !== walletAddress;
@@ -285,7 +285,7 @@ export default function Profile() {
     try {
       setIsSaveLoading(true);
 
-  
+
       if (!userData) return;
 
       // Find the selected country object to get its ID
@@ -370,11 +370,21 @@ export default function Profile() {
   // Check if wallet has been changed
   const walletChanged = originalWallet !== walletAddress;
 
+  // Check if any profile fields have changed
+  const hasProfileChanges = 
+    fName !== userData?.FName ||
+    lastName !== userData?.LName ||
+    email !== userData?.Email ||
+    phone !== userData?.Mobile ||
+    country !== userData?.CountryId ||
+    address !== userData?.Address;
+
   // Determine if save button should be disabled
   const isSaveButtonDisabled = walletChanged
     ? !isValidBep20Length(walletAddress) ||
-    (walletAddress !== "" && !isOtpSent)
-    : false;
+    (walletAddress !== "" && !isOtpSent) ||
+    (walletAddress !== "" && isOtpSent && !otp)
+    : !hasProfileChanges;
 
   const shouldShowOtpButton = walletChanged && walletAddress && !isOtpSent;
 
@@ -488,6 +498,11 @@ export default function Profile() {
                         type="tel"
                         placeholder="+1 555 0000"
                         value={phone}
+                        readOnly={kid === 1}
+                        style={{
+                          cursor: kid === 1 ? 'not-allowed' : 'text',
+                          backgroundColor: kid === 1 ? '#f5f5f5' : '#fff',
+                        }}
                         onChange={(e) => setPhone(e.target.value)}
                       />
                     </div>
@@ -496,6 +511,11 @@ export default function Profile() {
                       <select
                         className="fi"
                         value={country}
+                        readOnly={kid === 1}
+                        style={{
+                          cursor: kid === 1 ? 'not-allowed' : 'text',
+                          backgroundColor: kid === 1 ? '#f5f5f5' : '#fff',
+                        }}
                         onChange={(e) => setCountry(e.target.value)}
                       >
                         <option value="">Select Country</option>
@@ -527,6 +547,11 @@ export default function Profile() {
                       className="fi"
                       type="text"
                       value={address}
+                      readOnly={kid === 1}
+                      style={{
+                        cursor: kid === 1 ? 'not-allowed' : 'text',
+                        backgroundColor: kid === 1 ? '#f5f5f5' : '#fff',
+                      }}
                       onChange={(e) => setAddress(e.target.value)}
                     />
                   </div>
@@ -617,7 +642,11 @@ export default function Profile() {
 
                   <button
                     className="btn btn-p"
-                    style={{ padding: "9px 24px" }}
+                    style={{ 
+                      padding: "9px 24px",
+                      cursor: (isSaveButtonDisabled || isSaveLoading) ? "not-allowed" : "pointer",
+                      opacity: (isSaveButtonDisabled || isSaveLoading) ? 0.6 : 1
+                    }}
                     onClick={saveChanges}
                     disabled={isSaveButtonDisabled || isSaveLoading}
                   >
@@ -715,7 +744,7 @@ export default function Profile() {
                       paddingTop: "16px"
                     }}>
                       {/* Send OTP Button - Only show if OTP not sent */}
-                    
+
                       {isPasswordOtpSent && !isPasswordOtpVerified && (
                         <div style={{
                           background: "#faf9fc",
@@ -809,25 +838,25 @@ export default function Profile() {
 
                       {/* Change Password Button - Show after OTP verified */}
                       {/* {isPasswordOtpVerified && ( */}
-                        <button
-                          type="submit"
-                          disabled={isPasswordLoading}
-                          style={{
-                            width: "100%",
-                            padding: "12px 16px",
-                            fontWeight: 600,
-                            fontSize: "15px",
-                            color: "#fff",
-                            background: isPasswordLoading ? "#a78bfa" : "#10b981",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: isPasswordLoading ? "not-allowed" : "pointer",
-                            transition: "all 0.2s",
-                            marginTop: "4px",
-                          }}
-                        >
-                          {isPasswordLoading ? 'Updating...' : 'Change Password'}
-                        </button>
+                      <button
+                        type="submit"
+                        disabled={isPasswordLoading}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          fontWeight: 600,
+                          fontSize: "15px",
+                          color: "#fff",
+                          background: isPasswordLoading ? "#a78bfa" : "#10b981",
+                          border: "none",
+                          borderRadius: "8px",
+                          cursor: isPasswordLoading ? "not-allowed" : "pointer",
+                          transition: "all 0.2s",
+                          marginTop: "4px",
+                        }}
+                      >
+                        {isPasswordLoading ? 'Updating...' : 'Change Password'}
+                      </button>
                       {/* )} */}
                     </div>
                   </form>

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 import { getRequestWithToken } from '@/app/api/auth';
 import { getUserId } from '@/app/api/auth';
+import TradingViewWidget from '@/app/user/components/Tradeview';
 
 export default function ArbionEngine() {
   const pnlChartRef = useRef(null);
@@ -266,52 +267,10 @@ export default function ArbionEngine() {
   return (
     <>
       <div id="p-analytics" className="page">
-        <div className="g4">
-          <div className="scard scc">
-            <div className="ml">Portfolio Growth</div>
-            <div className="mv" >${PortfolioGrowth}</div>
-          </div>
-          <div className="scard scc">
-            <div className="ml">AI Trading Performance</div>
-            <div className="mv">${AITradingPerformance}</div>
-
-          </div>
-          <div className="scard scc">
-            <div className="ml">AI Executed Trades</div>
-            <div className="mv">{AIExecutedTrades}</div>
-         
-          </div>
-          <div className="scard scc">
-            <div className="ml">Average Daily Return</div>
-            <div className="mv" style={{ color: "var(--a)" }}>${AverageDailyReturn}</div>
-
-          </div>
-        </div>
 
         {/* CHARTS SECTION - Dynamic */}
-        <div className="g2">
-          <div className="scard scc">
-            <div className="sh">
-              <div className="st">PnL Curve · 90d</div>
-              <span className="tag tg">+${totalPnL.toFixed(2)}</span>
-            </div>
-            <div className="cw" style={{ height: "210px" }}>
-              <canvas ref={pnlChartRef} role="img" aria-label="90d PnL">
-                Steady growth to $8,241 over 90 days.
-              </canvas>
-            </div>
-          </div>
-
-          <div className="scard scc">
-            <div className="sh">
-              <div className="st">Daily Profits · 30d</div>
-            </div>
-            <div className="cw" style={{ height: "210px" }}>
-              <canvas ref={dailyChartRef} role="img" aria-label="Daily profits">
-                Daily profits $60–$340.
-              </canvas>
-            </div>
-          </div>
+        <div className="mb-6" style={{ height: "700px" }}>
+          <TradingViewWidget/>
         </div>
 
         {/* Trade History */}

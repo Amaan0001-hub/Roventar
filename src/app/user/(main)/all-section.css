@@ -132,3 +132,32 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Mobile menu specific fixes to ensure proper contrast */
+#mobileMenu {
+  background: rgba(5, 8, 15, 0.98) !important;
+}
+
+#mobileMenu a {
+  color: #eef3f8 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#mobileMenu a:hover {
+  color: #22e8d4 !important;
+}
+
+#mobileMenu a[href="#cta"] {
+  color: #03110f !important;
+}
+
+/* Ensure mobile menu is always visible when open */
+#mobileMenu.opacity-100 {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+#mobileMenu.opacity-0 {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}

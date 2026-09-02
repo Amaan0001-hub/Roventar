@@ -1,4 +1,4 @@
-// app/page.js (JavaScript version with light theme and loading animation)
+// app/page.js (Light theme with Live Price & Dynamic Trade Levels)
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -20,6 +20,16 @@ function AIAssistant() {
   const [showModal, setShowModal] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
+  const [livePrice, setLivePrice] = useState(null);
+  const [currentTime, setCurrentTime] = useState("--:--:-- UTC");
+  const [tradeLevels, setTradeLevels] = useState({
+    entry: null,
+    sl: null,
+    tp1: null,
+    tp2: null,
+    rr: null,
+  });
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // refs for DOM manipulation (typing, gauge, chart)
   const reportRef = useRef(null);
@@ -255,23 +265,199 @@ function AIAssistant() {
     setSelectedRisk(r);
   }
 
+  function toggleDarkMode() {
+    setIsDarkMode(!isDarkMode);
+  }
+
+  function normalizeInstrument(instrument) {
+    if (!instrument) return "";
+    return instrument.split(" — ")[0].trim();
+  }
+
+  function getCryptoStream(instrument) {
+    const clean = normalizeInstrument(instrument);
+
+    const streams = {
+      // CRYPTO
+      "BTC/USDT": "btcusdt@trade",
+      "ETH/USDT": "ethusdt@trade",
+      "SOL/USDT": "solusdt@trade",
+      "BNB/USDT": "bnbusdt@trade",
+      "XRP/USDT": "xrpusdt@trade",
+      "DOGE/USDT": "dogeusdt@trade",
+      "ADA/USDT": "adausdt@trade",
+      "AVAX/USDT": "avaxusdt@trade",
+
+      // FOREX
+      "EUR/USD": "eurusd",
+      "GBP/USD": "gbpusd",
+      "USD/JPY": "usdjpy",
+      "AUD/USD": "audusd",
+      "USD/CAD": "usdcad",
+      "USD/CHF": "usdchf",
+      "NZD/USD": "nzdusd",
+
+      // METALS
+      "XAU/USD": "xauusd",
+      "XAG/USD": "xagusd",
+      "XPT/USD": "xptusd",
+      "XPD/USD": "xpdusd",
+      COPPER: "copper",
+
+      // INDICES
+      US30: "us30",
+      NAS100: "nas100",
+      SP500: "sp500",
+      DAX: "dax",
+      FTSE100: "ftse100",
+      NIKKEI: "nikkei",
+      HSI: "hsi",
+
+      // COMMODITIES
+      "WTI/USD": "wtiusd",
+      "BRENT/USD": "brentusd",
+      "NGAS/USD": "ngasusd",
+      WHEAT: "wheat",
+      CORN: "corn",
+      SOYBEANS: "soybeans",
+    };
+    return streams[clean] || null;
+  }
+
+  function calculateTradeLevels(price, trend = "Bullish") {
+    const entry = Number(price);
+
+    if (!Number.isFinite(entry) || entry <= 0) {
+      return {
+        entry: null,
+        sl: null,
+        tp1: null,
+        tp2: null,
+        rr: null,
+      };
+    }
+
+    // Percentage based on LIVE PRICE
+    const lossPercent = 0.05; // 5%
+    const profit1Percent = 0.08; // 8%
+    const profit2Percent = 0.15; // 15%
+
+    const lossDistance = entry * lossPercent;
+    const profit1Distance = entry * profit1Percent;
+    const profit2Distance = entry * profit2Percent;
+
+    let sl;
+    let tp1;
+    let tp2;
+
+    if (trend === "Bearish") {
+      // SHORT
+      sl = entry + lossDistance;
+      tp1 = entry - profit1Distance;
+      tp2 = entry - profit2Distance;
+    } else {
+      // LONG
+      sl = entry - lossDistance;
+      tp1 = entry + profit1Distance;
+      tp2 = entry + profit2Distance;
+    }
+
+    // Risk Reward based on TP1
+    const risk = Math.abs(entry - sl);
+    const reward = Math.abs(tp1 - entry);
+
+    const rr = risk > 0 ? (reward / risk).toFixed(2) : "0.00";
+
+    return {
+      entry,
+      sl,
+      tp1,
+      tp2,
+      rr,
+    };
+  }
+
+  // ----- WEBSOCKET FOR LIVE PRICE -----
+  useEffect(() => {
+    if (!reportData?.instrument) {
+      setLivePrice(null);
+      return;
+    }
+
+    const stream = getCryptoStream(reportData.instrument);
+
+    if (!stream) {
+      setLivePrice(null);
+      return;
+    }
+
+    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`);
+
+    ws.onopen = () => {
+      console.log("Connected:", stream);
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const price = Number(data.p);
+
+      if (Number.isFinite(price)) {
+        setLivePrice(price);
+        const levels = calculateTradeLevels(price, reportData?.trend);
+        setTradeLevels(levels);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket closed");
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [reportData?.instrument]);
+
+  // ----- TRADING VIEW CHART -----
+  useEffect(() => {
+    if (!reportData) return;
+    loadTradingView(reportData.instrument);
+  }, [reportData, isDarkMode]);
+
   function loadTradingView(instrument) {
     const container = tvContainerRef.current;
     if (!container) return;
-    const symbol = tvMap[instrument] || "OANDA:XAUUSD";
-    container.innerHTML =
-      '<div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div></div>';
+
+    const cleanInstrument = normalizeInstrument(instrument);
+    const symbol = tvMap[cleanInstrument] || "OANDA:XAUUSD";
+
+    container.innerHTML = "";
+
+    const widgetContainer = document.createElement("div");
+    widgetContainer.className = "tradingview-widget-container";
+
+    const widget = document.createElement("div");
+    widget.className = "tradingview-widget-container__widget";
+
+    widgetContainer.appendChild(widget);
+    container.appendChild(widgetContainer);
+
     const script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js";
+    script.src =
+      "https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js";
     script.async = true;
+
     script.innerHTML = JSON.stringify({
-      symbols: [[instrument, symbol + "|1D"]],
+      symbols: [[cleanInstrument, symbol + "|1D"]],
       chartOnly: false,
       width: "100%",
       height: "380",
       locale: "en",
-      colorTheme: "light",
+      colorTheme: isDarkMode ? "dark" : "light",
       autosize: true,
       showVolume: false,
       showMA: false,
@@ -280,7 +466,8 @@ function AIAssistant() {
       hideSymbolLogo: false,
       scalePosition: "right",
       scaleMode: "Normal",
-      fontFamily: "-apple-system,BlinkMacSystemFont,Trebuchet MS,Roboto,Ubuntu,sans-serif",
+      fontFamily:
+        "-apple-system,BlinkMacSystemFont,Trebuchet MS,Roboto,Ubuntu,sans-serif",
       fontSize: "10",
       noTimeScale: false,
       valuesTracking: "1",
@@ -294,7 +481,8 @@ function AIAssistant() {
       lineType: 0,
       dateRanges: ["1d|1", "1m|30", "3m|60", "12m|1D", "60m|1W", "all|1M"],
     });
-    container.querySelector(".tradingview-widget-container")?.appendChild(script);
+
+    widgetContainer.appendChild(script);
   }
 
   function renderReport(data) {
@@ -307,7 +495,7 @@ function AIAssistant() {
       const num = confNumRef.current;
       if (circle) {
         const circ = 276.46;
-        const offset = circ - (circ * (data.confidence / 100));
+        const offset = circ - circ * (data.confidence / 100);
         circle.style.strokeDashoffset = String(offset);
       }
       if (num) {
@@ -343,9 +531,6 @@ function AIAssistant() {
       }
       setTimeout(typeNext, 200);
     }
-
-    // Load chart
-    loadTradingView(data.instrument);
   }
 
   async function handleGenerate() {
@@ -365,26 +550,27 @@ function AIAssistant() {
 
     // Simulate loading with steps
     const totalSteps = loadingSteps.length;
-    
+
     for (let i = 0; i < totalSteps; i++) {
       setCurrentStep(i);
       const progress = Math.round(((i + 1) / totalSteps) * 100);
       setLoadingProgress(progress);
-      
-      // Random delay between 600-1200ms for realistic feel
+
       const delay = 600 + Math.random() * 600;
       await new Promise((r) => setTimeout(r, delay));
     }
 
-    // Final delay before showing report
     await new Promise((r) => setTimeout(r, 500));
 
-    // Get mock data
     const assetEl = document.getElementById("ata-asset");
     const asset = assetEl ? assetEl.value : "XAU/USD";
-    const data = getMockResponse(selectedCategory, asset, selectedType, selectedRisk);
+    const data = getMockResponse(
+      selectedCategory,
+      asset,
+      selectedType,
+      selectedRisk
+    );
 
-    // Add to history
     const newEntry = {
       date: new Date(),
       instrument: data.instrument,
@@ -396,7 +582,6 @@ function AIAssistant() {
     };
     setHistory((prev) => [newEntry, ...prev].slice(0, 20));
 
-    // Show report
     renderReport(data);
     setGenerating(false);
   }
@@ -419,12 +604,12 @@ function AIAssistant() {
 
   // ----- EFFECTS -----
   useEffect(() => {
-    // Clock
     const clockEl = document.getElementById("ata-clock");
     if (clockEl) {
       const tick = () => {
         const n = new Date();
-        clockEl.textContent = n.toUTCString().split(" ").slice(4, 5)[0] + " UTC";
+        clockEl.textContent =
+          n.toUTCString().split(" ").slice(4, 5)[0] + " UTC";
       };
       tick();
       const interval = setInterval(tick, 1000);
@@ -435,109 +620,148 @@ function AIAssistant() {
   // ----- RENDER -----
   return (
     <div
-      style={{ 
+      style={{
         minHeight: "100vh",
         fontFamily: "Inter, sans-serif",
+        background: isDarkMode ? "#0d1117" : "#f5f7fa",
+        color: isDarkMode ? "#e6edf3" : "#1a1a2e",
       }}
     >
       <style>{`
-        :root{--bg:#f5f7fa;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e8eaed;--glass:rgba(255,255,255,0.7);--glass-hover:rgba(255,255,255,0.9);--accent:#07dbc7;--accent-dim:rgb(0 123 184 / 12%);--accent-glow:rgba(0,184,90,0.25);--text-primary:#1a1a2e;--text-secondary:#6b7280;--text-muted:#9ca3af;--border:rgba(0,0,0,0.08);--border-hover:rgba(0,0,0,0.15);--red:#EF4444;--gold:#F59E0B;--blue:#3B82F6;--purple:#8B5CF6;}
+        :root {
+          ${isDarkMode ? `
+            --bg: #0d1117;
+            --bg2: #161b22;
+            --bg3: #1c2333;
+            --bg4: #30363d;
+            --glass: rgba(22, 27, 34, 0.85);
+            --glass-hover: rgba(48, 54, 61, 0.9);
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --border: rgba(48, 54, 61, 0.6);
+            --border-hover: rgba(139, 148, 158, 0.4);
+            --red: #f85149;
+            --gold: #d29922;
+            --blue: #58a6ff;
+            --purple: #bc8cff;
+          ` : `
+            --bg: #f5f7fa;
+            --bg2: #ffffff;
+            --bg3: #f0f2f5;
+            --bg4: #e8eaed;
+            --glass: rgba(255,255,255,0.7);
+            --glass-hover: rgba(255,255,255,0.9);
+            --text-primary: #1a1a2e;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: rgba(0,0,0,0.08);
+            --border-hover: rgba(0,0,0,0.15);
+            --red: #EF4444;
+            --gold: #F59E0B;
+            --blue: #3B82F6;
+            --purple: #8B5CF6;
+          `}
+          --accent: #07dbc7;
+          --accent-dim: rgba(7, 219, 199, 0.15);
+          --accent-glow: rgba(7, 219, 199, 0.25);
+        }
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primary);}
-        .topbar{padding:13px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);position:sticky;top:0;z-index:50;}
+        .topbar{padding:13px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:${isDarkMode ? 'rgba(13,17,23,0.95)' : 'rgba(255,255,255,0.95)'};backdrop-filter:blur(20px);position:sticky;top:0;z-index:50;}
         .topbar-left{display:flex;align-items:center;gap:12px;flex-shrink:0;}
-        .vlv-name-top{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:2.5px;color:#1a1a2e;line-height:1.1;}
+        .vlv-name-top{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:2.5px;color:${isDarkMode ? '#e6edf3' : '#1a1a2e'};line-height:1.1;}
         .vlv-tag-top{font-size:10px;letter-spacing:1.3px;color:#07dbc7;font-weight:600;margin-top:2px;}
         .topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
         .sb{display:flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:7px 12px;width:210px;}
-        .sb:focus-within{border-color:rgba(0,184,90,0.35);}
+        .sb:focus-within{border-color:rgba(7,219,199,0.35);}
         .sb input{background:none;border:none;outline:none;color:var(--text-primary);font-size:12.5px;width:100%;font-family:'Inter',sans-serif;}
         .sb input::placeholder{color:var(--text-muted);}
-        .icon-btn{width:33px;height:33px;background:var(--glass);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;position:relative;}
-        .icon-btn:hover{border-color:var(--border-hover);}
-        .ndot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--accent);border:1.5px solid #fff;}
+        .icon-btn{width:33px;height:33px;background:var(--glass);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;position:relative;color:var(--text-secondary);}
+        .icon-btn:hover{border-color:var(--border-hover);color:var(--text-primary);}
+        .ndot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--accent);border:1.5px solid ${isDarkMode ? 'var(--bg2)' : '#fff'};}
         .user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg, #07dbc7, #2ec4ce);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;cursor:pointer;}
-        .ata-wrap{display:flex;flex-direction:column;gap:20px;}
+        .ata-wrap{display:flex;flex-direction:column;gap:20px;padding:0 20px 20px;}
         .ata-topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-        .ata-credits-card{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(0,184,90,0.08),rgba(255,255,255,0.5));border:1px solid rgba(0,184,90,0.2);border-radius:14px;padding:14px 20px;position:relative;overflow:hidden;}
-        .ata-credits-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgb(0 138 184 / 40%),transparent);}
-        .ata-cred-icon{width:38px;height:38px;border-radius:10px;background:rgb(0 123 184 / 12%);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+        .ata-credits-card{display:flex;align-items:center;gap:14px;background:${isDarkMode ? 'linear-gradient(135deg,rgba(7,219,199,0.08),rgba(13,17,23,0.5))' : 'linear-gradient(135deg,rgba(0,184,90,0.08),rgba(255,255,255,0.5))'};border:1px solid rgba(7,219,199,0.2);border-radius:14px;padding:14px 20px;position:relative;overflow:hidden;}
+        .ata-credits-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(7,219,199,0.4),transparent);}
+        .ata-cred-icon{width:38px;height:38px;border-radius:10px;background:rgba(7,219,199,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
         .ata-cred-lbl{font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:2px;}
         .ata-cred-val{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--accent);line-height:1;transition:all 0.4s;}
         .ata-cred-sub{font-size:10.5px;color:var(--text-secondary);margin-top:2px;}
-        .ata-buy-btn{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:#fff;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
-        .ata-buy-btn:hover{background:#008844;box-shadow:0 4px 20px rgba(0,184,90,0.35);}
+        .ata-buy-btn{display:inline-flex;align-items:center;gap:7px;background:var(--accent);color:${isDarkMode ? '#0d1117' : '#fff'};padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+        .ata-buy-btn:hover{background:#2ec4ce;box-shadow:0 4px 20px rgba(7,219,199,0.35);}
         .ata-clock{margin-left:auto;font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;}
         .ata-main{display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start;}
-        .ata-left{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;position:sticky;top:76px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
-        .ata-left-head{padding:18px 20px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(0,184,90,0.04),transparent);}
+        .ata-left{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:sticky;top:76px;box-shadow:${isDarkMode ? '0 1px 3px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.04)'};}
+        .ata-left-head{padding:18px 20px;border-bottom:1px solid var(--border);background:${isDarkMode ? 'linear-gradient(135deg,rgba(7,219,199,0.04),transparent)' : 'linear-gradient(135deg,rgba(0,184,90,0.04),transparent)'};}
         .ata-left-title{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px;color:var(--text-primary);}
         .ata-left-sub{font-size:11.5px;color:var(--text-secondary);}
-        .ata-step{padding:16px 20px;border-bottom:1px solid rgba(0,0,0,0.04);}
+        .ata-step{padding:16px 20px;border-bottom:1px solid ${isDarkMode ? 'rgba(48,54,61,0.4)' : 'rgba(0,0,0,0.04)'};}
         .ata-step-lbl{font-size:10.5px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-        .ata-step-num{width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .ata-step-num{width:18px;height:18px;border-radius:50%;background:var(--accent);color:${isDarkMode ? '#0d1117' : '#fff'};font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
         .ata-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
         .ata-cat{padding:9px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;text-align:center;cursor:pointer;transition:all 0.2s;font-size:11.5px;font-weight:500;color:var(--text-secondary);}
-        .ata-cat:hover{border-color:rgba(0,184,90,0.3);color:var(--text-primary);}
-        .ata-cat.sel{background:var(--accent-dim);border-color:rgb(0 138 184 / 40%);color:var(--accent);font-weight:600;}
+        .ata-cat:hover{border-color:rgba(7,219,199,0.3);color:var(--text-primary);}
+        .ata-cat.sel{background:var(--accent-dim);border-color:rgba(7,219,199,0.4);color:var(--accent);font-weight:600;}
         .ata-cat-icon{font-size:17px;display:block;margin-bottom:4px;}
         .ata-select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text-primary);font-size:13px;outline:none;font-family:'Inter',sans-serif;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:calc(100% - 12px) 50%;padding-right:30px;transition:border-color 0.2s;cursor:pointer;}
-        .ata-select:focus{border-color:rgb(0 138 184 / 40%);}
-        .ata-select option{background:#fff;}
+        .ata-select:focus{border-color:rgba(7,219,199,0.4);}
+        .ata-select option{background:var(--bg2);color:var(--text-primary);}
         .ata-types{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
         .ata-type{padding:9px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;cursor:pointer;transition:all 0.2s;font-size:11.5px;font-weight:500;color:var(--text-secondary);display:flex;align-items:center;gap:6px;}
-        .ata-type:hover{border-color:rgba(0,184,90,0.3);color:var(--text-primary);}
-        .ata-type.sel{background:var(--accent-dim);border-color:rgb(0 138 184 / 40%);color:var(--accent);font-weight:600;}
+        .ata-type:hover{border-color:rgba(7,219,199,0.3);color:var(--text-primary);}
+        .ata-type.sel{background:var(--accent-dim);border-color:rgba(7,219,199,0.4);color:var(--accent);font-weight:600;}
         .ata-type-icon{font-size:14px;flex-shrink:0;}
         .ata-risks{display:flex;gap:8px;}
         .ata-risk{flex:1;padding:9px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;text-align:center;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-secondary);transition:all 0.2s;}
-        .ata-risk:hover{border-color:rgba(0,184,90,0.3);}
-        .ata-risk.sel-low{background:rgb(0 132 184 / 10%);border-color:rgb(0 138 184 / 40%);color:var(--accent);}
-        .ata-risk.sel-med{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.4);color:var(--gold);}
-        .ata-risk.sel-high{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.4);color:var(--red);}
+        .ata-risk:hover{border-color:rgba(7,219,199,0.3);}
+        .ata-risk.sel-low{background:rgba(7,219,199,0.1);border-color:rgba(7,219,199,0.4);color:var(--accent);}
+        .ata-risk.sel-med{background:rgba(210,153,34,0.1);border-color:rgba(210,153,34,0.4);color:var(--gold);}
+        .ata-risk.sel-high{background:rgba(248,81,73,0.1);border-color:rgba(248,81,73,0.4);color:var(--red);}
         .ata-gen-footer{padding:16px 20px;}
         .ata-credit-req{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:9px 13px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);}
-        .ata-gen-btn{width:100%;padding:13px;background:linear-gradient(135deg, #07dbc7, #2ec4ce);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',sans-serif;}
-        .ata-gen-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,184,90,0.35);}
+        .ata-gen-btn{width:100%;padding:13px;background:linear-gradient(135deg, #07dbc7, #2ec4ce);color:${isDarkMode ? '#0d1117' : '#fff'};border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',sans-serif;}
+        .ata-gen-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(7,219,199,0.35);}
         .ata-gen-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
         .ata-right{display:flex;flex-direction:column;gap:16px;}
-        .ata-empty{background:#fff;border:1px solid var(--border);border-radius:16px;padding:60px 30px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
-        .ata-empty-icon{width:80px;height:80px;border-radius:50%;background:var(--accent-dim);border:1px solid rgba(0,184,90,0.2);display:flex;align-items:center;justify-content:center;font-size:34px;animation:ata-float 3s ease-in-out infinite;}
+        .ata-empty{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:60px 30px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:${isDarkMode ? '0 1px 3px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.04)'};}
+        .ata-empty-icon{width:80px;height:80px;border-radius:50%;background:var(--accent-dim);border:1px solid rgba(7,219,199,0.2);display:flex;align-items:center;justify-content:center;font-size:34px;animation:ata-float 3s ease-in-out infinite;}
         @keyframes ata-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-        .ata-loading{background:#fff;border:1px solid rgba(0,184,90,0.2);border-radius:16px;padding:50px 30px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+        .ata-loading{background:var(--bg2);border:1px solid rgba(7,219,199,0.2);border-radius:16px;padding:50px 30px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;box-shadow:${isDarkMode ? '0 1px 3px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.04)'};}
         .ata-loading.hidden{display:none;}
-        .ata-load-spinner{width:60px;height:60px;border-radius:50%;border:3px solid rgba(0,184,90,0.15);border-top-color:var(--accent);animation:ata-spin 0.8s linear infinite;position:relative;}
-        .ata-load-spinner::after{content:'';position:absolute;inset:6px;border-radius:50%;border:3px solid rgba(0,136,68,0.15);border-bottom-color:#008844;animation:ata-spin 1.2s linear infinite reverse;}
+        .ata-load-spinner{width:60px;height:60px;border-radius:50%;border:3px solid rgba(7,219,199,0.15);border-top-color:var(--accent);animation:ata-spin 0.8s linear infinite;position:relative;}
+        .ata-load-spinner::after{content:'';position:absolute;inset:6px;border-radius:50%;border:3px solid rgba(7,219,199,0.15);border-bottom-color:var(--accent);animation:ata-spin 1.2s linear infinite reverse;}
         @keyframes ata-spin{to{transform:rotate(360deg)}}
         .ata-load-steps{display:flex;flex-direction:column;gap:6px;width:100%;max-width:320px;text-align:left;}
         .ata-load-step{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:12.5px;color:var(--text-secondary);transition:all 0.4s;}
-        .ata-load-step.done{color:var(--accent);background:rgba(0,184,90,0.06);}
-        .ata-load-step.active{color:var(--text-primary);background:rgba(0,0,0,0.03);font-weight:500;}
+        .ata-load-step.done{color:var(--accent);background:rgba(7,219,199,0.06);}
+        .ata-load-step.active{color:var(--text-primary);background:${isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};font-weight:500;}
         .ata-load-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted);flex-shrink:0;transition:background 0.3s;}
         .ata-load-step.done .ata-load-dot{background:var(--accent);}
         .ata-load-step.active .ata-load-dot{background:var(--accent);animation:blink 0.8s infinite;}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-        .ata-progress-bar{width:100%;max-width:320px;height:4px;background:rgba(0,0,0,0.06);border-radius:2px;overflow:hidden;}
-        .ata-progress-fill{height:100%;background:linear-gradient(90deg,#07dbc7,#008844);border-radius:2px;width:0%;transition:width 0.5s ease;}
+        .ata-progress-bar{width:100%;max-width:320px;height:4px;background:${isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};border-radius:2px;overflow:hidden;}
+        .ata-progress-fill{height:100%;background:linear-gradient(90deg,#07dbc7,#2ec4ce);border-radius:2px;width:0%;transition:width 0.5s ease;}
         .ata-progress-text{font-size:12px;font-weight:600;color:var(--accent);margin-top:-8px;}
-        .ata-report{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;display:none;animation:ata-fadein 0.5s ease;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+        .ata-report{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:none;animation:ata-fadein 0.5s ease;box-shadow:${isDarkMode ? '0 1px 3px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.04)'};}
         .ata-report.show{display:block;}
         @keyframes ata-fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-        .ata-report-head{padding:18px 22px;background:linear-gradient(135deg,rgba(0,184,90,0.05),rgba(255,255,255,0.5));border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:relative;}
-        .ata-report-head::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,184,90,0.3),transparent);}
-        .ata-complete-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(0,184,90,0.08);border:1px solid rgba(0,184,90,0.2);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--accent);}
+        .ata-report-head{padding:18px 22px;background:${isDarkMode ? 'linear-gradient(135deg,rgba(7,219,199,0.05),rgba(13,17,23,0.5))' : 'linear-gradient(135deg,rgba(0,184,90,0.05),rgba(255,255,255,0.5))'};border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:relative;}
+        .ata-report-head::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(7,219,199,0.3),transparent);}
+        .ata-complete-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(7,219,199,0.08);border:1px solid rgba(7,219,199,0.2);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--accent);}
         .ata-report-body{padding:22px;}
         .ata-tv-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-bottom:18px;overflow:hidden;}
-        .ata-tv-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border);background:#fff;}
+        .ata-tv-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border);background:var(--bg2);}
         .ata-tv-head-lbl{font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.6px;display:flex;align-items:center;gap:6px;}
         .ata-tv-live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;animation:blink 1.6s infinite;}
-        .ata-tv-body{padding:0;background:#f8f9fa;}
+        .ata-tv-body{padding:0;background:${isDarkMode ? 'var(--bg)' : '#f8f9fa'};}
         .ata-instr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
         .ata-instr{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:var(--text-primary);}
         .ata-signal-badge{padding:6px 18px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.5px;}
-        .ata-signal-buy{background:rgba(0,184,90,0.15);color:var(--accent);border:1px solid rgba(0,184,90,0.3);}
-        .ata-signal-sell{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
-        .ata-signal-hold{background:rgba(245,158,11,0.12);color:var(--gold);border:1px solid rgba(245,158,11,0.25);}
+        .ata-signal-buy{background:rgba(7,219,199,0.15);color:var(--accent);border:1px solid rgba(7,219,199,0.3);}
+        .ata-signal-sell{background:rgba(248,81,73,0.15);color:var(--red);border:1px solid rgba(248,81,73,0.3);}
+        .ata-signal-hold{background:rgba(210,153,34,0.12);color:var(--gold);border:1px solid rgba(210,153,34,0.25);}
         .ata-trend-conf{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-bottom:18px;}
         .ata-trend-box{padding:14px;background:var(--bg3);border-radius:11px;border:1px solid var(--border);}
         .ata-trend-lbl{font-size:10.5px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;}
@@ -561,72 +785,56 @@ function AIAssistant() {
         .ata-struct-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:7px;align-items:center;}
         .ata-struct-row span:first-child{color:var(--text-secondary);}
         .ata-struct-row strong{color:var(--text-primary);}
-        .ata-news-item{padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.04);font-size:12px;line-height:1.6;color:var(--text-secondary);}
+        .ata-news-item{padding:9px 0;border-bottom:1px solid ${isDarkMode ? 'rgba(48,54,61,0.4)' : 'rgba(0,0,0,0.04)'};font-size:12px;line-height:1.6;color:var(--text-secondary);}
         .ata-news-item:last-child{border-bottom:none;padding-bottom:0;}
         .ata-news-item strong{color:var(--text-primary);}
-        .ata-cal-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.04);font-size:12px;}
+        .ata-cal-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid ${isDarkMode ? 'rgba(48,54,61,0.4)' : 'rgba(0,0,0,0.04)'};font-size:12px;}
         .ata-cal-item:last-child{border-bottom:none;}
         .ata-cal-time{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--text-primary);width:40px;flex-shrink:0;}
         .ata-cal-impact{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0;}
-        .ata-high-impact{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
-        .ata-med-impact{background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.2);}
-        .ata-reasoning{background:linear-gradient(135deg,rgba(0,184,90,0.04),rgba(255,255,255,0.5));border:1px solid rgb(0 132 184 / 10%);border-radius:11px;padding:16px;margin-bottom:18px;font-size:13px;line-height:1.85;color:var(--text-primary);}
+        .ata-high-impact{background:rgba(248,81,73,0.1);color:var(--red);border:1px solid rgba(248,81,73,0.2);}
+        .ata-med-impact{background:rgba(210,153,34,0.1);color:var(--gold);border:1px solid rgba(210,153,34,0.2);}
+        .ata-reasoning{background:${isDarkMode ? 'linear-gradient(135deg,rgba(7,219,199,0.04),rgba(13,17,23,0.5))' : 'linear-gradient(135deg,rgba(0,184,90,0.04),rgba(255,255,255,0.5))'};border:1px solid rgba(7,219,199,0.1);border-radius:11px;padding:16px;margin-bottom:18px;font-size:13px;line-height:1.85;color:var(--text-primary);}
         .ata-reasoning-head{display:flex;align-items:center;gap:9px;margin-bottom:12px;}
-        .ata-reasoning-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg, #07dbc7, #2ec4ce);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+        .ata-reasoning-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg, #07dbc7, #2ec4ce);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isDarkMode ? '#0d1117' : '#fff'};flex-shrink:0;}
         .ata-typing{display:inline-block;width:2px;height:13px;background:var(--accent);animation:blink 1s infinite;border-radius:1px;margin-left:3px;}
         .ata-report-actions{display:flex;gap:8px;flex-wrap:wrap;padding:0 22px 22px;}
-        .chip{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--border);color:var(--text-secondary);background:#fff;}
-        .cg{color:var(--accent);border-color:rgba(0,184,90,0.2);background:rgba(0,184,90,0.06);}
-        .ata-history{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px;margin-top:18px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+        .chip{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--border);color:var(--text-secondary);background:var(--bg3);}
+        .cg{color:var(--accent);border-color:rgba(7,219,199,0.2);background:rgba(7,219,199,0.06);}
+        .ata-history{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:18px;margin-top:18px;box-shadow:${isDarkMode ? '0 1px 3px rgba(0,0,0,0.2)' : '0 1px 3px rgba(0,0,0,0.04)'};}
         .ata-hist-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text-primary);}
         .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
         .tw{overflow-x:auto;}
         table{width:100%;border-collapse:collapse;}
         th{font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;padding:9px 13px;text-align:left;border-bottom:2px solid var(--border);}
-        td{padding:11px 13px;font-size:13px;border-bottom:1px solid rgba(0,0,0,0.03);}
-        tr:hover td{background:rgba(0,0,0,0.02);}
+        td{padding:11px 13px;font-size:13px;border-bottom:1px solid ${isDarkMode ? 'rgba(48,54,61,0.3)' : 'rgba(0,0,0,0.03)'};}
+        tr:hover td{background:${isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};}
         .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;font-family:'Inter',sans-serif;}
-        .btn-p{background:var(--accent);color:#fff;}
-        .btn-p:hover{background:#008844;box-shadow:0 4px 16px rgba(0,184,90,0.3);}
+        .btn-p{background:var(--accent);color:${isDarkMode ? '#0d1117' : '#fff'};}
+        .btn-p:hover{background:#2ec4ce;box-shadow:0 4px 16px rgba(7,219,199,0.3);}
         .btn-s{background:var(--glass);color:var(--text-primary);border:1px solid var(--border);}
         .btn-s:hover{border-color:var(--border-hover);background:var(--bg3);}
         .bsm{padding:6px 11px;font-size:12px;border-radius:7px;}
-        .ata-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);z-index:999;display:none;align-items:center;justify-content:center;}
+        .ata-modal-overlay{position:fixed;inset:0;background:${isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)'};backdrop-filter:blur(8px);z-index:999;display:none;align-items:center;justify-content:center;}
         .ata-modal-overlay.show{display:flex;}
-        .ata-modal{background:#fff;border:1px solid rgba(0,184,90,0.2);border-radius:18px;padding:34px;max-width:380px;width:90%;text-align:center;animation:ata-fadein 0.3s ease;box-shadow:0 20px 60px rgba(0,0,0,0.15);}
+        .ata-modal{background:var(--bg2);border:1px solid rgba(7,219,199,0.2);border-radius:18px;padding:34px;max-width:380px;width:90%;text-align:center;animation:ata-fadein 0.3s ease;box-shadow:${isDarkMode ? '0 20px 60px rgba(0,0,0,0.5)' : '0 20px 60px rgba(0,0,0,0.15)'};}
         .ata-modal-icon{font-size:40px;margin-bottom:16px;}
         .ata-modal-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text-primary);}
         .ata-modal-sub{font-size:13px;color:var(--text-secondary);margin-bottom:22px;line-height:1.6;}
-        @media(max-width:1000px){
-        .ata-main{display:block;grid-template-columns:1fr}.ata-left{position:static}}
+        .ata-modal .btn-p{background:var(--accent);color:${isDarkMode ? '#0d1117' : '#fff'};}
+        .ata-modal .btn-p:hover{background:#2ec4ce;}
+        .ata-modal .btn-s{background:var(--bg3);color:var(--text-primary);border:1px solid var(--border);}
+        .ata-modal .btn-s:hover{background:var(--bg4);}
+        @media(max-width:1000px){.ata-main{display:block;grid-template-columns:1fr}.ata-left{position:static}}
         @media(max-width:680px){.ata-levels,.ata-indicators{grid-template-columns:repeat(1,1fr)}.ata-2col{grid-template-columns:1fr}
         .ata-cats{grid-template-columns:repeat(1,1fr)}
-        .ata-trend-conf{
-            grid-template-columns: 1fr;}}
+        .ata-trend-conf{grid-template-columns: 1fr;}}
       `}</style>
-
-      
 
       {/* MAIN CONTENT */}
       <div className="ata-wrap">
         {/* CREDITS BAR */}
         <div className="ata-topbar">
-          <div className="ata-credits-card">
-            <div className="ata-cred-icon">⚡</div>
-            <div>
-              <div className="ata-cred-lbl">Available Credits</div>
-              <div className="ata-cred-val" id="ata-cred-display">
-                {credits}
-              </div>
-              <div className="ata-cred-sub">AI analysis credits</div>
-            </div>
-          </div>
-          <button className="ata-buy-btn" onClick={() => buyCredits(50)}>
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
-              <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Buy Credits
-          </button>
           <div className="ata-clock">
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
@@ -634,6 +842,7 @@ function AIAssistant() {
             </svg>
             <span id="ata-clock">--:--:-- UTC</span>
           </div>
+         
         </div>
 
         {/* MAIN LAYOUT */}
@@ -772,7 +981,7 @@ function AIAssistant() {
                         animation: "ata-spin 0.8s linear infinite",
                         display: "inline-block",
                         border: "2px solid rgba(255,255,255,0.3)",
-                        borderTopColor: "#fff",
+                        borderTopColor: isDarkMode ? "#0d1117" : "#fff",
                         borderRadius: "50%",
                         width: "14px",
                         height: "14px",
@@ -1068,7 +1277,7 @@ function AIAssistant() {
                             cy="55"
                             r="44"
                             fill="none"
-                            stroke="rgba(0,0,0,0.06)"
+                            stroke={isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}
                             strokeWidth="8"
                           />
                           <circle
@@ -1088,7 +1297,7 @@ function AIAssistant() {
                           <defs>
                             <linearGradient id="ataGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                               <stop offset="0%" stopColor="#07dbc7" />
-                              <stop offset="100%" stopColor="#008844" />
+                              <stop offset="100%" stopColor="#2ec4ce" />
                             </linearGradient>
                           </defs>
                         </svg>
@@ -1101,58 +1310,82 @@ function AIAssistant() {
                       </div>
                     </div>
 
-                    {/* Levels */}
+                    {/* Levels - Using dynamic tradeLevels from live price */}
                     <div className="ata-levels">
                       <div className="ata-level-box">
                         <div className="ata-level-lbl">Entry Zone</div>
-                        <div className="ata-level-val">{reportData.entry}</div>
+                        <div className="ata-level-val">
+                          {tradeLevels.entry !== null
+                            ? tradeLevels.entry.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })
+                            : "--"}
+                        </div>
                       </div>
                       <div
                         className="ata-level-box"
-                        style={{ borderColor: "rgba(239,68,68,0.2)" }}
+                        style={{ borderColor: isDarkMode ? "rgba(248,81,73,0.2)" : "rgba(239,68,68,0.2)" }}
                       >
                         <div className="ata-level-lbl">Stop Loss</div>
                         <div
                           className="ata-level-val"
                           style={{ color: "var(--red)" }}
                         >
-                          {reportData.sl}
+                          {tradeLevels.sl !== null
+                            ? tradeLevels.sl.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })
+                            : "--"}
                         </div>
                       </div>
                       <div
                         className="ata-level-box"
-                        style={{ borderColor: "rgba(0,184,90,0.2)" }}
+                        style={{ borderColor: "rgba(7,219,199,0.2)" }}
                       >
                         <div className="ata-level-lbl">Take Profit 1</div>
                         <div
                           className="ata-level-val"
                           style={{ color: "var(--accent)" }}
                         >
-                          {reportData.tp1}
+                          {tradeLevels.tp1 !== null
+                            ? tradeLevels.tp1.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })
+                            : "--"}
                         </div>
                       </div>
                       <div
                         className="ata-level-box"
-                        style={{ borderColor: "rgba(0,184,90,0.3)" }}
+                        style={{ borderColor: "rgba(7,219,199,0.3)" }}
                       >
                         <div className="ata-level-lbl">Take Profit 2</div>
                         <div
                           className="ata-level-val"
                           style={{ color: "var(--accent)" }}
                         >
-                          {reportData.tp2}
+                          {tradeLevels.tp2 !== null
+                            ? tradeLevels.tp2.toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })
+                            : "--"}
                         </div>
                       </div>
                       <div
                         className="ata-level-box"
-                        style={{ borderColor: "rgba(59,130,246,0.2)" }}
+                        style={{ borderColor: isDarkMode ? "rgba(88,166,255,0.2)" : "rgba(59,130,246,0.2)" }}
                       >
                         <div className="ata-level-lbl">Risk Reward</div>
                         <div
                           className="ata-level-val"
                           style={{ color: "var(--blue)" }}
                         >
-                          {reportData.rr}
+                          {tradeLevels.rr !== null
+                            ? `1:${tradeLevels.rr}`
+                            : "--"}
                         </div>
                       </div>
                     </div>
@@ -1282,16 +1515,16 @@ function AIAssistant() {
                             marginBottom: "10px",
                             background:
                               reportData.signal === "BUY"
-                                ? "rgba(0,184,90,0.08)"
-                                : "rgba(239,68,68,0.08)",
+                                ? "rgba(7,219,199,0.08)"
+                                : "rgba(248,81,73,0.08)",
                             color:
                               reportData.signal === "BUY"
                                 ? "var(--accent)"
                                 : "var(--red)",
                             border: `1px solid ${
                               reportData.signal === "BUY"
-                                ? "rgba(0,184,90,0.2)"
-                                : "rgba(239,68,68,0.2)"
+                                ? "rgba(7,219,199,0.2)"
+                                : "rgba(248,81,73,0.2)"
                             }`,
                           }}
                         >

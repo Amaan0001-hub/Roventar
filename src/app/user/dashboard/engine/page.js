@@ -460,14 +460,103 @@ const fetchTransactionLog = useCallback(async () => {
             </div>
           </div>
           
-          <div className="right-col"  style={{
-    background: "#F8F6FF",
-    borderRadius: "20px",
-    padding: "12px",
-    overflow: "hidden",
-  }}
->
-            <TradingViewHeatMap />
+          <div className="right-col">
+            <div className="scard strategy-card">
+              <div className="section-title">Strategy Mode</div>
+              <div className="strategies-list mt-3">
+                <div
+                  className={`strategy-item ${selectedStrategy === 'MEV Sandwich' ? 'selected' : ''}`}
+                  onClick={() => pickStrategy('MEV Sandwich')}
+                >
+                  <div className="strategy-check">
+                    <svg width="8" height="8" viewBox="0 0 8 8">
+                      <polyline points="1.5,4 3,5.5 6.5,2" stroke="#fff" strokeWidth="1.5" fill="none" />
+                    </svg>
+                  </div>
+                  <div className="strategy-name">MEV Sandwich</div>
+                  <div className="strategy-desc">Front-run pending large txs</div>
+                  <div className="strategy-apy">~340% APY</div>
+                </div>
+                <div
+                  className={`strategy-item ${selectedStrategy === 'Cross-DEX Arb' ? 'selected' : ''}`}
+                  onClick={() => pickStrategy('Cross-DEX Arb')}
+                >
+                  <div className="strategy-check">
+                    <svg width="8" height="8" viewBox="0 0 8 8">
+                      <polyline points="1.5,4 3,5.5 6.5,2" stroke="#fff" strokeWidth="1.5" fill="none" />
+                    </svg>
+                  </div>
+                  <div className="strategy-name">Cross-DEX Arb</div>
+                  <div className="strategy-desc">Jupiter, Orca, Uniswap, Curve</div>
+                  <div className="strategy-apy">~180% APY</div>
+                </div>
+                <div
+                  className={`strategy-item ${selectedStrategy === 'Flash Loan Arb' ? 'selected' : ''}`}
+                  onClick={() => pickStrategy('Flash Loan Arb')}
+                >
+                  <div className="strategy-check">
+                    <svg width="8" height="8" viewBox="0 0 8 8">
+                      <polyline points="1.5,4 3,5.5 6.5,2" stroke="#fff" strokeWidth="1.5" fill="none" />
+                    </svg>
+                  </div>
+                  <div className="strategy-name">Flash Loan Arb</div>
+                  <div className="strategy-desc">Aave/dYdX zero-capital flash</div>
+                  <div className="strategy-apy">~260% APY</div>
+                </div>
+                <div
+                  className={`strategy-item ${selectedStrategy === 'Triangular Arb' ? 'selected' : ''}`}
+                  onClick={() => pickStrategy('Triangular Arb')}
+                >
+                  <div className="strategy-check">
+                    <svg width="8" height="8" viewBox="0 0 8 8">
+                      <polyline points="1.5,4 3,5.5 6.5,2" stroke="#fff" strokeWidth="1.5" fill="none" />
+                    </svg>
+                  </div>
+                  <div className="strategy-name">Triangular Arb</div>
+                  <div className="strategy-desc">A → B → C → A profit loops</div>
+                  <div className="strategy-apy">~120% APY</div>
+                </div>
+              </div>
+            </div>
+            <div className="scard params-card">
+              <div className="section-title">Parameters</div>
+              <div className="form-group">
+                <label className="form-label">Max slippage</label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="3"
+                  step="0.1"
+                  value={slippage}
+                  onChange={handleSlippageChange}
+                  className="slider-input"
+                />
+                <div className="slider-value" id="slO">
+                  {slippage}%
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Min profit (USD)</label>
+                <input
+                  className="form-input"
+                  type="number"
+                  value={minProfit}
+                  onChange={(e) => setMinProfit(parseInt(e.target.value) || 0)}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Max gas (gwei)</label>
+                <input
+                  className="form-input"
+                  type="number"
+                  value={maxGas}
+                  onChange={(e) => setMaxGas(parseInt(e.target.value) || 0)}
+                />
+              </div>
+              <button className="btn btn-primary" onClick={applySettings}>
+                Apply &amp; Restart
+              </button>
+            </div>
           </div>
         </div>
       </div>

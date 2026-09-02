@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import 'swiper/css/navigation'; 
+import 'swiper/css/navigation';
 import { getUserDashboardDetails } from "../../redux/slices/authSlice";
 import { getallusernotification } from "../../redux/slices/ticketSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -58,23 +58,23 @@ export default function DashboardPage() {
   const BOT_SESSION_KEY = 'RoventarBotActive';
   const BOT_START_KEY = 'RoventarBotStartTime';
 
-  const rankOrder = ['V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13'];
+  const rankOrder = ['LT1', 'LT2', 'LT3', 'LT4', 'LT5', 'LT6', 'LT7', 'LT8', 'LT9', 'LT10', 'LT11'];
   const totalRanks = rankOrder.length;
 
   const rankProgress = () => {
     const data = dashboardData?.[0] || {};
-    const currentRank = data?.Ac_NextRank || 'V1';
-    
+    const currentRank = data?.NextRank || 'LT1';
+
     const currentIndex = rankOrder.indexOf(currentRank);
-    
+
     if (currentIndex === -1) return 0;
     const percentage = Math.round(((currentIndex + 1) / totalRanks) * 100);
-    
+
     return percentage;
   };
 
   const rankPct = rankProgress();
-  const currentRank = dashboardData?.[0]?.Ac_BoostRank || 'V1';
+  const currentRank = dashboardData?.[0]?.UserRank || 'LT1';
   const currentRankIndex = rankOrder.indexOf(currentRank);
   const growthLevels = rankOrder.map((rank, index) => ({
     level: rank,
@@ -1061,7 +1061,7 @@ export default function DashboardPage() {
         )}
 
         <div className="container-fluid p-0">
-          
+
           <RankProgress activeRank={dashboardData?.[0]?.UserRank} NextRank={dashboardData?.[0]?.NextRank} totQualifyRnk={dashboardData?.[0]?.totQualifyRnk} />
 
           {/* QUICK ACTIONS */}
@@ -1083,29 +1083,39 @@ export default function DashboardPage() {
           </div>
 
           {/* RANK & PACKAGE */}
-          
+
           <div className="row g-3 mb-4">
-            <div className="col-lg-6"> 
+            <div className="col-lg-6">
               <div className="dx-card h-100">
-                <div className="dx-card-title mb-1">Your Growth Reward Journey</div>
-                <div className="dx-card-sub mb-3">Your premium rank achievement system</div>
-                <div className="d-flex align-items-center gap-4 flex-wrap">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <div className="dx-card-title">Accelerator Boost Milestone</div>
+
+                </div>
+
+                <div className="d-flex justify-content-center my-3 position-relative">
                   <CircularGauge
                     percent={rankLevels.find(r => r.status === 'current')?.progress || 0}
                     size={110} stroke={9} colorFrom="#5eead4" colorTo="#0d9488" gradId="rankGrad"
-                    
                     centerTop={dashboardData?.[0]?.UserRank || 'N/A'}
-                    centerBottom={`${rankLevels.find(r => r.status === 'current')?.progress || 0}%`}
+                    centerBottom={`${(dashboardData?.[0]?.ac_totalQualifyBoot || 0) * 100}%`}
                   />
-                  <div className="flex-grow-1">
-                    
-                    <div className="dx-row"><div className="dx-row-label">Next Rank</div><div className="dx-row-value">{dashboardData?.[0]?.NextRank || 'V2'}</div></div>
-                    <div className="dx-row"><div className="dx-row-label">Next Rank Business</div><div className="dx-row-value">${Number(dashboardData?.[0]?.NextRewardBusReq || 0).toLocaleString('en-IN')}</div></div>
-                    <div className="dx-row"><div className="dx-row-label">Remaining Power</div><div className="dx-row-value">${Number(dashboardData?.[0]?.RewardPendingPowerTeam || 0).toLocaleString('en-IN')}</div></div>
-                    <div className="dx-row"><div className="dx-row-label">Remaining Weaker</div><div className="dx-row-value">${Number(dashboardData?.[0]?.RewardPendingWeakerTeam || 0).toLocaleString('en-IN')}</div></div>
+                </div>
+
+                <div className="row text-center g-3">
+                  <div className="col-4">
+                    <div className="dx-mini-stat-label">Active Investment</div>
+                    <div className="fw-bold" style={{ color: "#14b8a6" }}>${(dashboardData?.[0]?.ActiveInvestMent || 0).toFixed(2) || "0.00"}</div>
                   </div>
-                </div> 
-            </div>
+                  <div className="col-4">
+                    <div className="dx-mini-stat-label">2X</div>
+                    <div className="fw-bold" style={{ color: "#f59e0b" }}>${(dashboardData?.[0]?.InvestmenELimit || 0).toFixed(2) || "0.00"}</div>
+                  </div>
+                  <div className="col-4">
+                    <div className="dx-mini-stat-label">4X Boost</div>
+                    <div className="fw-bold" style={{ color: "#10b981" }}>${(dashboardData?.[0]?.EarningLimit || 0).toFixed(2) || "0.00"}</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="col-lg-6">
@@ -1119,7 +1129,7 @@ export default function DashboardPage() {
                   <CircularGauge percent={visualPercent} size={120} stroke={9} colorFrom="#0ea5e9" colorTo="#14b8a6" gradId="rg" centerTop={`${visualPercent}%`} centerBottom="used" />
                 </div>
 
-                <div className="row text-center g-2">
+                <div className="row text-center g-3">
                   <div className="col-4">
                     <div className="dx-mini-stat-label">Total Income</div>
                     <div className="fw-bold" style={{ color: "#14b8a6" }}>${(dashboardData?.[0]?.totatRoiLevelIncome || 0).toFixed(2) || "0.00"}</div>
@@ -1137,65 +1147,64 @@ export default function DashboardPage() {
             </div>
           </div>
 
-            {/* GROWTH REWARDS BANNER */}
-          
+          {/* GROWTH REWARDS BANNER */}
+
           <div className="dx-growth-banner mb-4">
             <div className="row align-items-center g-3">
               <div className="col-lg-8">
-                <div className="dx-eyebrow-light mb-1">Accelerator Boost Milestone</div>
-                <div className="dx-growth-title">${dashboardData?.[0]?.InvestmenELimit ?? 0} — {dashboardData?.[0]?.ac_totalQualifyBoot ?? 0}X Boost</div>
+                <div className="dx-eyebrow-light mb-1">Your Growth Reward Journey</div>
+                <div className="dx-growth-titleL"> {dashboardData?.[0]?.UserRank ?? 0} — {dashboardData?.[0]?.NextRank ?? 0}</div>
                 <div className="row g-3 mt-2">
                   <div className="col-4">
-                    <div className="dx-growth-label">Total Investment</div>
-                    <div className="dx-growth-value">${dashboardData?.[0]?.TotalInvestment ?? 0}</div>
+                    <div className="dx-growth-label">Next Rank Business</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.NextRewardBusReq ?? 0}</div>
                   </div>
                   <div className="col-4">
-                    <div className="dx-growth-label">Total Earning Limit</div>
-                    <div className="dx-growth-value">${dashboardData?.[0]?.EarningLimit ?? 0}</div>
+                    <div className="dx-growth-label">Remaining Power</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.RewardPendingPowerTeam ?? 0}</div>
                   </div>
                   <div className="col-4">
-                    <div className="dx-growth-label">Pending Limit</div>
-                    <div className="dx-growth-value">${dashboardData?.[0]?.RemainingLimit ?? 0}</div>
+                    <div className="dx-growth-label">Remaining Weaker</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.RewardPendingWeakerTeam ?? 0}</div>
                   </div>
-                </div> 
+                </div>
               </div>
               <div className="col-lg-4 d-flex justify-content-center">
-                <CircularGauge 
-                  percent={rankPct} 
-                  size={132} 
-                  stroke={10} 
-                  colorFrom="#5eead4" 
-                  colorTo="#14b8a6" 
-                  gradId="growthGrad" 
-                  centerTop={`${rankPct}%`} 
-                  centerBottom={`${dashboardData?.[0]?.Ac_NextRank || 'V1'} Progress`} 
+                <CircularGauge
+                  percent={rankPct}
+                  size={132}
+                  stroke={10}
+                  colorFrom="#5eead4"
+                  colorTo="#14b8a6"
+                  gradId="growthGrad"
+                  centerTop={`${rankPct}%`}
+                  centerBottom={`${dashboardData?.[0]?.NextRank || 'V1'} Progress`}
                 />
               </div>
             </div>
-          </div>
-
-          <div className="row g-3 mb-4">
-            <div className="col-12">
-              <div className="dx-card">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <div className="fw-bold dx-ink">Accelerator Reward Journey</div>
-                </div>
-                <div className="dx-stepper mb-4">
-                  {growthLevels.map((g, i) => (
-                    <div className="dx-stepper-item" key={g.level}>
-                      <div className={`dx-stepper-dot ${i < activeGrowthIdx ? 'done' : ''}`}>
-                        {i < activeGrowthIdx ? (
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                            <polyline points="2,8 5.5,11.5 14,3.5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        ) : g.level}
-                      </div>
-                      {i < growthLevels.length - 1 && <div className={`dx-stepper-line ${i < activeGrowthIdx - 1 ? 'done' : ''}`}></div>}
+            <div className="dx-card mt-4">
+              <div className="dx-stepper mb-4">
+                {growthLevels.map((g, i) => (
+                  <div className="dx-stepper-item" key={g.level}>
+                    <div className={`dx-stepper-dot ${i < activeGrowthIdx ? 'done' : ''}`}>
+                      {i < activeGrowthIdx ? (
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                          <polyline points="2,8 5.5,11.5 14,3.5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : g.level}
                     </div>
-                  ))}
-                </div>
+                    {i < growthLevels.length - 1 && <div className={`dx-stepper-line ${i < activeGrowthIdx - 1 ? 'done' : ''}`}></div>}
+                  </div>
+                ))}
+              </div>
 
-               
+            </div>
+
+            <div className="row g-3 mb-4">
+              <div className="col-12">
+
+
+
               </div>
             </div>
           </div>
@@ -1471,7 +1480,7 @@ export default function DashboardPage() {
                     <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
                   </svg>
                 </StatIcon>
-                <div className="dx-biz-value mt-3"> {(strongTeamBusiness || '0' )}</div>
+                <div className="dx-biz-value mt-3"> {(strongTeamBusiness || '0')}</div>
                 <div className="dx-biz-label">Power Team ID</div>
                 <MiniBars seed={4} />
               </div>
@@ -1553,7 +1562,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-        
+
 
           {/* BOTTOM ROW */}
           <div className="dx-section-head mb-3">

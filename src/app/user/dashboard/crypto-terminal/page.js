@@ -400,7 +400,7 @@ export default function CryptoTerminal() {
             </div>
           </div>
 
-          {/* Stats Row - Larger Fonts */}
+          {/* Stats Row */}
           <div className="stats-row">
             <div className="stat-item">
               <span className="stat-label">TOTAL VOLUME</span>
@@ -475,7 +475,6 @@ export default function CryptoTerminal() {
                   ))
                 )}
               </div>
-
               {/* System Alerts */}
               <div className="sidebar-card">
                 <div className="sidebar-title">System Alerts</div>
@@ -515,8 +514,8 @@ export default function CryptoTerminal() {
         .terminal-container {
           min-height: 100vh;
           height: 100vh;
-          background: #ffffff;
-          color: #1a1a2e;
+          background: var(--bg-base);
+          color: var(--text-1);
           font-family: 'Share Tech Mono', monospace;
           overflow: hidden;
           position: relative;
@@ -541,8 +540,8 @@ export default function CryptoTerminal() {
 
         /* ===== HEADER ===== */
         .header {
-          background: #f8f9fa;
-          border: 2px solid #e5e7eb;
+          background: var(--bg-card);
+          border: 2px solid var(--border);
           border-radius: 0.8rem;
           padding: 0.4rem 1.2rem;
           display: flex;
@@ -552,7 +551,7 @@ export default function CryptoTerminal() {
           margin-bottom: 0.6rem;
           gap: 0.5rem;
           flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          box-shadow: var(--shadow-sm);
         }
 
         .header-left {
@@ -572,7 +571,7 @@ export default function CryptoTerminal() {
           font-family: 'Orbitron', sans-serif;
           font-weight: 700;
           font-size: 1.4rem;
-          color: #1a1a2e;
+          color: var(--text-1);
         }
 
         .header-center {
@@ -581,7 +580,7 @@ export default function CryptoTerminal() {
         }
 
         .header-subtitle {
-          color: #6b7280;
+          color: var(--text-2);
           font-size: 0.65rem;
           letter-spacing: 2px;
           font-weight: 600;
@@ -594,13 +593,13 @@ export default function CryptoTerminal() {
         }
 
         .live-badge {
-          background: #1EA39F;
+          background: var(--brand-cyan);
           color: #000000;
           font-weight: 700;
           font-size: 0.55rem;
           padding: 0.15rem 0.6rem;
           border-radius: 20px;
-          box-shadow: 0 0 12px rgba(30, 163, 159, 0.3);
+          box-shadow: 0 0 12px rgba(47, 217, 211, 0.3);
           display: flex;
           align-items: center;
           gap: 0.3rem;
@@ -621,51 +620,50 @@ export default function CryptoTerminal() {
         }
 
         .clock {
-          color: #6b7280;
+          color: var(--text-2);
           font-size: 0.7rem;
           font-weight: 600;
         }
 
-        /* ===== STATS ROW - LARGER FONTS ===== */
+        /* ===== STATS ROW ===== */
         .stats-row {
-          background: #f8f9fa;
-          border: 2px solid #e5e7eb;
+          background: var(--bg-card);
+          border: 2px solid var(--border);
           border-radius: 0.8rem;
-          padding: 0.5rem 1.5rem;
+          padding: 0.3rem 1.2rem;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 3rem;
+          gap: 2rem;
           margin-bottom: 0.6rem;
           flex-wrap: wrap;
           flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          box-shadow: var(--shadow-sm);
         }
 
         .stat-item {
           display: flex;
           align-items: center;
-          gap: 0.8rem;
+          gap: 0.6rem;
         }
 
         .stat-label {
-          font-size: 0.8rem;
-          color: #4b5563;
+          font-size: 0.6rem;
+          color: var(--text-2);
           letter-spacing: 1px;
-          font-weight: 700;
-          text-transform: uppercase;
+          font-weight: 600;
         }
 
         .stat-value {
-          font-size: 1.4rem;
+          font-size: 1rem;
           font-weight: 700;
-          color: #1a1a2e;
+          color: var(--brand-cyan);
         }
 
         .stat-divider {
           width: 1px;
-          height: 30px;
-          background: #e5e7eb;
+          height: 20px;
+          background: var(--border);
         }
 
         /* ===== BODY GRID ===== */
@@ -684,8 +682,8 @@ export default function CryptoTerminal() {
         }
 
         .terminal {
-          background: #f8f9fa;
-          border: 2px solid #e5e7eb;
+          background: var(--bg-card);
+          border: 2px solid var(--border);
           border-radius: 0.8rem;
           padding: 0.8rem 1rem;
           font-size: 0.85rem;
@@ -693,18 +691,18 @@ export default function CryptoTerminal() {
           overflow-y: auto;
           height: 100%;
           scrollbar-width: thin;
-          scrollbar-color: #01DACA #f0f0f0;
-          color: #1a1a2e;
+          scrollbar-color: var(--brand-cyan) var(--bg-3);
+          color: var(--text-1);
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.04);
         }
 
         .terminal::-webkit-scrollbar {
           width: 5px;
-          background: #f0f0f0;
+          background: var(--bg-3);
         }
 
         .terminal::-webkit-scrollbar-thumb {
-          background: #01DACA;
+          background: var(--brand-cyan);
           border-radius: 6px;
         }
 
@@ -724,11 +722,11 @@ export default function CryptoTerminal() {
         }
 
         .sidebar-card {
-          background: #f8f9fa;
-          border: 2px solid #e5e7eb;
+          background: var(--bg-card);
+          border: 2px solid var(--border);
           border-radius: 0.8rem;
           padding: 0.8rem 1rem;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          box-shadow: var(--shadow-sm);
           flex-shrink: 0;
         }
 
@@ -740,20 +738,20 @@ export default function CryptoTerminal() {
 
         .sidebar-card.profits-card::-webkit-scrollbar {
           width: 3px;
-          background: #f0f0f0;
+          background: var(--bg-3);
         }
 
         .sidebar-card.profits-card::-webkit-scrollbar-thumb {
-          background: #01DACA;
+          background: var(--brand-cyan);
           border-radius: 6px;
         }
 
         .sidebar-title {
-          color: #6b7280;
+          color: var(--text-2);
           font-size: 0.8rem;
           font-weight: 700;
           letter-spacing: 1px;
-          border-left: 3px solid #01DACA;
+          border-left: 3px solid var(--brand-cyan);
           padding-left: 0.6rem;
           margin-bottom: 0.5rem;
         }
@@ -764,7 +762,7 @@ export default function CryptoTerminal() {
           align-items: center;
           justify-content: space-between;
           padding: 0.4rem 0;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid var(--border);
         }
 
         .network-item:last-child {
@@ -789,33 +787,33 @@ export default function CryptoTerminal() {
         }
 
         .network-eth {
-          background: #3b82f6;
+          background: var(--brand-cyan2);
           color: #ffffff;
         }
         .network-bsc {
-          background: #facc15;
+          background: var(--brand-gold);
           color: #000000;
         }
         .network-avax {
-          background: #ef4444;
+          background: var(--brand-red);
           color: #ffffff;
         }
         .network-sol {
-          background: #01DACA;
+          background: var(--brand-cyan);
           color: #000000;
         }
 
         .network-name {
           font-size: 0.9rem;
           font-weight: 500;
-          color: #1a1a2e;
+          color: var(--text-1);
         }
 
         .network-status {
           display: flex;
           align-items: center;
           gap: 0.4rem;
-          color: #01DACA;
+          color: var(--brand-cyan);
           font-size: 0.65rem;
           font-weight: 600;
         }
@@ -823,9 +821,9 @@ export default function CryptoTerminal() {
         .status-dot {
           width: 6px;
           height: 6px;
-          background: #01DACA;
+          background: var(--brand-cyan);
           border-radius: 50%;
-          box-shadow: 0 0 8px rgba(1, 218, 202, 0.5);
+          box-shadow: 0 0 8px rgba(47, 217, 211, 0.5);
         }
 
         /* ===== SYSTEM ALERTS ===== */
@@ -838,7 +836,7 @@ export default function CryptoTerminal() {
 
         .alert-icon {
           font-size: 0.9rem;
-          color: #01DACA;
+          color: var(--brand-cyan);
         }
 
         .alert-content {
@@ -848,19 +846,19 @@ export default function CryptoTerminal() {
         .alert-title {
           font-size: 0.75rem;
           font-weight: 600;
-          color: #1a1a2e;
+          color: var(--text-1);
         }
 
         .alert-details {
           display: flex;
           justify-content: space-between;
           font-size: 0.6rem;
-          color: #6b7280;
+          color: var(--text-2);
           margin-top: 0.1rem;
         }
 
         .alert-time {
-          color: #6b7280;
+          color: var(--text-2);
         }
 
         .alert-error {
@@ -868,9 +866,9 @@ export default function CryptoTerminal() {
           padding: 0.4rem 0.6rem;
           border-radius: 0.5rem;
           font-size: 0.65rem;
-          background: #fef2f2;
-          border: 1px solid #ef4444;
-          color: #ef4444;
+          background: rgba(240, 112, 138, 0.1);
+          border: 1px solid var(--brand-red);
+          color: var(--brand-red);
         }
 
         .alert-success {
@@ -878,14 +876,14 @@ export default function CryptoTerminal() {
           padding: 0.4rem 0.6rem;
           border-radius: 0.5rem;
           font-size: 0.65rem;
-          background: #f0fdf4;
-          border: 1px solid #01DACA;
-          color: #01DACA;
+          background: rgba(46, 217, 154, 0.1);
+          border: 1px solid var(--brand-cyan);
+          color: var(--brand-cyan);
         }
 
         /* ===== PROFITS ===== */
         .empty-state {
-          color: #9ca3af;
+          color: var(--text-3);
           text-align: center;
           font-size: 0.7rem;
           padding: 0.3rem 0;
@@ -898,8 +896,8 @@ export default function CryptoTerminal() {
           align-items: center;
           font-size: 0.75rem;
           padding: 0.4rem 0;
-          border-bottom: 1px dashed #e5e7eb;
-          color: #1a1a2e;
+          border-bottom: 1px dashed var(--border);
+          color: var(--text-1);
         }
 
         .profit-item:last-child {
@@ -907,36 +905,36 @@ export default function CryptoTerminal() {
         }
 
         .profit-time {
-          color: #6b7280;
+          color: var(--text-2);
         }
 
         .profit-network {
-          color: #3b82f6;
+          color: var(--brand-cyan2);
           font-weight: 500;
         }
 
         .profit-amount {
-          color: #01DACA;
+          color: var(--brand-cyan);
           font-weight: 600;
         }
 
         /* ===== COLOR CLASSES ===== */
-        .text-gold { color: #01DACA; }
-        .text-blue { color: #3b82f6; }
-        .text-yellow { color: #facc15; }
-        .text-cyan { color: #06b6d4; }
-        .text-red { color: #ef4444; }
-        .text-dark { color: #1a1a2e; }
-        .text-gray { color: #6b7280; }
-        .text-dim { color: #9ca3af; }
-        .text-purple { color: #8b5cf6; }
+        .text-gold { color: var(--brand-cyan); }
+        .text-blue { color: var(--brand-cyan2); }
+        .text-yellow { color: var(--brand-gold); }
+        .text-cyan { color: var(--brand-teal); }
+        .text-red { color: var(--brand-red); }
+        .text-dark { color: var(--text-1); }
+        .text-gray { color: var(--text-2); }
+        .text-dim { color: var(--text-3); }
+        .text-purple { color: var(--brand-purple); }
 
         /* ===== CURSOR ===== */
         .cursor-blink {
           display: inline-block;
           width: 7px;
           height: 14px;
-          background: #01DACA;
+          background: var(--brand-cyan);
           margin-left: 2px;
           vertical-align: middle;
           animation: pulse-cursor 1s infinite;
@@ -991,17 +989,14 @@ export default function CryptoTerminal() {
             font-size: 1.1rem;
           }
           .stats-row {
-            padding: 0.4rem 0.8rem;
-            gap: 1rem;
+            padding: 0.3rem 0.6rem;
+            gap: 0.6rem;
           }
           .stat-item {
-            gap: 0.4rem;
-          }
-          .stat-label {
-            font-size: 0.65rem;
+            gap: 0.3rem;
           }
           .stat-value {
-            font-size: 1.1rem;
+            font-size: 0.85rem;
           }
           .stat-divider {
             display: none;
@@ -1016,10 +1011,10 @@ export default function CryptoTerminal() {
             font-size: 0.9rem;
           }
           .stat-label {
-            font-size: 0.55rem;
+            font-size: 0.75rem;
           }
           .stat-value {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
           }
           .terminal {
             font-size: 0.65rem;

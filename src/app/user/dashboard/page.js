@@ -1083,10 +1083,7 @@ export default function DashboardPage() {
           </div>
 
           {/* RANK & PACKAGE */}
-          <div className="dx-section-head mb-3">
-            <h5 className="dx-section-title">Accelerator Rank</h5>
-            <div className="dx-section-sub">Your premium rank achievement system</div>
-          </div>
+          
           <div className="row g-3 mb-4">
             <div className="col-lg-6"> 
               <div className="dx-card h-100">
@@ -1136,6 +1133,69 @@ export default function DashboardPage() {
                     <div className="fw-bold" style={{ color: "#10b981" }}>${(dashboardData?.[0]?.RemainingLimit || 0).toFixed(2) || "0.00"}</div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+            {/* GROWTH REWARDS BANNER */}
+          
+          <div className="dx-growth-banner mb-4">
+            <div className="row align-items-center g-3">
+              <div className="col-lg-8">
+                <div className="dx-eyebrow-light mb-1">Accelerator Boost Milestone</div>
+                <div className="dx-growth-title">${dashboardData?.[0]?.InvestmenELimit ?? 0} — {dashboardData?.[0]?.ac_totalQualifyBoot ?? 0}X Boost</div>
+                <div className="row g-3 mt-2">
+                  <div className="col-4">
+                    <div className="dx-growth-label">Total Investment</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.TotalInvestment ?? 0}</div>
+                  </div>
+                  <div className="col-4">
+                    <div className="dx-growth-label">Total Earning Limit</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.EarningLimit ?? 0}</div>
+                  </div>
+                  <div className="col-4">
+                    <div className="dx-growth-label">Pending Limit</div>
+                    <div className="dx-growth-value">${dashboardData?.[0]?.RemainingLimit ?? 0}</div>
+                  </div>
+                </div> 
+              </div>
+              <div className="col-lg-4 d-flex justify-content-center">
+                <CircularGauge 
+                  percent={rankPct} 
+                  size={132} 
+                  stroke={10} 
+                  colorFrom="#5eead4" 
+                  colorTo="#14b8a6" 
+                  gradId="growthGrad" 
+                  centerTop={`${rankPct}%`} 
+                  centerBottom={`${dashboardData?.[0]?.Ac_NextRank || 'V1'} Progress`} 
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="row g-3 mb-4">
+            <div className="col-12">
+              <div className="dx-card">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <div className="fw-bold dx-ink">Accelerator Reward Journey</div>
+                </div>
+                <div className="dx-stepper mb-4">
+                  {growthLevels.map((g, i) => (
+                    <div className="dx-stepper-item" key={g.level}>
+                      <div className={`dx-stepper-dot ${i < activeGrowthIdx ? 'done' : ''}`}>
+                        {i < activeGrowthIdx ? (
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                            <polyline points="2,8 5.5,11.5 14,3.5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        ) : g.level}
+                      </div>
+                      {i < growthLevels.length - 1 && <div className={`dx-stepper-line ${i < activeGrowthIdx - 1 ? 'done' : ''}`}></div>}
+                    </div>
+                  ))}
+                </div>
+
+               
               </div>
             </div>
           </div>
@@ -1493,71 +1553,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* GROWTH REWARDS BANNER */}
-          <div className="dx-section-head mb-3">
-            <h5 className="dx-section-title">Accelerator Reward</h5>
-            <div className="dx-section-sub">Build your business. Unlock your next milestone.</div>
-          </div>
-          <div className="dx-growth-banner mb-4">
-            <div className="row align-items-center g-3">
-              <div className="col-lg-8">
-                <div className="dx-eyebrow-light mb-1">Accelerator Boost Milestone</div>
-                <div className="dx-growth-title">${dashboardData?.[0]?.InvestmenELimit ?? 0} — {dashboardData?.[0]?.ac_totalQualifyBoot ?? 0}X Boost</div>
-                <div className="row g-3 mt-2">
-                  <div className="col-4">
-                    <div className="dx-growth-label">Total Investment</div>
-                    <div className="dx-growth-value">${dashboardData?.[0]?.TotalInvestment ?? 0}</div>
-                  </div>
-                  <div className="col-4">
-                    <div className="dx-growth-label">Total Earning Limit</div>
-                    <div className="dx-growth-value">${dashboardData?.[0]?.EarningLimit ?? 0}</div>
-                  </div>
-                  <div className="col-4">
-                    <div className="dx-growth-label">Pending Limit</div>
-                    <div className="dx-growth-value">${dashboardData?.[0]?.RemainingLimit ?? 0}</div>
-                  </div>
-                </div> 
-              </div>
-              <div className="col-lg-4 d-flex justify-content-center">
-                <CircularGauge 
-                  percent={rankPct} 
-                  size={132} 
-                  stroke={10} 
-                  colorFrom="#5eead4" 
-                  colorTo="#14b8a6" 
-                  gradId="growthGrad" 
-                  centerTop={`${rankPct}%`} 
-                  centerBottom={`${dashboardData?.[0]?.Ac_NextRank || 'V1'} Progress`} 
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="row g-3 mb-4">
-            <div className="col-12">
-              <div className="dx-card">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <div className="fw-bold dx-ink">Accelerator Reward Journey</div>
-                </div>
-                <div className="dx-stepper mb-4">
-                  {growthLevels.map((g, i) => (
-                    <div className="dx-stepper-item" key={g.level}>
-                      <div className={`dx-stepper-dot ${i < activeGrowthIdx ? 'done' : ''}`}>
-                        {i < activeGrowthIdx ? (
-                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                            <polyline points="2,8 5.5,11.5 14,3.5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        ) : g.level}
-                      </div>
-                      {i < growthLevels.length - 1 && <div className={`dx-stepper-line ${i < activeGrowthIdx - 1 ? 'done' : ''}`}></div>}
-                    </div>
-                  ))}
-                </div>
-
-               
-              </div>
-            </div>
-          </div>
+        
 
           {/* BOTTOM ROW */}
           <div className="dx-section-head mb-3">

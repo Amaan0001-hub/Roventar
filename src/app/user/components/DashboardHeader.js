@@ -22,6 +22,7 @@ import {
   FiAward ,
   FiBookOpen // Added for Fund Director icon
 } from "react-icons/fi";
+import { FaBitcoin } from "react-icons/fa";
 import { doUserLogout } from "@/app/api/auth";
 
 export default function DashboardHeader({
@@ -123,6 +124,12 @@ export default function DashboardHeader({
             <FiUsers />
           </span>
           <span>Genealogy</span>
+        </Link>
+         <Link href="/user/dashboard/crypto-terminal" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/crypto-terminal' ? 'on' : '')}>
+          <span className="ic">
+            <FaBitcoin />
+          </span>
+          <span>Crypto Terminal</span>
         </Link>
         {/* <Link href="/user/dashboard/lms" className={"ni " + (pathname === '/user/dashboard/lms' ? 'on' : '')}>
           <span className="ic">

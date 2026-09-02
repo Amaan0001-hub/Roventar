@@ -329,6 +329,7 @@ button {
   font-size: 17px;
   letter-spacing: .5px;
   line-height: 1;
+  color: var(--text-1);
 }
 
 .ltext em {
@@ -8447,6 +8448,7 @@ input[type=number]::-webkit-inner-spin-button {
 
 input[type=number] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .lbl {
@@ -13980,14 +13982,7 @@ option:hover {
   background: #F8F6FF !important;
 }
 
-/* ==========================================================
-   Rank Progress card styles
-   Paste this block into your dashboard.css
-   Uses your existing tokens (--brand-green, --shadow, --border3,
-   --r20, --r8, --p) with safe fallbacks, so it still looks right
-   even if a variable isn't defined yet, and follows your
-   light/dark theme automatically via [data-theme].
-   ========================================================== */
+
 
 .rpc-card,
 .rpc-card * {
@@ -16858,7 +16853,12 @@ html[data-theme="dark"] .dx-table tbody td {
   color: #fff !important;
 } */
 .dx-growth-title {
+  color: var(--dashboardroot-ink) !important;
+}
+
+.dx-growth-titleL {
   color: #fff !important;
+  font-weight: 800;
 }
 
 html[data-theme="dark"] .dx-achieve-title {
@@ -16889,8 +16889,7 @@ html[data-theme="dark"] .dx-ann-item {
 }
 
 [data-theme="dark"] .logo-area img {
-  filter: invert(0.6);
-  transition: filter 0.3s ease;
+  filter: none !important;
 }
 
 .dx-gauge-bottom {
@@ -17860,7 +17859,7 @@ html[data-theme="dark"] .dx-ann-item {
   justify-content: center;
   font-size: 12px;
   font-weight: 800;
-  background: var(--dashboardroot-soft);
+  background: var(--dashboardroot-card);
   color: var(--dashboardroot-muted);
   border: 2px solid var(--dashboardroot-border);
 }
@@ -17887,6 +17886,41 @@ html[data-theme="dark"] .dx-ann-item {
 
 .dx-stepper-line.done {
   background: var(--dashboardroot-teal-dark);
+}
+
+/* Responsive stepper for mobile */
+@media (max-width: 768px) {
+  .dx-stepper {
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .dx-stepper-item {
+    min-width: 50px;
+  }
+  
+  .dx-stepper-dot {
+    width: 32px;
+    height: 32px;
+    font-size: 10px;
+  }
+  
+  .dx-stepper-line {
+    margin: 0 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dx-stepper-dot {
+    width: 28px;
+    height: 28px;
+    font-size: 9px;
+  }
+  
+  .dx-stepper-item {
+    min-width: 40px;
+  }
 }
 
 /* ---------- NEW: Table ---------- */

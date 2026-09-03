@@ -1,232 +1,538 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import React from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  LayoutDashboard,
+  Bot,
+  Activity,
+  Radio,
+  BarChart3,
+  Settings,
+  HelpCircle,
+  ArrowUpRight,
+  TrendingUp,
+  TrendingDown,
+  CircleDollarSign,
+  Zap,
+  History,
+  Clock,
+  Sun,
+  Moon,
+  Eye,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveProducts } from "@/app/redux/slices/productSlice";
 import { getFundRequestReport, usernameByLoginId, addRechargeTransactionUser, getRechargetransactionHIstory } from "@/app/redux/slices/fundManagerSlice";
 import { AuthLogin, getUserId } from "@/app/api/auth";
 import { activeProducts, productLoading } from "@/app/(main)/admin/product/product-selectors";
 import html2pdf from 'html2pdf.js';
+import InvestmentHistory from "../../components/AitradingbotHistory";
 
-const Spark = ({ data, color }) => {
-  const W = 120, H = 44, mn = Math.min(...data), mx = Math.max(...data), rng = mx - mn || 1;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * W},${H - 4 - ((v - mn) / rng) * (H - 8)}`).join(" ");
-  const area = `0,${H} ${pts} ${W},${H}`;
-  const gid = `sg${color.replace(/[^a-z0-9]/gi, "")}`;
+/* =========================
+   LIVE DATA HOOK - Binance WebSocket
+========================= */
+
+function useLiveMarket() {
+  const [livePrice, setLivePrice] = useState(null);
+  const [priceChange, setPriceChange] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [marketPrices, setMarketPrices] = useState({});
+  const previousPriceRef = useRef(null);
+  const priceHistoryRef = useRef([]);
+
+  const generateLivePrice = (basePrice, symbol) => {
+    const volatility = symbol === "XAU/USD" ? 0.002 : 0.001;
+    const change = (Math.random() - 0.5) * volatility * basePrice;
+    return basePrice + change;
+  };
+
+  useEffect(() => {
+    const stream = "btcusdt@trade";
+    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`);
+
+    ws.onopen = () => {
+      console.log("WebSocket Connected to Binance");
+      setWsConnected(true);
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const price = parseFloat(data.p);
+
+      if (Number.isFinite(price)) {
+        setLivePrice(price);
+        setLastUpdate(Date.now());
+
+        if (previousPriceRef.current) {
+          const change = ((price - previousPriceRef.current) / previousPriceRef.current) * 100;
+          setPriceChange(change);
+        }
+        previousPriceRef.current = price;
+
+        setChartData((prev) => {
+          const newData = [...prev, price];
+          if (newData.length > 50) {
+            return newData.slice(-50);
+          }
+          return newData;
+        });
+
+        setMarketPrices({
+          "EUR/USD": {
+            price: generateLivePrice(1.16642, "EUR/USD"),
+            change: ((Math.random() - 0.5) * 0.2).toFixed(2),
+            positive: Math.random() > 0.5,
+          },
+          "GBP/USD": {
+            price: generateLivePrice(1.31867, "GBP/USD"),
+            change: ((Math.random() - 0.5) * 0.25).toFixed(2),
+            positive: Math.random() > 0.5,
+          },
+          "XAU/USD": {
+            price: generateLivePrice(3523.41, "XAU/USD"),
+            change: ((Math.random() - 0.5) * 0.3).toFixed(2),
+            positive: Math.random() > 0.5,
+          },
+          "USD/JPY": {
+            price: generateLivePrice(146.217, "USD/JPY"),
+            change: ((Math.random() - 0.5) * 0.15).toFixed(2),
+            positive: Math.random() > 0.5,
+          },
+        });
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      setWsConnected(false);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket disconnected");
+      setWsConnected(false);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    const fallbackInterval = setInterval(() => {
+      if (!wsConnected) {
+        const simulatedPrice = 43000 + (Math.random() - 0.5) * 200;
+        setLivePrice(simulatedPrice);
+        setLastUpdate(Date.now());
+        
+        setPriceChange((Math.random() - 0.5) * 0.5);
+        
+        setChartData((prev) => {
+          const newData = [...prev, simulatedPrice];
+          if (newData.length > 50) return newData.slice(-50);
+          return newData;
+        });
+
+        setMarketPrices({
+          "EUR/USD": {
+            price: 1.16642 + (Math.random() - 0.5) * 0.005,
+            change: ((Math.random() - 0.5) * 0.3).toFixed(2),
+            positive: Math.random() > 0.5,
+          },
+          "GBP/USD": {
+            price: 1.31867 + (Math.random() - 0.5) * 0.005,
+            change: ((Math.random() - 0.5) * 0.3).toFixed(2),
+            positive: Math.random() > 0.5,
+          },
+          "XAU/USD": {
+            price: 3523.41 + (Math.random() - 0.5) * 10,
+            change: ((Math.random() - 0.5) * 0.3).toFixed(2),
+            positive: Math.random() > 0.5,
+          },
+          "USD/JPY": {
+            price: 146.217 + (Math.random() - 0.5) * 0.5,
+            change: ((Math.random() - 0.5) * 0.3).toFixed(2),
+            positive: Math.random() > 0.5,
+          },
+        });
+      }
+    }, 3000);
+
+    return () => clearInterval(fallbackInterval);
+  }, [wsConnected]);
+
+  return {
+    livePrice,
+    priceChange,
+    chartData,
+    wsConnected,
+    lastUpdate,
+    marketPrices,
+  };
+}
+
+/* =========================
+   STATIC DATA
+========================= */
+
+const bots = [
+  {
+    name: "SONIC SCALPER AI",
+    subtitle: "Scalping Strategy",
+    icon: "🤖",
+    iconBg: "sb-icon-blue",
+    symbols: ["EUR/USD", "GBP/USD"],
+    chartColor: "#2563eb",
+    rsi: "62.4",
+    macd: "Bullish",
+    trend: "Uptrend",
+    signal: "BUY",
+    signalSymbol: "EUR/USD",
+    confidence: "82%",
+    timeframe: "5M",
+    market: "Forex",
+  
+    apr: "19.8%",
+    winRate: "71.3%",
+    traders: "2,341",
+  },
+  {
+    name: "SONIC FOREX AI",
+    subtitle: "Trend Following Strategy",
+    icon: "🧠",
+    iconBg: "sb-icon-purple",
+    symbols: ["EUR/USD", "USD/JPY"],
+    chartColor: "#9333ea",
+    rsi: "58.7",
+    macd: "Bullish",
+    trend: "Uptrend",
+    signal: "BUY",
+    signalSymbol: "USD/JPY",
+    confidence: "76%",
+    timeframe: "15M",
+    market: "Forex",
+   
+    apr: "21.4%",
+    winRate: "68.9%",
+    traders: "1,892",
+  },
+  {
+    name: "PHANTOM STEALTH AI",
+    subtitle: "Grid Trading Strategy",
+    icon: "🥷",
+    iconBg: "sb-icon-orange",
+    symbols: ["EUR/USD", "GBP/USD"],
+    chartColor: "#f97316",
+    rsi: "45.3",
+    macd: "Bearish",
+    trend: "Sideways",
+    signal: "SELL",
+    signalSymbol: "GBP/USD",
+    confidence: "64%",
+    timeframe: "1H",
+    market: "Forex",
+   
+    apr: "15.2%",
+    winRate: "63.1%",
+    traders: "1,276",
+  },
+  {
+    name: "PIP SNIPER AI",
+    subtitle: "Breakout Strategy",
+    icon: "🎯",
+    iconBg: "sb-icon-green",
+    symbols: ["GBP/USD", "EUR/USD"],
+    chartColor: "#22c55e",
+    rsi: "65.1",
+    macd: "Bullish",
+    trend: "Uptrend",
+    signal: "BUY",
+    signalSymbol: "EUR/USD",
+    confidence: "79%",
+    timeframe: "15M",
+    market: "Forex",
+    risk: "Medium",
+   
+    winRate: "72.6%",
+    traders: "1,654",
+  },
+  {
+    name: "GOLD RUSH AI",
+    subtitle: "Gold Trading Strategy",
+    icon: "🪙",
+    iconBg: "sb-icon-yellow",
+    symbols: ["XAU/USD"],
+    chartColor: "#eab308",
+    rsi: "53.6",
+    macd: "Bearish",
+    trend: "Sideways",
+    signal: "SELL",
+    signalSymbol: "XAU/USD",
+    confidence: "68%",
+    timeframe: "15M",
+    market: "Commodities",
+
+    apr: "23.6%",
+    winRate: "70.4%",
+    traders: "987",
+  },
+];
+
+/* =========================
+   MINI CHART
+========================= */
+
+function MiniChart({ data = [] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="sb-chart-placeholder">
+        <span className="sb-chart-loading">Loading chart...</span>
+      </div>
+    );
+  }
+
+  const width = 300;
+  const height = 90;
+  const padding = 5;
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+
+  const points = data
+    .map((value, index) => {
+      const x = padding + (index / Math.max(data.length - 1, 1)) * (width - padding * 2);
+      const y = height - padding - ((value - min) / range) * (height - padding * 2);
+      return `${x},${y}`;
+    })
+    .join(" ");
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H}>
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={area} fill={`url(#${gid})`} />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={W} cy={H - 4 - ((data[data.length - 1] - mn) / rng) * (H - 8)} r="3" fill={color} />
+    <svg viewBox={`0 0 ${width} ${height}`} className="sb-mini-chart">
+      <polyline
+        points={points}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="sb-chart-line"
+      />
     </svg>
   );
-};
+}
 
-const ROIChart = ({ data, color }) => {
-  const labels = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
-  const W = 560, H = 180, mn = Math.min(...data, 0), mx = Math.max(...data), rng = mx - mn || 1;
-  const x = i => (i / (data.length - 1)) * (W - 56) + 28;
-  const y = v => H - 28 - ((v - mn) / rng) * (H - 52);
-  const pts = data.map((v, i) => `${x(i)},${y(v)}`).join(" ");
+/* =========================
+   MARKET ROW
+========================= */
+
+function MarketRow({ symbol, marketPrices, livePrice }) {
+  const market = marketPrices?.[symbol];
+  
+  if (!market) {
+    return (
+      <div className="sb-market-row sb-market-loading">
+        <span className="sb-market-symbol">{symbol}</span>
+        <span className="sb-market-loading-text">Loading...</span>
+      </div>
+    );
+  }
+
+  const price = market.price;
+  const change = parseFloat(market.change);
+  const positive = market.positive;
+
+  const formattedPrice = symbol === "XAU/USD" 
+    ? price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : price.toFixed(5);
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block" }}>
-      <defs>
-        <linearGradient id="rg2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-        <line key={i} x1={28} y1={28 + t * (H - 52)} x2={W - 28} y2={28 + t * (H - 52)} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-      ))}
-      <polygon points={`28,${y(data[0])} ${pts} ${x(data.length - 1)},${H - 28} 28,${H - 28}`} fill="url(#rg2)" />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-      {data.map((v, i) => <circle key={i} cx={x(i)} cy={y(v)} r="3.5" fill={color} opacity="0.8" />)}
-      {labels.map((l, i) => (
-        <text key={i} x={x(i)} y={H - 8} textAnchor="middle" style={{ fontSize: "10px", fill: "var(--text-1)" }}>{l}</text>
-      ))}
-    </svg>
+    <div className="sb-market-row">
+      <span className="sb-market-symbol">{symbol}</span>
+      <span className="sb-market-price">${formattedPrice}</span>
+      <span className={`sb-market-change ${positive ? "sb-change-positive" : "sb-change-negative"}`}>
+        {positive ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
+      </span>
+    </div>
   );
-};
+}
 
-const Risk = ({ r }) => {
-  const cfg = { Low: { bg: "rgba(34,197,94,0.12)", c: "#4ade80", b: "rgba(34,197,94,0.25)" }, Medium: { bg: "rgba(251,191,36,0.12)", c: "#fbbf24", b: "rgba(251,191,36,0.25)" }, High: { bg: "rgba(248,113,113,0.12)", c: "#f87171", b: "rgba(248,113,113,0.25)" } };
-  const s = cfg[r] || cfg.Medium;
-  return <span style={{ background: s.bg, color: s.c, border: `1px solid ${s.b}`, borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" }}>{r?.toUpperCase() || "MEDIUM"}</span>;
-};
+/* =========================
+   BOT CARD
+========================= */
 
-export default function App() {
+function BotCard({ bot, marketPrices, lastUpdate, chartData, livePrice, wsConnected, onInvest, onViewDetails }) {
+  const isBuy = bot.signal === "BUY";
+  const isConnected = wsConnected;
+
+  return (
+    <div className="sb-card">
+      {/* Header */}
+      <div className="sb-card-header">
+        <div className="sb-card-header-left">
+          <div className={`sb-card-icon ${bot.iconBg}`}>
+            {bot.icon}
+          </div>
+          <div>
+            <h2 className="sb-card-title">{bot.name}</h2>
+            <p className="sb-card-subtitle">{bot.subtitle}</p>
+          </div>
+        </div>
+        <div className="sb-card-status">
+          <span className={`sb-status-dot ${isConnected ? 'sb-status-live' : 'sb-status-offline'}`} />
+          <span className={isConnected ? 'sb-status-live-text' : 'sb-status-offline-text'}>
+            {isConnected ? 'LIVE' : 'OFFLINE'}
+          </span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="sb-card-body">
+        <div className="sb-card-grid">
+          {/* Left */}
+          <div className="sb-card-left">
+            <p className="sb-section-label">Live Market</p>
+            <div className="sb-market-list">
+              {bot.symbols.map((symbol) => (
+                <MarketRow 
+                  key={symbol} 
+                  symbol={symbol} 
+                  marketPrices={marketPrices} 
+                  livePrice={livePrice}
+                />
+              ))}
+            </div>
+
+            <div className="sb-chart-label">
+              {bot.signalSymbol} • {bot.timeframe} Chart
+            </div>
+
+            <MiniChart data={chartData.length > 0 ? chartData : bot.chart || []} />
+
+            {/* Details */}
+            <div className="sb-details-grid">
+              <div className="sb-detail-item">
+                <p className="sb-detail-label">Timeframe</p>
+                <p className="sb-detail-value">{bot.timeframe}</p>
+              </div>
+              <div className="sb-detail-item sb-detail-border">
+                <p className="sb-detail-label">Market</p>
+                <p className="sb-detail-value">{bot.market}</p>
+              </div>
+            
+            </div>
+          </div>
+
+          {/* Right */}
+          <div className="sb-card-right">
+            <p className="sb-strategy-label">Strategy Indicators</p>
+
+            <div className="sb-indicators">
+              <div className="sb-indicator-item">
+                <span className="sb-indicator-label">RSI</span>
+                <span className="sb-indicator-value">{bot.rsi}</span>
+              </div>
+              <div className="sb-indicator-item">
+                <span className="sb-indicator-label">MACD</span>
+                <span className={`sb-indicator-value ${bot.macd === "Bullish" ? "sb-indicator-bullish" : "sb-indicator-bearish"}`}>
+                  {bot.macd}
+                </span>
+              </div>
+              <div className="sb-indicator-item">
+                <span className="sb-indicator-label">Trend</span>
+                <span className={`sb-indicator-value ${
+                  bot.trend === "Uptrend" ? "sb-indicator-uptrend" : 
+                  bot.trend === "Downtrend" ? "sb-indicator-downtrend" : "sb-indicator-sideways"
+                }`}>
+                  {bot.trend}
+                </span>
+              </div>
+            </div>
+
+            {/* Signal */}
+            <p className="sb-signal-label">Signal</p>
+            <div className={`sb-signal-box ${isBuy ? "sb-signal-buy" : "sb-signal-sell"}`}>
+              <div className={`sb-signal-content ${isBuy ? "sb-signal-buy-text" : "sb-signal-sell-text"}`}>
+                {isBuy ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                {bot.signal}
+              </div>
+              <p className="sb-signal-symbol">{bot.signalSymbol}</p>
+            </div>
+
+            {/* Confidence */}
+            <div className="sb-confidence">
+              <span className="sb-confidence-label">Confidence</span>
+              <span className={`sb-confidence-value ${isBuy ? "sb-confidence-buy" : "sb-confidence-sell"}`}>
+                {bot.confidence}
+              </span>
+            </div>
+
+            <div className="sb-last-update">
+              <span className="sb-update-label">Last Update</span>
+              <span className="sb-update-value">
+                {lastUpdate ? new Date(lastUpdate).toLocaleTimeString() : "--:--:--"}
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="sb-action-buttons">
+              {/* View Details Button */}
+              <button 
+                onClick={() => onViewDetails(bot)}
+                className="sb-view-btn"
+              >
+                <Eye size={14} />
+                View Details
+              </button>
+
+              {/* Invest Now Button */}
+              <button 
+                onClick={() => onInvest(bot)}
+                className="sb-invest-btn"
+              >
+                Invest Now
+                <ArrowUpRight size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom stats */}
+        <div className="sb-stats-grid">
+          <div className="sb-stat-item">
+            <p className="sb-stat-label">Backtest APR</p>
+            <p className="sb-stat-value">{bot.apr}</p>
+          </div>
+          <div className="sb-stat-item sb-stat-border">
+            <p className="sb-stat-label">Win Rate</p>
+            <p className="sb-stat-value">{bot.winRate}</p>
+          </div>
+          <div className="sb-stat-item">
+            <p className="sb-stat-label">Demo Traders</p>
+            <p className="sb-stat-value">{bot.traders}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================
+   INVEST MODAL
+========================= */
+
+function InvestModal({ bot, onClose, onSubmit, walletBalance, isLoading }) {
   const dispatch = useDispatch();
-  const loading = useSelector(productLoading);
-  const activeProductsData = useSelector(activeProducts);
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [walletLoading, setWalletLoading] = useState(true);
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const [tab, setTab] = useState("bots");
-  const [q, setQ] = useState("");
-  const [selected, setSelected] = useState(null);
-  const [investBot, setInvestBot] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  // Custom amount state
-  const [customAmount, setCustomAmount] = useState("");
-  const [amountError, setAmountError] = useState("");
-
-  // User ID related states
   const [uid, setUid] = useState("");
   const [uname, setUname] = useState("");
   const [uerr, setUerr] = useState("");
   const [userURID, setUserURID] = useState("");
   const [isFetchingUser, setIsFetchingUser] = useState(false);
+  const [customAmount, setCustomAmount] = useState("");
+  const [amountError, setAmountError] = useState("");
 
-  const [orders, setOrders] = useState([]);
-  const [inv, setInv] = useState(null);
-  const [hov, setHov] = useState(null);
-  const [bots, setBots] = useState([]);
-  const [orderHistory, setOrderHistory] = useState([]);
-  const [dashboardData, setDashboardData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [orderHistoryLoading, setOrderHistoryLoading] = useState(false);
-  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const URID = getUserId();
-
-  const userDashboardData = useSelector((state) => state.auth.UserdashboardData);
-  // Check if wallet has sufficient balance for custom amount
-  const hasSufficientBalance = () => {
-    if (!investBot) return false;
-    const amountToInvest = customAmount && customAmount !== "" ? parseFloat(customAmount) : 0;
-    if (amountToInvest === 0) return false;
-    return walletBalance >= amountToInvest;
-  };
-
-  // Get current investment amount
-  const getInvestmentAmount = () => {
-    if (!investBot) return 0;
-    const amount = customAmount && customAmount !== "" ? parseFloat(customAmount) : 0;
-    return amount;
-  };
-
-  // Calculate max investment based on mininvest range
-  const getMaxInvestment = () => {
-    if (!investBot || !investBot.mininvest) return 999;
-    const minInvest = parseFloat(investBot.mininvest);
-    if (isNaN(minInvest) || minInvest <= 0) return 999;
-    if (minInvest < 1000) return 999;
-    if (minInvest < 10000) return 9999;
-    if (minInvest < 100000) return 99999;
-    return minInvest * 10; // Fallback: 10x of min
-  };
-
-  // Validate amount
-  const validateAmount = (value) => {
-    if (!investBot) return false;
-    const numValue = parseFloat(value);
-    const minInvest = parseFloat(investBot.mininvest);
-
-    if (isNaN(numValue)) {
-      setAmountError("Please enter a valid amount");
-      return false;
-    }
-    if (isNaN(minInvest) || minInvest <= 0) {
-      setAmountError("Invalid minimum investment amount");
-      return false;
-    }
-    if (numValue < minInvest) {
-      setAmountError(`Minimum investment amount is $${minInvest}`);
-      return false;
-    }
-
-    const maxInvest = getMaxInvestment();
-    if (numValue > maxInvest) {
-      setAmountError(`Maximum investment amount is $${maxInvest}`);
-      return false;
-    }
-
-    if (numValue > walletBalance) {
-      setAmountError(`Insufficient balance! Your wallet balance is $${walletBalance.toLocaleString()}`);
-      return false;
-    }
-    setAmountError("");
-    return true;
-  };
-
-  // Handle amount change
-  const handleAmountChange = (e) => {
-    const value = e.target.value;
-    if (value === "") {
-      setCustomAmount("");
-      setAmountError("");
-      return;
-    }
-
-    const numValue = parseFloat(value);
-    if (!isNaN(numValue)) {
-      setCustomAmount(numValue);
-      validateAmount(numValue);
-    }
-  };
-
-  // Fetch wallet balance
-  useEffect(() => {
-    const fetchWalletBalance = async () => {
-      try {
-        setWalletLoading(true);
-        const urid = getUserId();
-        const result = await dispatch(getFundRequestReport()).unwrap();
-
-        if (result?.walletBalance?.[0]?.depositWallet !== undefined) {
-          setWalletBalance(result.walletBalance[0].depositWallet);
-        }
-      } catch (error) {
-        console.error("Failed to fetch wallet balance:", error);
-        setWalletBalance(0);
-      } finally {
-        setWalletLoading(false);
-      }
-    };
-
-    fetchWalletBalance();
-  }, [dispatch]);
-
-
-
-  // Fetch Order History from API
-  useEffect(() => {
-    const fetchOrderHistory = async () => {
-      try {
-        setOrderHistoryLoading(true);
-        const urid = getUserId();
-        const result = await dispatch(getRechargetransactionHIstory(urid)).unwrap();
-
-        if (Array.isArray(result)) {
-          setOrderHistory(result);
-        }
-        else if (result?.data && Array.isArray(result.data)) {
-          setOrderHistory(result.data);
-        }
-        else {
-          setOrderHistory([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch order history:", error);
-        setOrderHistory([]);
-      } finally {
-        setOrderHistoryLoading(false);
-      }
-    };
-
-    if (tab === "orders") {
-      fetchOrderHistory();
-    }
-  }, [dispatch, tab]);
-
-  // Fetch username when userId changes (for invest modal)
   useEffect(() => {
     const fetchUsername = async () => {
       if (!uid.trim()) {
@@ -267,848 +573,1810 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [uid, dispatch]);
 
-  // Generate chart data for each bot
-  const generateChartData = (roi) => {
-    const baseValue = roi > 0 ? Math.max(0, roi / 10) : Math.abs(roi) / 5;
-    const chart = [];
-    let current = baseValue / 2;
-    for (let i = 0; i < 12; i++) {
-      const change = (Math.random() - 0.5) * (Math.abs(roi) / 15);
-      current = Math.max(0, current + change);
-      chart.push(parseFloat(current.toFixed(2)));
-    }
-    const trend = chart[chart.length - 1];
-    const multiplier = roi > 0 ? roi / trend : -Math.abs(roi) / trend;
-    return chart.map(v => parseFloat((v * (multiplier || 1)).toFixed(2)));
+  const getInvestmentAmount = () => {
+    const amount = customAmount && customAmount !== "" ? parseFloat(customAmount) : 0;
+    return amount;
   };
 
-  // Helper functions
-  const getLogoEmoji = (name) => {
-    const emojis = {
-      "SONIC": "⚡",
-      "Roventar": "🔮",
-      "PHANTOM": "👻",
-      "PIP SNIPER": "🎯",
-      "GOLD RUSH": "🏆",
-      "AURUM MIND": "🧠",
-      "MARIO": "🍄"
-    };
-    return emojis[name?.toUpperCase()] || "🤖";
+  // Get max investment (always 14999)
+  const getMaxInvestment = () => {
+    return 14999;
   };
 
-  const getColorByRisk = (risk) => {
-    switch (risk?.toLowerCase()) {
-      case 'low': return "#4ade80";
-      case 'medium': return "#fbbf24";
-      case 'high': return "#f87171";
-      default: return "#6725cd";
+  // Get package name based on trading amount
+  const getPackageNameByAmount = (amount) => {
+    if (!amount || isNaN(amount)) return null;
+    
+    // Check if amount is within valid range
+    if (amount < 100) return "Minimum $100 required";
+    if (amount > 14999) return "Maximum $14,999 allowed";
+    
+    // Package determination based on trading amount
+    if (amount >= 100 && amount <= 999) return "Basic";
+    else if (amount >= 1000 && amount <= 4999) return "Standard";
+    else if (amount >= 5000 && amount <= 9999) return "Elite";
+    else if (amount >= 10000 && amount <= 14999) return "Growth";
+    
+    return null;
+  };
+
+  // Validate amount with new limits
+  const validateAmount = (value) => {
+    const numValue = parseFloat(value);
+
+    if (isNaN(numValue)) {
+      setAmountError("Please enter a valid amount");
+      return false;
+    }
+
+    // Check minimum amount (100)
+    if (numValue < 100) {
+      setAmountError("Minimum investment amount is $100");
+      return false;
+    }
+
+    // Check maximum amount (14,999)
+    if (numValue > 14999) {
+      setAmountError("Maximum investment amount is $14,999");
+      return false;
+    }
+
+    if (numValue > walletBalance) {
+      setAmountError(`Insufficient balance! Your wallet balance is $${walletBalance.toLocaleString()}`);
+      return false;
+    }
+    
+    setAmountError("");
+    return true;
+  };
+
+  // Handle amount change with validation
+  const handleAmountChange = (e) => {
+    const value = e.target.value;
+    if (value === "") {
+      setCustomAmount("");
+      setAmountError("");
+      return;
+    }
+
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      setCustomAmount(numValue);
+      validateAmount(numValue);
     }
   };
 
-  // Fetch active products from Redux
-  useEffect(() => {
-    dispatch(getActiveProducts());
-  }, [dispatch]);
-
-  // Set bots directly from API data
-  useEffect(() => {
-    if (activeProductsData && activeProductsData.length > 0) {
-      setBots(activeProductsData);
-    }
-  }, [activeProductsData]);
-
-const downloadPDFInvoice = async (orderData) => {
-    const d = orderData;
-    if (!d) return;
-
-    // Data extraction
-    const userName = d.Name || d.user || "User";
-    const userId = d.AuthLogin || d.uid || "N/A";
-    const roiValue = d.rOI || d.roi || d.APY || "2";
-    const invoiceNo = d.RechargeId || d.id || `XFX-${d.OrderDate || Date.now()}`;
-    const status = d.status || "Active";
-    const amount = Number(d.Rkprice || d.amount || 0);
-    const orderDate = d.OrderDate || d.date || new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-    });
-
-    const invoiceHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>Roventar Invoice ${invoiceNo}</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            
-            body {
-                background: #f0f2f5;
-                padding: 10px;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-            }
-
-            /* ===== MAIN CONTAINER ===== */
-            .invoice {
-                max-width: 780px;
-                width: 100%;
-                background: #ffffff;
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 20px 60px rgba(108, 99, 255, 0.12);
-                page-break-inside: avoid;
-                break-inside: avoid;
-            }
-
-            /* ===== TOP BAR ===== */
-            .top-bar {
-                background: linear-gradient(135deg, #6C63FF, #8B7CF7);
-                padding: 12px 28px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                border-bottom: 3px solid #5a52d5;
-            }
-
-            .top-bar .brand {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .top-bar .brand .logo-img {
-                width: 44px;
-                height: 44px;
-                object-fit: contain;
-                border-radius: 10px;
-                background: rgba(255, 255, 255, 0.15);
-                padding: 4px;
-            }
-
-            .top-bar .brand .brand-text h1 {
-                font-size: 18px;
-                font-weight: 800;
-                color: #ffffff;
-                letter-spacing: 1px;
-                margin: 0;
-                line-height: 1.2;
-            }
-
-            .top-bar .brand .brand-text span {
-                font-size: 9px;
-                color: rgba(255, 255, 255, 0.85);
-                font-weight: 400;
-                display: block;
-                letter-spacing: 0.5px;
-            }
-
-            .top-bar .invoice-tag {
-                text-align: right;
-            }
-
-            .top-bar .invoice-tag .label {
-                font-size: 8px;
-                color: rgba(255, 255, 255, 0.7);
-                text-transform: uppercase;
-                letter-spacing: 1.5px;
-                font-weight: 600;
-            }
-
-            .top-bar .invoice-tag .number {
-                font-size: 13px;
-                font-weight: 700;
-                color: #ffffff;
-                letter-spacing: 0.3px;
-            }
-
-            /* ===== HEADER ===== */
-            .header {
-                background: linear-gradient(135deg, #f8f7ff, #f0eeff);
-                padding: 16px 28px 14px;
-                border-bottom: 1px solid #e8e4ff;
-            }
-
-            .header-content {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .header-left .greeting {
-                font-size: 20px;
-                font-weight: 700;
-                color: #1a1a2e;
-            }
-
-            .header-left .greeting span {
-                color: #6C63FF;
-            }
-
-            .header-left .sub {
-                font-size: 12px;
-                color: #4a5568;
-                font-weight: 400;
-                margin-top: 1px;
-            }
-
-            .header-right {
-                text-align: right;
-            }
-
-            .header-right .amount-label {
-                font-size: 10px;
-                color: #6C63FF;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                font-weight: 700;
-            }
-
-            .header-right .amount-wrapper {
-                display: flex;
-                align-items: baseline;
-                justify-content: flex-end;
-                gap: 4px;
-            }
-
-            .header-right .amount {
-                font-size: 28px;
-                font-weight: 900;
-                color: #1a1a2e;
-                line-height: 1.1;
-                letter-spacing: -0.5px;
-            }
-
-            .header-right .currency {
-                font-size: 14px;
-                font-weight: 600;
-                color: #6C63FF;
-                letter-spacing: 0.5px;
-            }
-
-            /* ===== STATUS ROW ===== */
-            .status-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 8px 28px;
-                background: #ffffff;
-                border-bottom: 1px solid #e8e4ff;
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-
-            .status-row .date {
-                font-size: 12px;
-                color: #4a5568;
-                font-weight: 500;
-            }
-
-            .status-row .date strong {
-                color: #1a1a2e;
-                font-weight: 700;
-            }
-
-            .status-badge {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 12px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 0.8px;
-                color: #10b981;
-                padding: 0;
-                background: transparent;
-                border: none;
-            }
-
-            /* ===== BODY ===== */
-            .body {
-                padding: 14px 28px 10px;
-                background: #ffffff;
-            }
-
-            /* ===== SECTIONS ===== */
-            .section {
-                margin-bottom: 10px;
-            }
-
-            .section:last-of-type {
-                margin-bottom: 0;
-            }
-
-            .section-title {
-                font-size: 10px;
-                font-weight: 800;
-                color: #1a1a2e;
-                text-transform: uppercase;
-                letter-spacing: 1.5px;
-                margin-bottom: 6px;
-                padding-bottom: 4px;
-                border-bottom: 2px solid #e8e4ff;
-            }
-
-            .section-title .icon {
-                margin-right: 6px;
-                font-size: 13px;
-            }
-
-            /* ===== GRID ===== */
-            .grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                gap: 8px;
-            }
-
-            .grid-3 {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            /* ===== CARD ===== */
-            .card {
-                background: #f8f7ff;
-                border-radius: 10px;
-                padding: 8px 14px;
-                border: 1px solid #e8e4ff;
-            }
-
-            .card .label {
-                font-size: 9px;
-                font-weight: 700;
-                color: #6C63FF;
-                text-transform: uppercase;
-                letter-spacing: 0.8px;
-                margin-bottom: 2px;
-            }
-
-            .card .value {
-                font-size: 14px;
-                font-weight: 700;
-                color: #1a1a2e;
-                letter-spacing: -0.2px;
-            }
-
-            .card .value-sm {
-                font-size: 13px;
-                font-weight: 600;
-                color: #1a1a2e;
-            }
-
-            /* ===== HIGHLIGHT BOX ===== */
-            .highlight-box {
-                background: linear-gradient(135deg, #f5f3ff, #edeafe);
-                border: 2px solid #c8bfff;
-                border-radius: 10px;
-                padding: 10px 18px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 8px;
-                margin-top: 2px;
-            }
-
-            .highlight-box .left .label {
-                font-size: 10px;
-                font-weight: 700;
-                color: #6C63FF;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .highlight-box .left .value {
-                font-size: 16px;
-                font-weight: 800;
-                color: #1a1a2e;
-                margin-top: 1px;
-                letter-spacing: -0.3px;
-            }
-
-            .highlight-box .right {
-                text-align: right;
-            }
-
-            .highlight-box .right .label {
-                font-size: 10px;
-                font-weight: 700;
-                color: #6C63FF;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }
-
-            .highlight-box .right .value {
-                font-size: 18px;
-                font-weight: 900;
-                color: #6C63FF;
-                margin-top: 1px;
-                letter-spacing: -0.5px;
-            }
-
-            /* ===== COMPANY ADDRESS ===== */
-            .company-address {
-                background: #f8f7ff;
-                padding: 8px 18px;
-                border-radius: 10px;
-                border: 1px solid #e8e4ff;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-
-            .company-address .address-text {
-                font-size: 10px;
-                color: #4a5568;
-                line-height: 1.5;
-            }
-
-            .company-address .address-text strong {
-                color: #1a1a2e;
-            }
-
-            /* ===== STAMP ONLY - RIGHT SIDE ===== */
-            .stamp-section {
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-                margin-top: 8px;
-                padding-top: 8px;
-                border-top: 2px dashed #e8e4ff;
-            }
-
-            .stamp-box {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 2px;
-            }
-
-            .stamp-box .stamp-label {
-                font-size: 7px;
-                color: #6b7280;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-                font-weight: 600;
-            }
-
-            .stamp-box .stamp-image {
-                width: 120px;
-                height: 120px;
-                object-fit: contain;
-                border-radius: 8px;
-                background: #ffffff;
-                padding: 4px;
-            }
-
-            /* ===== FOOTER ===== */
-            .footer {
-                background: #f8f7ff;
-                padding: 10px 28px 8px;
-                text-align: center;
-                border-top: 2px solid #e8e4ff;
-            }
-
-            .footer .brand-name {
-                font-size: 14px;
-                font-weight: 800;
-                color: #1a1a2e;
-                letter-spacing: 1px;
-            }
-
-            .footer .brand-name span {
-                color: #6C63FF;
-            }
-
-            .footer .divider {
-                width: 25px;
-                height: 2px;
-                background: linear-gradient(90deg, #6C63FF, #8B7CF7);
-                margin: 4px auto;
-                border-radius: 2px;
-            }
-
-            .footer p {
-                font-size: 10px;
-                color: #1a1a2e;
-                font-weight: 500;
-                line-height: 1.4;
-            }
-
-            .footer .note {
-                font-size: 7px;
-                color: #6b7280;
-                font-weight: 500;
-                margin-top: 3px;
-                letter-spacing: 0.3px;
-            }
-
-            /* ===== RESPONSIVE ===== */
-            @media (max-width: 700px) {
-                .top-bar {
-                    flex-direction: column;
-                    gap: 6px;
-                    padding: 10px 16px;
-                    text-align: center;
-                }
-                .top-bar .invoice-tag {
-                    text-align: center;
-                }
-                .header {
-                    padding: 12px 16px;
-                }
-                .header-content {
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-                .header-right {
-                    text-align: left;
-                    width: 100%;
-                }
-                .header-right .amount-wrapper {
-                    justify-content: flex-start;
-                }
-                .header-right .amount {
-                    font-size: 24px;
-                }
-                .body {
-                    padding: 10px 16px;
-                }
-                .grid-3 {
-                    grid-template-columns: 1fr 1fr;
-                }
-                .status-row {
-                    padding: 6px 16px;
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-                .footer {
-                    padding: 8px 16px;
-                }
-                .stamp-section {
-                    justify-content: center;
-                }
-                .company-address {
-                    flex-direction: column;
-                    text-align: center;
-                }
-                .stamp-box .stamp-image {
-                    width: 100px;
-                    height: 100px;
-                }
-            }
-
-            @media (max-width: 480px) {
-                .grid-3 {
-                    grid-template-columns: 1fr;
-                }
-                .top-bar .brand h1 {
-                    font-size: 16px;
-                }
-                .header-left .greeting {
-                    font-size: 17px;
-                }
-            }
-
-            /* ===== PRINT ===== */
-            @media print {
-                body {
-                    background: #ffffff;
-                    padding: 0;
-                    margin: 0;
-                }
-                .invoice {
-                    box-shadow: none;
-                    border-radius: 0;
-                    max-width: 100%;
-                }
-                .top-bar {
-                    background: linear-gradient(135deg, #6C63FF, #8B7CF7) !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .top-bar .brand .logo-img {
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .status-badge {
-                    color: #10b981 !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .highlight-box {
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .card {
-                    background: #f8f7ff !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .footer {
-                    background: #f8f7ff !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .header {
-                    background: linear-gradient(135deg, #f8f7ff, #f0eeff) !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .company-address {
-                    background: #f8f7ff !important;
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .stamp-image {
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                }
-                .stamp-section {
-                    page-break-inside: avoid;
-                    break-inside: avoid;
-                }
-            }
-        </style>
-    </head>
-
-    <body>
-        <div class="invoice">
-
-            <!-- ===== TOP BAR ===== -->
-            <div class="top-bar">
-                <div class="brand">
-                    <img src="/logo.png" alt="Roventar Logo" class="logo-img" />
-                    <div class="brand-text">
-                        <h1>Roventar</h1>
-                        <span>Smart Trading · Better Future</span>
-                    </div>
-                </div>
-                <div class="invoice-tag">
-                    <div class="label">Invoice Number</div>
-                    <div class="number">#${invoiceNo}</div>
-                </div>
-            </div>
-
-            <!-- ===== HEADER ===== -->
-            <div class="header">
-                <div class="header-content">
-                    <div class="header-left">
-                        <div class="greeting">
-                            Hello, <span>${userName}</span>
-                        </div>
-                        <div class="sub">Thank you for investing with Roventar</div>
-                    </div>
-                    <div class="header-right">
-                        <div class="amount-label">Total Investment</div>
-                        <div class="amount-wrapper">
-                            <span class="amount">$${amount.toFixed(2)}</span>
-                            <span class="currency">USD</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== STATUS ROW ===== -->
-            <div class="status-row">
-                <div class="date">
-                    📅 <strong>Transaction Date:</strong> ${orderDate}
-                </div>
-                <div>
-                    <span class="status-badge">${status}</span>
-                </div>
-            </div>
-
-            <!-- ===== BODY ===== -->
-            <div class="body">
-
-                <!-- User Details -->
-                <div class="section">
-                    <div class="section-title">
-                        <span class="icon">👤</span> User Details
-                    </div>
-                    <div class="grid">
-                        <div class="card">
-                            <div class="label">Username</div>
-                            <div class="value">${userName}</div>
-                        </div>
-                        <div class="card">
-                            <div class="label">User ID</div>
-                            <div class="value value-sm">${userId}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Package Details -->
-                <div class="section">
-                    <div class="section-title">
-                        <span class="icon">🤖</span> Package Details
-                    </div>
-                    <div class="grid grid-3">
-                        <div class="card">
-                            <div class="label">Strategy</div>
-                            <div class="value">${d.CategoryName || d.bot || "N/A"}</div>
-                        </div>
-                        <div class="card">
-                            <div class="label">Package</div>
-                            <div class="value">${d.PackageName || d.package || "N/A"}</div>
-                        </div>
-                        <div class="card">
-                            <div class="label">APY</div>
-                            <div class="value">${typeof roiValue === 'number' ? roiValue.toFixed(2) : roiValue}%</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Investment Summary -->
-                <div class="section">
-                    <div class="section-title">
-                        <span class="icon">💰</span> Investment Summary
-                    </div>
-                    <div class="highlight-box">
-                        <div class="left">
-                            <div class="label">Package</div>
-                            <div class="value">${d.PackageName || d.package || "N/A"}</div>
-                        </div>
-                        <div class="right">
-                            <div class="label">Amount</div>
-                            <div class="value">$${amount.toFixed(2)}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ===== COMPANY ADDRESS ===== -->
-                <div class="section" style="margin-bottom: 4px;">
-                    <div class="section-title">
-                        <span class="icon">🏢</span> Company Details
-                    </div>
-                <div class="company-address">
-    <div class="address-text">
-        <strong>ROVENTAR TRADING LLC</strong><br />
-        Registered Agent: As per Articles of Organization<br />
-        State of Missouri, USA<br />
-        Date Filed: 08/26/2026
-    </div>
-
-    <div class="address-text" style="text-align: right;">
-        <strong>Email:</strong> support@roventar.com<br />
-        <strong>Phone:</strong> +1 (800) 555-0199
-    </div>
-</div>
-                </div>
-
-                <!-- ===== STAMP ONLY - RIGHT SIDE ===== -->
-                <div class="stamp-section">
-                    <div class="stamp-box">
-                        <span class="stamp-label">Company Stamp</span>
-                        <img src="/stampbackremove.png" alt="Roventar CAPITAL MANAGEMENT LLC Stamp" class="stamp-image" />
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- ===== FOOTER ===== -->
-            <div class="footer">
-                <div class="brand-name">✦ Rove<span>ntar</span></div>
-                <div class="divider"></div>
-                <p>
-                    Thank you for trusting Roventar with your investment.<br />
-                    Our AI-driven strategies are working to grow your wealth.
-                </p>
-                <div class="note">
-                    © ${new Date().getFullYear()} Roventar · All Rights Reserved · Computer Generated Invoice
-                </div>
-            </div>
-
-        </div>
-    </body>
-    </html>
-    `;
-
-    // Generate PDF
-    const element = document.createElement("div");
-    element.innerHTML = invoiceHTML;
-    document.body.appendChild(element);
-
-    const opt = {
-        margin: 0,
-        filename: `Roventar_Invoice_${d.CategoryName || d.bot || "Bot"}_${d.OrderDate || d.date || "Date"}.pdf`,
-        image: { type: "jpeg", quality: 1 },
-        html2canvas: {
-            scale: 2,
-            useCORS: true,
-            scrollY: 0,
-            logging: false,
-        },
-        jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait",
-        },
-        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-    };
-
-    try {
-        await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-        console.error("PDF generation error:", error);
-        alert("Error generating PDF. Please try again.");
-    } finally {
-        document.body.removeChild(element);
-    }
-};
-
-  const submit = async () => {
+  const handleSubmit = () => {
     if (!uname) {
       setUerr("Please enter a valid User ID");
       return;
     }
 
-    // Get investment amount (custom amount)
     const investmentAmount = getInvestmentAmount();
-    const minInvest = parseFloat(investBot.mininvest);
 
-    // Validate minimum amount
-    if (investmentAmount < minInvest) {
-      setAmountError(`Minimum investment amount is $${minInvest}`);
+    // Validate amount range
+    if (investmentAmount < 100) {
+      setAmountError("Minimum investment amount is $100");
       return;
     }
 
-    // Validate maximum amount
-    const maxInvest = getMaxInvestment();
-    if (investmentAmount > maxInvest) {
-      setAmountError(`Maximum investment amount is $${maxInvest}`);
+    if (investmentAmount > 14999) {
+      setAmountError("Maximum investment amount is $14,999");
       return;
     }
 
-    // CHECK INSUFFICIENT FUNDS
     if (walletBalance < investmentAmount) {
-      setAmountError(`Insufficient funds! Your wallet balance is $${walletBalance.toLocaleString()} but investment amount is $${investmentAmount.toLocaleString()}`);
+      setAmountError(`Insufficient funds! Your wallet balance is $${walletBalance.toLocaleString()}`);
       return;
     }
 
-    setIsProcessing(true);
+    onSubmit({
+      uid,
+      uname,
+      userURID,
+      amount: investmentAmount,
+      bot
+    });
+  };
 
+  return (
+    <div className="sb-modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="sb-modal">
+        <div className="sb-modal-header">
+          <div>
+            <h3 className="sb-modal-title">Invest in {bot?.name}</h3>
+            <p className="sb-modal-subtitle">Enter investment details below</p>
+          </div>
+          <button onClick={onClose} className="sb-modal-close">✕</button>
+        </div>
+
+        {/* Wallet Balance */}
+        <div className="sb-modal-wallet">
+          <div className="sb-modal-wallet-inner">
+            <span className="sb-modal-wallet-label">Wallet Balance</span>
+            <span className="sb-modal-wallet-value">${walletBalance.toLocaleString()}</span>
+          </div>
+        </div>
+
+        {/* User ID Input */}
+        <div className="sb-modal-field">
+          <label className="sb-modal-label">User ID *</label>
+          <input
+            className="sb-modal-input"
+            placeholder="Enter User ID (e.g. X0100001)"
+            value={uid}
+            onChange={e => setUid(e.target.value)}
+          />
+          {!uid.trim() ? (
+            <div className="sb-modal-error">⚠ Please enter User ID</div>
+          ) : isFetchingUser ? (
+            <div className="sb-modal-info">⏳ Fetching user details...</div>
+          ) : uname ? (
+            <div className="sb-modal-success">✓ {uname}</div>
+          ) : uerr ? (
+            <div className="sb-modal-error">⚠ {uerr}</div>
+          ) : null}
+        </div>
+
+        {/* Selected Bot */}
+        <div className="sb-modal-field">
+          <label className="sb-modal-label">Selected Bot</label>
+          <div className="sb-modal-bot-display">
+            <span>{bot?.icon || "🤖"}</span>
+            <span className="sb-modal-bot-name">{bot?.name}</span>
+          </div>
+        </div>
+
+        {/* Investment Amount */}
+        <div className="sb-modal-field">
+          <label className="sb-modal-label">Investment Amount (USD) *</label>
+          <p className="sb-modal-helper">Min: $100 | Max: $14,999</p>
+          <input
+            type="number"
+            step="1"
+            className={`sb-modal-input ${amountError ? "sb-modal-input-error" : ""}`}
+            placeholder="Enter amount between $100 - $14,999"
+            value={customAmount}
+            onChange={handleAmountChange}
+          />
+          {amountError ? (
+            <div className="sb-modal-error">⚠ {amountError}</div>
+          ) : customAmount && parseFloat(customAmount) >= 100 && parseFloat(customAmount) <= 14999 && (
+            (() => {
+              const packageName = getPackageNameByAmount(parseFloat(customAmount));
+              if (packageName && !packageName.includes("Minimum") && !packageName.includes("Maximum")) {
+                return (
+                  <div className="sb-modal-package">
+                    Package: <strong>{packageName}</strong>
+                  </div>
+                );
+              }
+              return null;
+            })()
+          )}
+        </div>
+
+        <button
+          className="sb-modal-submit"
+          onClick={handleSubmit}
+          disabled={
+            !uname || 
+            isLoading || 
+            isFetchingUser || 
+            !customAmount || 
+            amountError || 
+            parseFloat(customAmount) < 100 || 
+            parseFloat(customAmount) > 14999 || 
+            walletBalance < parseFloat(customAmount || 0)
+          }
+        >
+          {isLoading ? "Processing..." : "🚀 Activate Investment"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================
+   STYLES WITH LIGHT & DARK MODE - FULLY RESPONSIVE
+========================= */
+
+const styles = `
+  /* ===== CSS VARIABLES - LIGHT MODE (Default) ===== */
+  :root {
+    --sb-text-1: #0f172a;
+    --sb-text-2: #475569;
+    --sb-text-3: #94a3b8;
+    --sb-border: #e2e8f0;
+    --sb-border-2: #cbd5e1;
+    --sb-bg-1: #ffffff;
+    --sb-bg-2: #f8fafc;
+    --sb-bg-hover: #f1f5f9;
+    --sb-blue: #2563eb;
+    --sb-blue-light: #dbeafe;
+    --sb-blue-dark: #1d4ed8;
+    --sb-green: #22c55e;
+    --sb-green-light: #dcfce7;
+    --sb-red: #ef4444;
+    --sb-red-light: #fee2e2;
+    --sb-purple: #9333ea;
+    --sb-purple-light: #f3e8ff;
+    --sb-orange: #f97316;
+    --sb-orange-light: #fff7ed;
+    --sb-yellow: #eab308;
+    --sb-yellow-light: #fefce8;
+    --sb-amber: #f59e0b;
+    --sb-amber-light: #fef3c7;
+    --sb-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --sb-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+    --sb-shadow-modal: 0 25px 50px -12px rgba(0,0,0,0.25);
+    --sb-radius: 16px;
+    --sb-radius-sm: 8px;
+    --sb-transition: 0.3s ease;
+    --sb-bg-overlay: rgba(0,0,0,0.5);
+  }
+
+  /* ===== DARK MODE ===== */
+  [data-theme="dark"] {
+    --sb-text-1: #f1f5f9;
+    --sb-text-2: #cbd5e1;
+    --sb-text-3: #94a3b8;
+    --sb-border: #334155;
+    --sb-border-2: #475569;
+    --sb-bg-1: #1e293b;
+    --sb-bg-2: #0f172a;
+    --sb-bg-hover: #334155;
+    --sb-blue: #60a5fa;
+    --sb-blue-light: #1e3a5f;
+    --sb-blue-dark: #3b82f6;
+    --sb-green: #4ade80;
+    --sb-green-light: #14532d;
+    --sb-red: #f87171;
+    --sb-red-light: #7f1d1d;
+    --sb-purple: #a78bfa;
+    --sb-purple-light: #2e1065;
+    --sb-orange: #fb923c;
+    --sb-orange-light: #431407;
+    --sb-yellow: #facc15;
+    --sb-yellow-light: #422006;
+    --sb-amber: #fbbf24;
+    --sb-amber-light: #451a03;
+    --sb-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --sb-shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+    --sb-shadow-modal: 0 25px 50px -12px rgba(0,0,0,0.5);
+    --sb-bg-overlay: rgba(0,0,0,0.7);
+  }
+
+  /* ===== BASE ===== */
+  * {
+    box-sizing: border-box;
+  }
+
+  .sb-container {
+    min-height: 100vh;
+    background: var(--sb-bg-2);
+    color: var(--sb-text-1);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  .sb-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--sb-border);
+    background: var(--sb-bg-1);
+  }
+
+  .sb-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .sb-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .sb-header-icon {
+    color: var(--sb-blue);
+    flex-shrink: 0;
+  }
+
+  .sb-header-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sb-text-1);
+    margin: 0;
+  }
+
+  .sb-header-subtitle {
+    font-size: 11px;
+    color: var(--sb-text-3);
+    margin: 0;
+  }
+
+  .sb-header-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .sb-header-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-1);
+    box-shadow: var(--sb-shadow);
+  }
+
+  .sb-header-badge-icon {
+    color: var(--sb-amber);
+    flex-shrink: 0;
+  }
+
+  .sb-header-badge-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sb-text-1);
+    white-space: nowrap;
+  }
+
+  .sb-header-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-1);
+    box-shadow: var(--sb-shadow);
+  }
+
+  .sb-status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .sb-status-indicator-live {
+    background: var(--sb-green);
+    animation: sb-pulse 1.5s ease-in-out infinite;
+  }
+
+  .sb-status-indicator-offline {
+    background: var(--sb-red);
+  }
+
+  .sb-status-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sb-text-1);
+    white-space: nowrap;
+  }
+
+  .sb-header-wallet {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--sb-green);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-green-light);
+    box-shadow: var(--sb-shadow);
+  }
+
+  .sb-header-wallet-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sb-green);
+    white-space: nowrap;
+  }
+
+  /* ===== THEME TOGGLE BUTTON ===== */
+  .sb-theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-1);
+    color: var(--sb-text-1);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--sb-transition);
+    flex-shrink: 0;
+  }
+
+  .sb-theme-toggle:hover {
+    background: var(--sb-bg-hover);
+    border-color: var(--sb-border-2);
+  }
+
+  .sb-theme-toggle-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .sb-theme-toggle-icon-sun {
+    color: var(--sb-amber);
+  }
+
+  .sb-theme-toggle-icon-moon {
+    color: var(--sb-blue);
+  }
+
+  /* ===== TAB NAVIGATION ===== */
+  .sb-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--sb-bg-2);
+    border-radius: var(--sb-radius-sm);
+    border: 1px solid var(--sb-border);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .sb-tab {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--sb-text-3);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .sb-tab:hover {
+    background: var(--sb-bg-hover);
+    color: var(--sb-text-1);
+  }
+
+  .sb-tab-active {
+    background: var(--sb-bg-1);
+    color: var(--sb-blue);
+    box-shadow: var(--sb-shadow);
+  }
+
+  .sb-tab-active:hover {
+    background: var(--sb-bg-1);
+  }
+
+  .sb-tab-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ===== SECTION ===== */
+  .sb-section {
+    padding: 12px 16px;
+  }
+
+  /* ===== CARD ===== */
+  .sb-card {
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius);
+    background: var(--sb-bg-1);
+    box-shadow: var(--sb-shadow);
+    transition: all var(--sb-transition);
+    margin-bottom: 16px;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .sb-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sb-shadow-lg);
+  }
+
+  .sb-card-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--sb-border);
+    gap: 8px;
+  }
+
+  .sb-card-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sb-card-icon {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .sb-icon-blue { background: var(--sb-blue-light); }
+  .sb-icon-purple { background: var(--sb-purple-light); }
+  .sb-icon-orange { background: var(--sb-orange-light); }
+  .sb-icon-green { background: var(--sb-green-light); }
+  .sb-icon-yellow { background: var(--sb-yellow-light); }
+
+  .sb-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--sb-text-1);
+    margin: 0;
+    letter-spacing: 0.02em;
+    word-break: break-word;
+  }
+
+  .sb-card-subtitle {
+    font-size: 11px;
+    color: var(--sb-text-3);
+    margin: 2px 0 0 0;
+  }
+
+  .sb-card-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .sb-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .sb-status-live { background: var(--sb-green); animation: sb-pulse 1.5s ease-in-out infinite; }
+  .sb-status-offline { background: var(--sb-red); }
+  .sb-status-live-text { color: var(--sb-green); }
+  .sb-status-offline-text { color: var(--sb-red); }
+
+  .sb-card-body {
+    padding: 12px 16px;
+  }
+
+  .sb-card-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  @media (min-width: 992px) {
+    .sb-card-grid {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .sb-card-grid {
+      grid-template-columns: 1fr 220px;
+    }
+  }
+
+  .sb-card-left {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .sb-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sb-text-3);
+    margin-bottom: 6px;
+  }
+
+  .sb-market-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sb-market-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-2);
+    gap: 4px;
+  }
+
+  .sb-market-loading {
+    opacity: 0.6;
+  }
+
+  .sb-market-symbol {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--sb-text-1);
+  }
+
+  .sb-market-price {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sb-text-1);
+  }
+
+  .sb-market-change {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .sb-change-positive { color: var(--sb-green); }
+  .sb-change-negative { color: var(--sb-red); }
+
+  .sb-market-loading-text {
+    font-size: 11px;
+    color: var(--sb-text-3);
+  }
+
+  .sb-chart-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--sb-text-1);
+    margin: 12px 0 6px 0;
+  }
+
+  .sb-mini-chart {
+    width: 100%;
+    height: 80px;
+  }
+
+  .sb-chart-line {
+    color: var(--sb-blue);
+  }
+
+  .sb-chart-placeholder {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sb-chart-loading {
+    font-size: 11px;
+    color: var(--sb-text-3);
+  }
+
+  .sb-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow: hidden;
+    border-radius: var(--sb-radius-sm);
+    border: 1px solid var(--sb-border);
+    margin-top: 10px;
+  }
+
+  .sb-detail-item {
+    padding: 6px;
+    text-align: center;
+  }
+
+  .sb-detail-border {
+    border-left: 1px solid var(--sb-border);
+    border-right: 1px solid var(--sb-border);
+  }
+
+  .sb-detail-label {
+    font-size: 9px;
+    color: var(--sb-text-3);
+    margin: 0;
+  }
+
+  .sb-detail-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sb-text-1);
+    margin: 3px 0 0 0;
+  }
+
+  .sb-detail-risk {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sb-amber);
+    margin: 3px 0 0 0;
+  }
+
+  .sb-card-right {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .sb-strategy-label {
+    padding: 4px 8px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-2);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sb-text-1);
+    margin: 0;
+  }
+
+  .sb-indicators {
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    overflow: hidden;
+  }
+
+  .sb-indicator-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--sb-border);
+  }
+
+  .sb-indicator-item:last-child {
+    border-bottom: none;
+  }
+
+  .sb-indicator-label {
+    font-size: 11px;
+    color: var(--sb-text-3);
+  }
+
+  .sb-indicator-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sb-text-1);
+  }
+
+  .sb-indicator-bullish { color: var(--sb-green); }
+  .sb-indicator-bearish { color: var(--sb-red); }
+  .sb-indicator-uptrend { color: var(--sb-green); }
+  .sb-indicator-downtrend { color: var(--sb-red); }
+  .sb-indicator-sideways { color: var(--sb-amber); }
+
+  .sb-signal-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sb-text-3);
+    margin: 3px 0 0 0;
+  }
+
+  .sb-signal-box {
+    border-radius: var(--sb-radius-sm);
+    padding: 10px;
+    text-align: center;
+    border: 1px solid;
+  }
+
+  .sb-signal-buy {
+    border-color: var(--sb-green);
+    background: var(--sb-green-light);
+  }
+
+  .sb-signal-sell {
+    border-color: var(--sb-red);
+    background: var(--sb-red-light);
+  }
+
+  .sb-signal-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .sb-signal-buy-text { color: var(--sb-green); }
+  .sb-signal-sell-text { color: var(--sb-red); }
+
+  .sb-signal-symbol {
+    font-size: 11px;
+    color: var(--sb-text-1);
+    margin: 3px 0 0 0;
+  }
+
+  .sb-confidence {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-2);
+  }
+
+  .sb-confidence-label {
+    font-size: 10px;
+    color: var(--sb-text-3);
+  }
+
+  .sb-confidence-value {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .sb-confidence-buy { color: var(--sb-green); }
+  .sb-confidence-sell { color: var(--sb-red); }
+
+  .sb-last-update {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+  }
+
+  .sb-update-label {
+    color: var(--sb-text-3);
+  }
+
+  .sb-update-value {
+    font-weight: 500;
+    color: var(--sb-text-1);
+  }
+
+  /* ===== ACTION BUTTONS ===== */
+  .sb-action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .sb-view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-2);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--sb-text-1);
+    cursor: pointer;
+    transition: all var(--sb-transition);
+    white-space: nowrap;
+  }
+
+  .sb-view-btn:hover {
+    background: var(--sb-bg-hover);
+    border-color: var(--sb-border-2);
+    transform: translateY(-1px);
+  }
+
+  .sb-invest-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 10px;
+    border: 1px solid var(--sb-blue);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-blue-light);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--sb-blue);
+    cursor: pointer;
+    transition: all var(--sb-transition);
+    white-space: nowrap;
+  }
+
+  .sb-invest-btn:hover {
+    background: var(--sb-blue);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  /* ===== RESPONSIVE ACTION BUTTONS ===== */
+  @media (max-width: 768px) {
+    .sb-action-buttons {
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    .sb-view-btn,
+    .sb-invest-btn {
+      padding: 8px 8px;
+      font-size: 10px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .sb-action-buttons {
+      grid-template-columns: 1fr;
+    }
+    
+    .sb-view-btn,
+    .sb-invest-btn {
+      padding: 10px 12px;
+      font-size: 11px;
+    }
+  }
+
+  .sb-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow: hidden;
+    border-radius: var(--sb-radius-sm);
+    border: 1px solid var(--sb-border);
+    margin-top: 12px;
+  }
+
+  .sb-stat-item {
+    padding: 6px;
+    text-align: center;
+  }
+
+  .sb-stat-border {
+    border-left: 1px solid var(--sb-border);
+    border-right: 1px solid var(--sb-border);
+  }
+
+  .sb-stat-label {
+    font-size: 9px;
+    color: var(--sb-text-3);
+    margin: 0;
+  }
+
+  .sb-stat-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sb-text-1);
+    margin: 3px 0 0 0;
+  }
+
+  /* ===== FOOTER ===== */
+  .sb-footer {
+    margin-top: 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--sb-border);
+    border-radius: 12px;
+    background: var(--sb-bg-1);
+    font-size: 10px;
+    color: var(--sb-text-3);
+  }
+
+  .sb-footer-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  @media (min-width: 768px) {
+    .sb-footer-inner {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+  }
+
+  .sb-footer-label {
+    font-weight: 600;
+    color: var(--sb-text-1);
+  }
+
+  .sb-footer-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sb-footer-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .sb-footer-dot-live { background: var(--sb-green); }
+  .sb-footer-dot-sim { background: var(--sb-yellow); }
+
+  .sb-footer-provider {
+    font-weight: 600;
+    color: var(--sb-blue);
+  }
+
+  /* ===== MODAL ===== */
+  .sb-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--sb-bg-overlay);
+    animation: sb-fadeIn 0.2s ease-out;
+  }
+
+  .sb-modal {
+    width: 100%;
+    max-width: 460px;
+    border-radius: var(--sb-radius);
+    background: var(--sb-bg-1);
+    padding: 20px;
+    box-shadow: var(--sb-shadow-modal);
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: sb-slideUp 0.3s ease-out;
+  }
+
+  @keyframes sb-slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .sb-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    gap: 12px;
+  }
+
+  .sb-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--sb-text-1);
+    margin: 0;
+  }
+
+  .sb-modal-subtitle {
+    font-size: 12px;
+    color: var(--sb-text-3);
+    margin: 3px 0 0 0;
+  }
+
+  .sb-modal-close {
+    background: var(--sb-bg-hover);
+    border: 1px solid var(--sb-border);
+    color: var(--sb-text-3);
+    border-radius: var(--sb-radius-sm);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .sb-modal-close:hover {
+    background: var(--sb-border);
+  }
+
+  .sb-modal-wallet {
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--sb-green);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-green-light);
+  }
+
+  .sb-modal-wallet-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .sb-modal-wallet-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--sb-green);
+  }
+
+  .sb-modal-wallet-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sb-green);
+  }
+
+  .sb-modal-field {
+    margin-bottom: 10px;
+  }
+
+  .sb-modal-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--sb-text-1);
+    margin-bottom: 4px;
+  }
+
+  .sb-modal-helper {
+    font-size: 11px;
+    color: var(--sb-text-3);
+    margin-bottom: 4px;
+  }
+
+  .sb-modal-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    font-size: 13px;
+    color: var(--sb-text-1);
+    background: var(--sb-bg-1);
+    transition: border-color var(--sb-transition);
+  }
+
+  .sb-modal-input:focus {
+    outline: none;
+    border-color: var(--sb-blue);
+  }
+
+  .sb-modal-input-error {
+    border-color: var(--sb-red);
+  }
+
+  .sb-modal-error {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--sb-red);
+  }
+
+  .sb-modal-info {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--sb-text-3);
+  }
+
+  .sb-modal-success {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--sb-green);
+    font-weight: 600;
+  }
+
+  .sb-modal-bot-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-2);
+  }
+
+  .sb-modal-bot-name {
+    font-weight: 600;
+    color: var(--sb-text-1);
+    font-size: 13px;
+  }
+
+  .sb-modal-package {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--sb-blue);
+    font-weight: 600;
+  }
+
+  .sb-modal-submit {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-blue);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--sb-transition);
+  }
+
+  .sb-modal-submit:hover:not(:disabled) {
+    background: var(--sb-blue-dark);
+  }
+
+  .sb-modal-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ===== SUCCESS MODAL ===== */
+  .sb-success-modal {
+    width: 100%;
+    max-width: 420px;
+    border-radius: var(--sb-radius);
+    background: var(--sb-bg-1);
+    padding: 20px;
+    box-shadow: var(--sb-shadow-modal);
+    text-align: center;
+    animation: sb-slideUp 0.3s ease-out;
+  }
+
+  .sb-success-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+  }
+
+  .sb-success-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sb-green);
+    margin-bottom: 6px;
+  }
+
+  .sb-success-subtitle {
+    font-size: 13px;
+    color: var(--sb-text-1);
+    margin-bottom: 14px;
+  }
+
+  .sb-success-details {
+    margin-bottom: 14px;
+    padding: 14px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-bg-2);
+    text-align: left;
+  }
+
+  .sb-success-detail {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--sb-border);
+    gap: 8px;
+  }
+
+  .sb-success-detail:last-child {
+    border-bottom: none;
+  }
+
+  .sb-success-detail-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--sb-text-1);
+  }
+
+  .sb-success-detail-value {
+    font-size: 12px;
+    color: var(--sb-text-1);
+    word-break: break-word;
+  }
+
+  .sb-success-detail-value-highlight {
+    font-weight: 700;
+    color: var(--sb-text-1);
+  }
+
+  .sb-success-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-blue);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--sb-transition);
+  }
+
+  .sb-success-btn:hover {
+    background: var(--sb-blue-dark);
+  }
+
+  /* ===== GRID ===== */
+  .sb-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .sb-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .sb-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .sb-grid {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes sb-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  @keyframes sb-fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ===== LOADING ===== */
+  .sb-loading {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background: var(--sb-bg-2);
+  }
+
+  .sb-loading-content {
+    text-align: center;
+  }
+
+  .sb-loading-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+
+  .sb-loading-text {
+    font-size: 18px;
+    color: var(--sb-text-1);
+  }
+
+  /* ===== TAB CONTENT TRANSITION ===== */
+  .sb-tab-content {
+    animation: sb-fadeIn 0.3s ease-out;
+  }
+
+  /* ===== RESPONSIVE HEADER ===== */
+  @media (max-width: 640px) {
+    .sb-header {
+      padding: 10px 12px;
+    }
+    
+    .sb-header-title {
+      font-size: 15px;
+    }
+    
+    .sb-header-subtitle {
+      font-size: 10px;
+    }
+    
+    .sb-header-right {
+      gap: 6px;
+    }
+    
+    .sb-header-badge,
+    .sb-header-status,
+    .sb-header-wallet {
+      padding: 4px 8px;
+    }
+    
+    .sb-header-badge-text,
+    .sb-status-label,
+    .sb-header-wallet-text {
+      font-size: 10px;
+    }
+    
+    .sb-tabs {
+      width: 100%;
+      justify-content: stretch;
+    }
+    
+    .sb-tab {
+      flex: 1;
+      justify-content: center;
+      font-size: 11px;
+      padding: 5px 8px;
+    }
+    
+    .sb-tab-icon {
+      width: 12px;
+      height: 12px;
+    }
+    
+    .sb-theme-toggle {
+      font-size: 10px;
+      padding: 4px 8px;
+    }
+    
+    .sb-theme-toggle-icon {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .sb-header-title {
+      font-size: 14px;
+    }
+    
+    .sb-header-right {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+    }
+    
+    .sb-tabs {
+      width: 100%;
+    }
+    
+    .sb-tab {
+      font-size: 10px;
+      padding: 4px 6px;
+    }
+    
+    .sb-header-badge,
+    .sb-header-status,
+    .sb-header-wallet {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .sb-section {
+      padding: 8px 10px;
+    }
+    
+    .sb-card-header {
+      padding: 10px 12px;
+    }
+    
+    .sb-card-body {
+      padding: 10px 12px;
+    }
+    
+    .sb-card-title {
+      font-size: 12px;
+    }
+    
+    .sb-card-subtitle {
+      font-size: 10px;
+    }
+    
+    .sb-modal {
+      padding: 16px;
+      margin: 8px;
+    }
+  }
+
+  /* ===== HISTORY TAB RESPONSIVE ===== */
+  .sb-history-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  @media (min-width: 768px) {
+    .sb-history-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .sb-history-card {
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius);
+    background: var(--sb-bg-1);
+    padding: 16px;
+    transition: all var(--sb-transition);
+  }
+
+  .sb-history-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sb-shadow-lg);
+  }
+
+  .sb-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sb-history-icon {
+    font-size: 32px;
+  }
+
+  .sb-history-status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--sb-green-light);
+    color: var(--sb-green);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+
+  .sb-history-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--sb-text-1);
+    margin-bottom: 4px;
+  }
+
+  .sb-history-subtitle {
+    font-size: 12px;
+    color: var(--sb-text-3);
+    margin-bottom: 8px;
+  }
+
+  .sb-history-amount {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--sb-text-1);
+    margin-bottom: 4px;
+  }
+
+  .sb-history-package {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sb-green);
+    margin-bottom: 8px;
+  }
+
+  .sb-history-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--sb-border);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sb-history-date {
+    font-size: 11px;
+    color: var(--sb-text-3);
+  }
+
+  .sb-history-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .sb-history-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: 6px;
+    background: var(--sb-bg-2);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--sb-text-1);
+    cursor: pointer;
+    transition: all var(--sb-transition);
+  }
+
+  .sb-history-btn:hover {
+    background: var(--sb-bg-hover);
+  }
+
+  .sb-history-btn-primary {
+    border-color: var(--sb-blue);
+    background: var(--sb-blue-light);
+    color: var(--sb-blue);
+  }
+
+  .sb-history-btn-primary:hover {
+    background: var(--sb-blue);
+    color: #fff;
+  }
+
+  .sb-history-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--sb-border);
+    font-size: 12px;
+  }
+
+  .sb-history-detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .sb-history-detail-label {
+    color: var(--sb-text-3);
+  }
+
+  .sb-history-detail-value {
+    font-weight: 500;
+    color: var(--sb-text-1);
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .sb-empty {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .sb-empty-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  .sb-empty-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sb-text-1);
+    margin-bottom: 8px;
+  }
+
+  .sb-empty-subtitle {
+    font-size: 13px;
+    color: var(--sb-text-3);
+  }
+
+  /* ===== SCROLLBAR ===== */
+  .sb-modal::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sb-modal::-webkit-scrollbar-track {
+    background: var(--sb-bg-2);
+  }
+
+  .sb-modal::-webkit-scrollbar-thumb {
+    background: var(--sb-border);
+    border-radius: 2px;
+  }
+
+  .sb-modal::-webkit-scrollbar-thumb:hover {
+    background: var(--sb-border-2);
+  }
+`;
+
+/* =========================
+   MAIN PAGE
+========================= */
+
+export default function SonicScalper() {
+  const dispatch = useDispatch();
+  const loading = useSelector(productLoading);
+  const activeProductsData = useSelector(activeProducts);
+  const [activeTab, setActiveTab] = useState('bots');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  const { 
+    livePrice, 
+    priceChange, 
+    chartData, 
+    wsConnected, 
+    lastUpdate, 
+    marketPrices 
+  } = useLiveMarket();
+
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletLoading, setWalletLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showInvestModal, setShowInvestModal] = useState(false);
+  const [selectedBot, setSelectedBot] = useState(null);
+  const [inv, setInv] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailBot, setDetailBot] = useState(null);
+
+  // Inject styles
+  useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = styles;
+    document.head.appendChild(styleEl);
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
+
+  // Check for saved theme preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }, []);
+
+  // Toggle theme
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    if (newTheme) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  // Fetch wallet balance
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      try {
+        setWalletLoading(true);
+        const result = await dispatch(getFundRequestReport()).unwrap();
+        if (result?.walletBalance?.[0]?.depositWallet !== undefined) {
+          setWalletBalance(result.walletBalance[0].depositWallet);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wallet balance:", error);
+        setWalletBalance(0);
+      } finally {
+        setWalletLoading(false);
+      }
+    };
+    fetchWalletBalance();
+  }, [dispatch]);
+
+  // Handle invest button click
+  const handleInvestClick = (bot) => {
+    setSelectedBot(bot);
+    setShowInvestModal(true);
+  };
+
+  // Handle view details button click
+  const handleViewDetails = (bot) => {
+    setDetailBot(bot);
+    setShowDetailModal(true);
+  };
+
+  // Handle investment submission
+  const handleInvestSubmit = async ({ uid, uname, userURID, amount, bot }) => {
+    setIsProcessing(true);
+    
     try {
       const currentUserURID = getUserId();
-
+      const productId = bot.id || bot.productId;
+      
       const requestBody = {
-        // urid: userURID,
-        productId: investBot.productId,
-        // createdBy: currentUserURID,
+        productId: productId,
         byLoginId: uid,
-        rkprice: investmentAmount  // Using custom amount
+        rkprice: amount
       };
 
       const result = await dispatch(addRechargeTransactionUser(requestBody)).unwrap();
@@ -1119,1081 +2387,302 @@ const downloadPDFInvoice = async (orderData) => {
       } else {
         transactionData = result;
       }
-      const o = {
-        id: `XFX-${Date.now()}`,
-        bot: investBot.categoryName,
-        logo: getLogoEmoji(investBot.productName),
-        user: uname,
-        package: transactionData?.PackageName || getPackageNameByAmount(investmentAmount), // ✅ Fixed
-        uid: uid.toUpperCase(),
-        amount: investmentAmount,
-        date: new Date().toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }),
-        roi: investBot.roi,
-        status: "Active",
-        color: getColorByRisk(investBot.type),
-        transactionId: transactionData?.RechargeId || transactionData?.transactionId || result?.transactionId || `TXN-${Date.now()}`
+
+      // Package name function based on trading amount
+      const getPackageNameByAmount = (amount) => {
+        if (!amount || isNaN(amount)) return null;
+        if (amount >= 100 && amount <= 999) return "Basic";
+        else if (amount >= 1000 && amount <= 4999) return "Standard";
+        else if (amount >= 5000 && amount <= 9999) return "Elite";
+        else if (amount >= 10000 && amount <= 14999) return "Growth";
+        return null;
       };
 
+      const o = {
+        id: `XFX-${Date.now()}`,
+        bot: bot.name,
+        logo: bot.icon || "🤖",
+        user: uname,
+        package: transactionData?.PackageName || getPackageNameByAmount(amount),
+        uid: uid.toUpperCase(),
+        amount: amount,
+        date: new Date().toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }),
+        roi: bot.apr?.replace('%', '') || "20",
+        status: "Active",
+        color: bot.chartColor || "#6725cd",
+        transactionId: transactionData?.RechargeId || transactionData?.transactionId || `TXN-${Date.now()}`
+      };
 
-      setOrders(p => [o, ...p]);
       setInv(o);
-      setInvestBot(null);
-      setCustomAmount(""); // Reset custom amount
-      setAmountError("");
+      setShowInvestModal(false);
       setShowSuccess(true);
-      setUid("");
-      setUname("");
-      setUerr("");
-      setUserURID("");
+      setSelectedBot(null);
 
-      const urid = getUserId();
+      // Refresh wallet balance
       const walletResult = await dispatch(getFundRequestReport()).unwrap();
       if (walletResult?.walletBalance?.[0]?.depositWallet !== undefined) {
         setWalletBalance(walletResult.walletBalance[0].depositWallet);
       }
 
-      // Refresh order history after successful transaction
-      const historyResult = await dispatch(getRechargetransactionHIstory(urid)).unwrap();
-      if (Array.isArray(historyResult)) {
-        setOrderHistory(historyResult);
-      } else if (historyResult?.data && Array.isArray(historyResult.data)) {
-        setOrderHistory(historyResult.data);
-      }
-
     } catch (error) {
       console.error("Transaction failed:", error);
-      setUerr(error?.message || "Transaction failed. Please try again.");
+      alert(error?.message || "Transaction failed. Please try again.");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const getAuthLogin = () => {
-    try {
-      const currentUserPlain = localStorage.getItem("currentUserPlain");
-      if (currentUserPlain) {
-        const userData = JSON.parse(currentUserPlain);
-        return userData?.FName || userData?.userData?.FName;
-      }
-    } catch (error) {
-      console.error("Error getting AuthLogin:", error);
-    }
-    return null;
-  };
-
-  const userID = getAuthLogin();
-
-
-  // Invoice download handler
-  const dlInvoice = (orderData) => {
-    downloadPDFInvoice(orderData);
-  };
-
-  const filtered = bots.filter(b =>
-    b.categoryName?.toLowerCase().includes(q.toLowerCase()) ||
-    b.productName?.toLowerCase().includes(q.toLowerCase())
-  );
-
-  const nav = [
-    { id: "bots", icon: "◈", label: "Browse Bot" },
-    { id: "orders", icon: "≡", label: "Order History" }
-  ];
-
-  const totalInvestors = bots.reduce((sum, b) => sum + (b.traders || 0), 0);
-  const bestROI = Math.max(...bots.map(b => b.roi || 0));
-  const bestBot = bots.find(b => b.roi === bestROI);
-
-  const getPackageNameByAmount = (amount) => {
-    if (!amount || isNaN(amount)) return null;
-
-    if (amount >= 10 && amount <= 499) {
-      return "BO StartX";
-    } else if (amount >= 500 && amount <= 1999) {
-      return "BO TitanX";
-    } else if (amount >= 2000 && amount <= 4999) {
-      return "BO QuantumX";
-    } else if (amount >= 5000) {
-      return "BO MegaBullX";
-    }
-    return null;
+  // Detail Modal Component
+  const DetailModal = ({ bot, onClose }) => {
+    if (!bot) return null;
+    
+    return (
+      <div className="sb-modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="sb-modal" style={{ maxWidth: '500px' }}>
+          <div className="sb-modal-header">
+            <div>
+              <h3 className="sb-modal-title">Bot Details</h3>
+              <p className="sb-modal-subtitle">{bot.name} - {bot.subtitle}</p>
+            </div>
+            <button onClick={onClose} className="sb-modal-close">✕</button>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Bot Info */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--sb-bg-2)', borderRadius: 'var(--sb-radius-sm)', flexWrap: 'wrap' }}>
+              <div className={`sb-card-icon ${bot.iconBg}`} style={{ width: '48px', height: '48px', fontSize: '24px', flexShrink: 0 }}>
+                {bot.icon}
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--sb-text-1)' }}>{bot.name}</h4>
+                <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--sb-text-3)' }}>{bot.subtitle}</p>
+              </div>
+            </div>
+            
+            {/* Details Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              <div className="sb-history-detail-row">
+                <span className="sb-history-detail-label">Market</span>
+                <span className="sb-history-detail-value">{bot.market}</span>
+              </div>
+              <div className="sb-history-detail-row">
+                <span className="sb-history-detail-label">Timeframe</span>
+                <span className="sb-history-detail-value">{bot.timeframe}</span>
+              </div>
+              <div className="sb-history-detail-row">
+                <span className="sb-history-detail-label">Risk</span>
+                <span className="sb-history-detail-value" style={{ color: 'var(--sb-amber)' }}>{bot.risk}</span>
+              </div>
+              <div className="sb-history-detail-row">
+                <span className="sb-history-detail-label">Signal</span>
+                <span className="sb-history-detail-value" style={{ color: bot.signal === 'BUY' ? 'var(--sb-green)' : 'var(--sb-red)' }}>
+                  {bot.signal}
+                </span>
+              </div>
+              <div className="sb-history-detail-row">
+                <span className="sb-history-detail-label">Confidence</span>
+                <span className="sb-history-detail-value">{bot.confidence}</span>
+              </div>
+              <div className="sb-history-detail-row">
+                <span className="sb-history-detail-label">Symbol</span>
+                <span className="sb-history-detail-value">{bot.signalSymbol}</span>
+              </div>
+            </div>
+            
+            {/* Performance Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+              <div style={{ textAlign: 'center', padding: '8px', background: 'var(--sb-bg-2)', borderRadius: 'var(--sb-radius-sm)' }}>
+                <p style={{ fontSize: '9px', color: 'var(--sb-text-3)', margin: 0 }}>APR</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--sb-green)', margin: '4px 0 0 0' }}>{bot.apr}</p>
+              </div>
+              <div style={{ textAlign: 'center', padding: '8px', background: 'var(--sb-bg-2)', borderRadius: 'var(--sb-radius-sm)' }}>
+                <p style={{ fontSize: '9px', color: 'var(--sb-text-3)', margin: 0 }}>Win Rate</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--sb-blue)', margin: '4px 0 0 0' }}>{bot.winRate}</p>
+              </div>
+              <div style={{ textAlign: 'center', padding: '8px', background: 'var(--sb-bg-2)', borderRadius: 'var(--sb-radius-sm)' }}>
+                <p style={{ fontSize: '9px', color: 'var(--sb-text-3)', margin: 0 }}>Traders</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--sb-amber)', margin: '4px 0 0 0' }}>{bot.traders}</p>
+              </div>
+            </div>
+            
+            {/* Action Button */}
+            <button
+              className="sb-modal-submit"
+              onClick={() => {
+                onClose();
+                handleInvestClick(bot);
+              }}
+            >
+              Invest Now
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
     return (
-      <div style={{ background: "var(--bg-base)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>🤖</div>
-          <div style={{ fontSize: 18, color: "var(--text-1)" }}>Loading AI Bots...</div>
+      <div className="sb-loading">
+        <div className="sb-loading-content">
+          <div className="sb-loading-icon">🤖</div>
+          <div className="sb-loading-text">Loading AI Bots...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "var(--bg-base)", minHeight: "100vh", color: "var(--text-1)", fontFamily: "'Plus Jakarta Sans', sans-serif" }} >
-
-      {/* TOP BAR */}
-      <div className="flex-wrap" style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "16px 28px",
-        borderBottom: "1px solid var(--border)",
-        background: "var(--bg-1)",
-        top: 0,
-      }}>
-        <div>
-          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em" }}>
-            <span style={{ color: "var(--brand-cyan)" }}>AI Trading</span><span style={{ color: "var(--text-1)" }}> Bots</span>
+    <div className="sb-container">
+      {/* Header with Tabs */}
+      <div className="sb-header">
+        <div className="sb-header-inner">
+          <div>
+            <div className="sb-header-left">
+              <CircleDollarSign size={20} className="sb-header-icon" />
+              <h1 className="sb-header-title">AI Trading Bots</h1>
+            </div>
+            <p className="sb-header-subtitle">Monitor your automated trading strategies</p>
           </div>
-          <div style={{ fontSize: 9, color: "var(--text-1)", letterSpacing: "0.1em", fontWeight: 600 }}>BOT MARKETPLACE</div>
-        </div>
-
-        <div style={{ display: "flex", gap: 8 }} className="flex-wrap">
-          {nav.map(n => (
-            <div key={n.id} className={`navitem ${tab === n.id ? "on" : ""}`} onClick={() => setTab(n.id)}>
-              <span style={{ fontSize: 16 }}>{n.icon}</span>
-              <span>{n.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* CONTENT */}
-      <div style={{ padding: "28px 12px" }}>
-
-        {/* BOTS GRID */}
-        {tab === "bots" && (
-          <>
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-              <div style={{ position: "relative" }}>
-                <input className="xfield" placeholder="Search bots…" value={q} onChange={e => setQ(e.target.value)} style={{ width: 220, paddingLeft: 38 }} />
-                <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", fontSize: 15, color: "var(--text-1)" }}>⌕</span>
-              </div>
-            </div>
-
-            <div className="four-card-div">
-              {filtered.map(b => {
-                const pos = b.roi >= 0;
-                const bcl = pos ? getColorByRisk(b.type) : "#f87171";
-                const chartData = generateChartData(b.roi);
-
-                return (
-                  <div key={b.id} className="it" onMouseEnter={() => setHov(b.id)} onMouseLeave={() => setHov(null)}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 14, background: `${getColorByRisk(b.type)}18`, border: `1px solid ${getColorByRisk(b.type)}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, transition: "transform .3s", transform: hov === b.id ? "scale(1.1)" : "scale(1)" }}>
-                          {getLogoEmoji(b.productName)}
-                        </div>
-                        <div>
-                          <div className="ticker" style={{ fontSize: 17, letterSpacing: ".07em", color: "var(--text-1)" }}>{b.categoryName}</div>
-                          <div style={{ fontSize: 11, color: "var(--text-1)", marginTop: 2 }}>📊 {b.productName}</div>
-                        </div>
-                      </div>
-                      <Risk r={b.type} />
-                    </div>
-
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
-                      <div>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", letterSpacing: ".08em", marginBottom: 3 }}>APR</div>
-                        <div className="ticker" style={{ fontSize: 30, color: bcl, lineHeight: 1 }}>{b.roi > 0 ? `+${b.roi}` : b.roi}%</div>
-                      </div>
-                      <Spark data={chartData} color={bcl} />
-                    </div>
-
-                    <div style={{ height: 1, background: "var(--border)", marginBottom: 14 }} />
-                    <div style={{ fontSize: 12, color: "var(--text-2)", lineHeight: 1.65, marginBottom: 14 }}>{b.tittle}</div>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 16 }}>
-                      {[
-                        { l: "MIN. INVEST", v: `$${b.mininvest}` },
-                        { l: "WIN RATE", v: `${b.winrate}%`, c: "var(--brand-purple)" },
-                        { l: "TRADERS", v: b.traders?.toLocaleString() || '0', c: "var(--brand-cyan)" }
-                      ].map((m, i) => (
-                        <div key={i} style={{ background: "var(--bg-hover)", borderRadius: 10, padding: "8px 10px", textAlign: "center", border: "1px solid var(--border)" }}>
-                          <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-1)", letterSpacing: ".07em", marginBottom: 3 }}>{m.l}</div>
-                          <div style={{ fontSize: 14, fontWeight: 800, color: m.c || "var(--text-1)" }}>{m.v}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button className="obtn" style={{ flex: 1 }} onClick={() => setSelected(b)}>View Details</button>
-                      <button className="bdep" style={{ flex: 1 }} onClick={() => {
-                        setInvestBot(b);
-                        setCustomAmount(""); // Reset custom amount when opening modal
-                        setAmountError("");
-                      }}>Invest Now ↗</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* ORDER HISTORY - WITH STATS ROW */}
-        {tab === "orders" && (
-          <>
-            {/* STATS ROW */}
-            <div className="g4" style={{ marginBottom: 24 }}>
-              <div className="scard scc">
-                <div className="ml">Active Bots</div>
-                <div className="mv" style={{ color: "var(--brand-cyan)" }}>{orderHistory.length}</div>
-                <div className="mc up">Bots</div>
-              </div>
-
-              <div className="scard scc">
-                <div className="ml">Total Investment</div>
-                <div className="mv" style={{ color: "var(--brand-green)" }}>
-                  ${orderHistory[0]?.TotalInvestment?.toLocaleString() || 0}
-                </div>
-                <div className="mc up">User Investment</div>
-              </div>
-
-              <div className="scard scc">
-                <div className="ml">Income Limit</div>
-                <div className="mv" style={{ color: "var(--text-1)" }}>
-                  ${orderHistory[0]?.TotalIncome?.toLocaleString() || 0}
-                </div>
-                <div style={{ fontSize: 10, color: "var(--text-1)", marginTop: 6 }}>Income</div>
-              </div>
-
-              <div className="scard scc">
-                <div className="ml">Limit / Remaining</div>
-                <div className="mv" style={{ color: "var(--brand-gold)" }}>
-                  ${orderHistory[0]?.RemainingLimit?.toLocaleString() || 0}
-                </div>
-                <div className="mc up">${orderHistory[0]?.EarningLimit?.toLocaleString() || 0}</div>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "var(--brand-cyan)", letterSpacing: ".12em", marginBottom: 6 }}>RECORDS</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text-1)" }}>Order <span style={{ color: "var(--brand-purple)" }}>History</span></div>
-            </div>
-
-            {orderHistoryLoading ? (
-              <div style={{ textAlign: "center", padding: "80px 20px" }}>
-                <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
-                <div style={{ fontSize: 18, color: "var(--text-1)" }}>Loading orders...</div>
-              </div>
-            ) : orderHistory.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "80px 20px" }}>
-                <div style={{ fontSize: 60, marginBottom: 16 }}>📋</div>
-                <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "var(--text-1)" }}>No Orders Yet</div>
-                <div style={{ fontSize: 13, color: "var(--text-2)" }}>Your investment orders will appear here</div>
-              </div>
-            ) : (
-              <>
-                <div className="Order-History-Card" >
-                  {orderHistory.slice().map((item, index) => {
-
-                    const pos = parseFloat(item.rOI) >= 0;
-                    return (
-                      <div
-                        key={index}
-                        style={{
-                          background: "var(--bg-2)",
-                          border: "1px solid var(--border2)",
-                          borderRadius: 18,
-                          padding: "20px",
-                          transition: "all 0.3s ease",
-                          cursor: "pointer",
-                          position: "relative",
-                          overflow: "hidden"
-                        }}
-                        onMouseEnter={e => {
-                          e.currentTarget.style.transform = "translateY(-6px)";
-                          e.currentTarget.style.borderColor = "var(--brand-purple)";
-                          e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.15)";
-                        }}
-                        onMouseLeave={e => {
-                          e.currentTarget.style.transform = "translateY(0)";
-                          e.currentTarget.style.borderColor = "var(--border2)";
-                          e.currentTarget.style.boxShadow = "none";
-                        }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                          <div style={{
-                            fontSize: 40,
-                            width: 60,
-                            height: 60,
-                            borderRadius: 16,
-                            background: `${getColorByRisk(item.type)}18`,
-                            border: `1px solid ${getColorByRisk(item.type)}33`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center"
-                          }}>
-                            {getLogoEmoji(item.productName)}
-                          </div>
-                          <div style={{
-                            background: "rgba(16, 185, 129, 0.12)",
-                            color: "var(--brand-green)",
-                            padding: "4px 12px",
-                            borderRadius: 20,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            border: "1px solid rgba(16, 185, 129, 0.25)"
-                          }}>
-                            Active
-                          </div>
-                        </div>
-
-                        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-1)", marginBottom: 12 }}>
-                          {item.CategoryName}
-                        </div>
-
-                        <div style={{ marginBottom: 12, fontSize: 11, color: "var(--text-2)" }}>
-                          {item.productName}
-                        </div>
-
-                        <div style={{ marginBottom: 12 }}>
-                          <div style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 4, letterSpacing: "0.05em" }}>INVESTED AMOUNT</div>
-                          <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-1)" }}>${item.Rkprice.toFixed(2)}</div>
-                        </div>
-                        <div style={{ marginBottom: 16 }}>
-                          <div style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 4, letterSpacing: "0.05em" }}>Roventar Package</div>
-                          <div style={{ fontSize: 15, fontWeight: 700, color: pos ? "var(--brand-green)" : "#f87171" }}>
-                            {item.PackageName}
-                          </div>
-                        </div>
-
-                        <div style={{ marginBottom: 16 }}>
-                          <div style={{ fontSize: 10, color: "var(--text-2)", marginBottom: 4, letterSpacing: "0.05em" }}>Activated By</div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: pos ? "var(--brand-green)" : "#f87171" }}>
-                            {userID}
-                          </div>
-                        </div>
-
-
-                        <div style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginTop: 8,
-                          paddingTop: 12,
-                          borderTop: "1px solid var(--border)"
-                        }}>
-                          <div style={{ fontSize: 11, color: "var(--text-2)" }}>
-                            📅 {item.OrderDate}
-                          </div>
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button
-                              onClick={() => setShowWelcomePopup(true)}
-                              style={{
-                                background: "none",
-                                border: "1px solid rgba(59, 130, 246, 0.3)",
-                                color: "#3b82f6",
-                                borderRadius: 8,
-                                padding: "6px 12px",
-                                fontSize: 11,
-                                cursor: "pointer",
-                                fontFamily: "inherit",
-                                fontWeight: 600,
-                                transition: "all 0.2s ease"
-                              }}
-                              onMouseEnter={e => {
-                                e.currentTarget.style.background = "rgba(59, 130, 246, 0.1)";
-                                e.currentTarget.style.transform = "scale(1.05)";
-                              }}
-                              onMouseLeave={e => {
-                                e.currentTarget.style.background = "none";
-                                e.currentTarget.style.transform = "scale(1)";
-                              }}
-                            >
-                              👋 Welcome
-                            </button>
-                            <button
-                              onClick={() => dlInvoice(item)}
-                              style={{
-                                background: "none",
-                                border: "1px solid rgba(16, 185, 129, 0.3)",
-                                color: "var(--brand-green)",
-                                borderRadius: 8,
-                                padding: "6px 12px",
-                                fontSize: 11,
-                                cursor: "pointer",
-                                fontFamily: "inherit",
-                                fontWeight: 600,
-                                transition: "all 0.2s ease"
-                              }}
-                              onMouseEnter={e => {
-                                e.currentTarget.style.background = "rgba(16, 185, 129, 0.1)";
-                                e.currentTarget.style.transform = "scale(1.05)";
-                              }}
-                              onMouseLeave={e => {
-                                e.currentTarget.style.background = "none";
-                                e.currentTarget.style.transform = "scale(1)";
-                              }}
-                            >
-                              📄 Invoice
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </>
-        )}
-
-        {/* DETAILS MODAL */}
-        {selected && (
-          <div className="xoverlay" onClick={e => e.target === e.currentTarget && setSelected(null)}>
-            <div className="xmodal scroller" style={{ maxWidth: 700, width: "100%" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                  <div style={{ width: 56, height: 56, borderRadius: 15, background: `${getColorByRisk(selected.type)}18`, border: `1px solid ${getColorByRisk(selected.type)}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>
-                    {getLogoEmoji(selected.productName)}
-                  </div>
-                  <div>
-                    <div className="ticker" style={{ fontSize: 26, letterSpacing: ".07em", color: "var(--text-1)" }}>{selected.categoryName}</div>
-                    <div style={{ fontSize: 13, color: "var(--text-2)", marginTop: 4 }}>{selected.productName}</div>
-                    <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
-                      <Risk r={selected.type} />
-                      <span style={{ background: "rgba(56,189,248,0.1)", color: "#38bdf8", border: "1px solid rgba(56,189,248,0.2)", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700 }}>🤖 AI POWERED</span>
-                    </div>
-                  </div>
-                </div>
-                <button onClick={() => setSelected(null)} style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-2)", borderRadius: 10, width: 36, height: 36, cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
-              </div>
-
-              <div className="four-card-div">
-                {[
-                  { l: "APR", v: `${selected.roi > 0 ? `+${selected.roi}` : selected.roi}%`, c: selected.roi >= 0 ? getColorByRisk(selected.type) : "#f87171" },
-                  { l: "Win Rate", v: `${selected.winrate}%`, c: "var(--brand-green)" },
-                  { l: "Traders", v: selected.traders?.toLocaleString() || '0', c: "var(--text-1)" },
-                  { l: "Min Invest", v: `$${selected.mininvest}`, c: "var(--brand-gold)" },
-                ].map((s, i) => (
-                  <div key={i} className="scard" style={{ textAlign: "center" }}>
-                    <div className="ticker" style={{ fontSize: 22, color: s.c, letterSpacing: ".04em" }}>{s.v}</div>
-                    <div style={{ fontSize: 9, color: "var(--text-1)", fontWeight: 700, letterSpacing: ".08em", marginTop: 5 }}>{s.l}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ marginBottom: 22 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-2)", letterSpacing: ".12em", marginBottom: 10 }}>APR PERFORMANCE</div>
-                <div style={{ background: "var(--bg-hover)", borderRadius: 14, padding: "14px 10px 6px", border: "1px solid var(--border)" }}>
-                  <ROIChart data={generateChartData(selected.roi)} color={selected.roi >= 0 ? getColorByRisk(selected.type) : "#f87171"} />
-                </div>
-              </div>
-
-              <div style={{ marginBottom: 22, background: "var(--bg-hover)", border: "1px solid var(--border)", borderRadius: 14, padding: 16 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: "var(--brand-cyan)", letterSpacing: ".12em", marginBottom: 10 }}>STRATEGY OVERVIEW</div>
-                <div style={{ fontSize: 13, color: "var(--text-2)", lineHeight: 1.7 }}>{selected.tittle}</div>
-              </div>
-
-              <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, color: "var(--brand-cyan)", letterSpacing: ".12em", marginBottom: 12 }}>INVESTMENT PLANS</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
-                  <div style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 14px", textAlign: "center" }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>Basic</div>
-                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>$100 - $999</div>
-                  </div>
-
-                  <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "2px solid rgba(16, 185, 129, 0.4)", borderRadius: 14, padding: "18px 14px", textAlign: "center", position: "relative" }}>
-                    <div style={{ position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)", background: "var(--brand-green)", color: "#fff", fontSize: 9, fontWeight: 800, letterSpacing: ".08em", padding: "3px 12px", borderRadius: 20, whiteSpace: "nowrap" }}>⭐ POPULAR</div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>Standard</div>
-                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>$1,000 - $4,999</div>
-                  </div>
-
-                  <div style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 14px", textAlign: "center" }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>Elite</div>
-                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>$5,000 - $9,999</div>
-                  </div>
-
-                  <div style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", borderRadius: 14, padding: "18px 14px", textAlign: "center" }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-1)", marginBottom: 8, letterSpacing: ".06em" }}>Growth</div>
-                    <div className="ticker" style={{ fontSize: 28, color: "var(--text-1)", marginBottom: 4 }}>$10,000 - $14,999</div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 10 }}>
-                <button className="obtn" style={{ flex: 1 }} onClick={() => setSelected(null)}>Close</button>
-                <button className="bdep" style={{ flex: 2, fontSize: 14 }} onClick={() => { setSelected(null); setInvestBot(selected); setCustomAmount(""); setAmountError(""); }}>Invest in {selected.categoryName} →</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* INVEST MODAL - Hidden minimum, only validation */}
-        {investBot && (
-          <div className="xoverlay" onClick={e => {
-            if (e.target === e.currentTarget) {
-              setInvestBot(null);
-              setCustomAmount("");
-              setAmountError("");
-            }
-          }}>
-            <div className="xmodal" style={{ maxWidth: 460, width: "100%" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "var(--brand-cyan)", letterSpacing: ".12em", marginBottom: 4 }}>INVEST NOW</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-1)" }}>Activate <span style={{ color: "var(--brand-purple)" }}>{investBot.categoryName}</span></div>
-                </div>
-                <button onClick={() => {
-                  setInvestBot(null);
-                  setCustomAmount("");
-                  setAmountError("");
-                }} style={{ background: "var(--bg-hover)", border: "1px solid var(--border)", color: "var(--text-2)", borderRadius: 10, width: 36, height: 36, cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
-              </div>
-
-              <div style={{ background: "rgba(16, 185, 129, 0.05)", border: "1px solid rgba(16, 185, 129, 0.15)", borderRadius: 14, padding: "14px 18px", marginBottom: 22, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-2)", letterSpacing: ".1em", marginBottom: 3 }}>WALLET BALANCE</div>
-                  <div className="ticker" style={{ fontSize: 24, color: "var(--brand-green)" }}>
-                    ${Math.floor(walletBalance).toLocaleString()}
-                  </div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-2)", letterSpacing: ".1em", marginBottom: 3 }}>MIN. INVEST</div>
-                  <div className="ticker" style={{ fontSize: 24, color: "var(--text-1)" }}>${investBot.mininvest}</div>
-                </div>
-              </div>
-
-              {/* USER ID INPUT WITH VALIDATION */}
-              <div style={{ marginBottom: 16 }}>
-                <label className="lbl">USER ID *</label>
-                <input
-                  className="xfield"
-                  placeholder="Enter User ID (e.g. X0100001)"
-                  value={uid}
-                  onChange={e => setUid(e.target.value)}
-                />
-                {!uid.trim() ? (
-                  <div style={{ marginTop: 6, fontSize: 12, color: "#f87171" }}>
-                    ⚠ Please enter User ID
-                  </div>
-                ) : isFetchingUser ? (
-                  <div style={{ marginTop: 6, fontSize: 12, color: "var(--text-2)" }}>
-                    ⏳ Fetching user details...
-                  </div>
-                ) : uname ? (
-                  <div style={{ marginTop: 6, fontSize: 12, color: "var(--brand-green)", fontWeight: 600 }}>
-                    ✓ {uname}
-                  </div>
-                ) : uerr ? (
-                  <div style={{ marginTop: 6, fontSize: 12, color: "#f87171" }}>
-                    ⚠ {uerr}
-                  </div>
-                ) : null}
-              </div>
-
-              <div style={{ marginBottom: 16 }}>
-                <label className="lbl">SELECTED BOT</label>
-                <div className="xfield" style={{ display: "flex", alignItems: "center", gap: 8, cursor: "default", opacity: .65 }}>
-                  <span>{getLogoEmoji(investBot.productName)}</span>
-                  <span style={{ fontWeight: 600, color: "var(--text-1)" }}>{investBot.categoryName}</span>
-                </div>
-              </div>
-
-              <div style={{ marginBottom: 24 }}>
-                <label className="lbl">INVESTMENT AMOUNT (USD) *</label>
-                <input
-                  className="xfield"
-                  type="number"
-                  step="1"
-                  placeholder={`Enter amount`}
-                  value={customAmount}
-                  onChange={handleAmountChange}
-                  style={{
-                    background: "var(--bg-1)",
-                    border: amountError ? "1px solid #f87171" : "1px solid var(--border)",
-                    color: "var(--text-1)",
-                    padding: "12px 16px",
-                    borderRadius: "12px",
-                    width: "100%",
-                    fontSize: "16px"
-                  }}
-                />
-
-                {amountError ? (
-                  <div style={{ marginTop: 6, fontSize: 12, color: "#f87171" }}>
-                    ⚠ {amountError}
-                  </div>
-                ) : customAmount && parseFloat(customAmount) >= investBot.mininvest && (
-                  (() => {
-                    const packageName = getPackageNameByAmount(parseFloat(customAmount));
-                    if (packageName) {
-                      return (
-                        <div style={{ marginTop: 6, fontSize: 12, color: "var(--brand-green)", fontWeight: 500 }}>
-                          XOXO Package: <strong>{packageName}</strong>
-                        </div>
-                      );
-                    } else if (parseFloat(customAmount) < 50) {
-                      return (
-                        <div style={{ marginTop: 6, fontSize: 12, color: "#f87171" }}>
-                          ⚠ Minimum package amount is $10
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()
-                )}
-
-
-              </div>
-
+          <div className="sb-header-right">
+            {/* Tabs */}
+            <div className="sb-tabs">
               <button
-                className="bdep"
-                style={{
-                  width: "100%",
-                  padding: "15px",
-                  fontSize: 15,
-                  borderRadius: 14,
-                  letterSpacing: ".04em",
-                  opacity: (!uname || isProcessing || isFetchingUser || !customAmount || amountError || parseFloat(customAmount) < parseFloat(investBot.mininvest) || parseFloat(customAmount) > getMaxInvestment() || walletBalance < parseFloat(customAmount)) ? 0.5 : 1,
-                  cursor: (!uname || isProcessing || isFetchingUser || !customAmount || amountError || parseFloat(customAmount) < parseFloat(investBot.mininvest) || parseFloat(customAmount) > getMaxInvestment() || walletBalance < parseFloat(customAmount)) ? "not-allowed" : "pointer"
-                }}
-                onClick={submit}
-                disabled={!uname || isProcessing || isFetchingUser || !customAmount || amountError || parseFloat(customAmount) < parseFloat(investBot.mininvest) || parseFloat(customAmount) > getMaxInvestment() || walletBalance < parseFloat(customAmount)}
+                className={`sb-tab ${activeTab === 'bots' ? 'sb-tab-active' : ''}`}
+                onClick={() => setActiveTab('bots')}
               >
-                {isProcessing ? "PROCESSING..." : `🚀 ACTIVATE INVESTMENT`}
+                <Bot size={14} className="sb-tab-icon" />
+                Bots
+              </button>
+              <button
+                className={`sb-tab ${activeTab === 'history' ? 'sb-tab-active' : ''}`}
+                onClick={() => setActiveTab('history')}
+              >
+                <History size={14} className="sb-tab-icon" />
+                History
               </button>
             </div>
+            
+           
+            
+            <div className="sb-header-badge">
+              <Zap size={13} className="sb-header-badge-icon" />
+              <span className="sb-header-badge-text">{bots.length} Active Bots</span>
+            </div>
+            <div className="sb-header-status">
+              <span className={`sb-status-indicator ${wsConnected ? 'sb-status-indicator-live' : 'sb-status-indicator-offline'}`} />
+              <span className="sb-status-label">{wsConnected ? 'Live Data' : 'Demo Mode'}</span>
+            </div>
+            <div className="sb-header-wallet">
+              <span className="sb-header-wallet-text">Wallet: ${walletBalance.toLocaleString()}</span>
+            </div>
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* SUCCESS MODAL WITH SPARKLE/BALLOON EFFECT */}
-        {showSuccess && (
-          <div className="xoverlay" onClick={e => e.target === e.currentTarget && setShowSuccess(false)}>
-            <div className="xmodal" style={{ maxWidth: 420, width: "100%", textAlign: "center", position: "relative", overflow: "hidden" }}>
-              {/* SPARKLE/BALLOON EFFECT - Confetti Animation */}
-              <div className="confetti-container">
-                {[...Array(30)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="confetti-piece"
-                    style={{
-                      left: `${Math.random() * 100}%`,
-                      animationDelay: `${Math.random() * 2}s`,
-                      animationDuration: `${2 + Math.random() * 3}s`,
-                      width: `${6 + Math.random() * 8}px`,
-                      height: `${6 + Math.random() * 8}px`,
-                      background: [
-                        '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff',
-                        '#ff6bff', '#ff9f43', '#00d2d3', '#f368e0',
-                        '#ff9ff3', '#54a0ff', '#5f27cd', '#ff6348'
-                      ][Math.floor(Math.random() * 12)],
-                      borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-                      position: 'absolute',
-                      top: '-20px',
-                      animation: 'confetti-fall linear infinite',
-                      opacity: 0.8,
-                      transform: `rotate(${Math.random() * 360}deg)`,
-                      pointerEvents: 'none'
-                    }}
-                  />
-                ))}
-                {/* Sparkle stars */}
-                {[...Array(12)].map((_, i) => (
-                  <div
-                    key={`sparkle-${i}`}
-                    className="sparkle"
-                    style={{
-                      left: `${Math.random() * 100}%`,
-                      top: `${Math.random() * 100}%`,
-                      animationDelay: `${Math.random() * 3}s`,
-                      animationDuration: `${1.5 + Math.random() * 2}s`,
-                      fontSize: `${12 + Math.random() * 20}px`,
-                      position: 'absolute',
-                      pointerEvents: 'none',
-                      animation: 'sparkle-pulse ease-in-out infinite'
-                    }}
-                  >
-                    ✨
-                  </div>
-                ))}
-              </div>
+      {/* Tab Content */}
+      <div className="sb-tab-content">
+        {activeTab === 'bots' ? (
+          // Bots Section
+          <div className="sb-section">
+            <div className="sb-grid">
+              {bots.map((bot) => (
+                <BotCard 
+                  key={bot.name} 
+                  bot={bot} 
+                  marketPrices={marketPrices}
+                  lastUpdate={lastUpdate}
+                  chartData={chartData}
+                  livePrice={livePrice}
+                  wsConnected={wsConnected}
+                  onInvest={handleInvestClick}
+                  onViewDetails={handleViewDetails}
+                />
+              ))}
+            </div>
 
-              <div style={{ position: "relative", zIndex: 2 }}>
-                <div style={{
-                  width: 76,
-                  height: 76,
-                  borderRadius: "50%",
-                  background: "rgba(16, 185, 129, 0.15)",
-                  border: "2px solid rgba(16, 185, 129, 0.4)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 36,
-                  margin: "0 auto 20px",
-                  animation: "success-pop 0.6s ease-out"
-                }}>🎉</div>
-                <div style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: "var(--brand-cyan)",
-                  letterSpacing: ".14em",
-                  marginBottom: 6,
-                  animation: "fade-in-up 0.6s ease-out 0.2s both"
-                }}>INVESTMENT ACTIVATED</div>
-                <div className="ticker" style={{
-                  fontSize: 30,
-                  color: "var(--brand-green)",
-                  letterSpacing: ".04em",
-                  marginBottom: 6,
-                  animation: "fade-in-up 0.6s ease-out 0.3s both"
-                }}>Congratulations!</div>
-                <div style={{
-                  fontSize: 13,
-                  color: "var(--text-2)",
-                  marginBottom: 22,
-                  animation: "fade-in-up 0.6s ease-out 0.4s both"
-                }}>Your AI bot investment is now live and running.</div>
-
-                {inv && (
-                  <div style={{
-                    background: "var(--bg-hover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 14,
-                    padding: 16,
-                    marginBottom: 20,
-                    textAlign: "left",
-                    animation: "fade-in-up 0.6s ease-out 0.5s both"
-                  }}>
-                    {[
-                      { k: "Order ID", v: inv.id, hi: true },
-                      { k: "Bot Strategy", v: inv.bot },
-                      { k: "User ID", v: inv.user },
-                      { k: "XOXO Package", v: inv.package },
-                      { k: "Amount", v: `$${inv.amount.toFixed(2)}`, hi: true },
-                      { k: "Date", v: inv.date }
-                    ].map(r => (
-                      <div key={r.k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)", fontSize: 13 }}>
-                        <span style={{ color: "var(--text-1)", fontWeight: 600 }}>{r.k}</span>
-                        <span style={{ fontWeight: r.hi ? 800 : 500, color: r.hi ? "var(--text-1)" : "var(--text-2)" }}>{r.v}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div style={{
-                  display: "flex",
-                  gap: 10,
-                  animation: "fade-in-up 0.6s ease-out 0.6s both"
-                }}>
-                  <button className="obtn" style={{ flex: 1 }} onClick={() => dlInvoice(inv)}>📄 Download PDF</button>
-                  <button className="bdep" style={{ flex: 1 }} onClick={() => { setShowSuccess(false); setTab("orders"); }}>Orders →</button>
+            {/* Footer */}
+            <div className="sb-footer">
+              <div className="sb-footer-inner">
+                <div>
+                  <span className="sb-footer-label">⚡ Live Data:</span>{" "}
+                  {wsConnected ? 'Connected to Binance WebSocket' : 'Using simulated data (fallback mode)'}
+                </div>
+                <div className="sb-footer-status">
+                  <span className={`sb-footer-dot ${wsConnected ? 'sb-footer-dot-live' : 'sb-footer-dot-sim'}`} />
+                  <span>{wsConnected ? 'Real-time' : 'Simulated'} Market Data</span>
+                </div>
+                <div>
+                  Data Provider: <span className="sb-footer-provider">Twelve Data</span>
                 </div>
               </div>
             </div>
           </div>
+        ) : (
+          <InvestmentHistory />
         )}
       </div>
 
-      {/* Welcome Popup */}
-      {showWelcomePopup && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "rgba(0, 0, 0, 0.7)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 9999,
-          padding: 20,
-          overflow: "hidden"
-        }}>
-          {/* Confetti */}
-          {Array.from({ length: 50 }).map((_, i) => (
-            <div
-              key={i}
-              style={{
-                position: "absolute",
-                top: -20,
-                left: `${Math.random() * 100}%`,
-                width: Math.random() * 10 + 5,
-                height: Math.random() * 10 + 5,
-                background: ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#ffeaa7", "#dfe6e9", "#fd79a8", "#a29bfe"][Math.floor(Math.random() * 8)],
-                borderRadius: Math.random() > 0.5 ? "50%" : "0",
-                animation: `confetti-fall ${Math.random() * 3 + 2}s linear infinite`,
-                animationDelay: `${Math.random() * 2}s`,
-                opacity: 0.8
-              }}
-            />
-          ))}
+      {/* Invest Modal */}
+      {showInvestModal && selectedBot && (
+        <InvestModal
+          bot={selectedBot}
+          onClose={() => {
+            setShowInvestModal(false);
+            setSelectedBot(null);
+          }}
+          onSubmit={handleInvestSubmit}
+          walletBalance={walletBalance}
+          isLoading={isProcessing}
+        />
+      )}
 
-          {/* Sparkles */}
-          {Array.from({ length: 30 }).map((_, i) => (
-            <div
-              key={`sparkle-${i}`}
-              style={{
-                position: "absolute",
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                width: Math.random() * 8 + 4,
-                height: Math.random() * 8 + 4,
-                background: ["#ffd700", "#ffeb3b", "#fff176", "#ffffff"][Math.floor(Math.random() * 4)],
-                borderRadius: "50%",
-                animation: `sparkle-pulse ${Math.random() * 2 + 1}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 1.5}s`,
-                boxShadow: "0 0 10px currentColor"
-              }}
-            />
-          ))}
+      {/* Detail Modal */}
+      {showDetailModal && detailBot && (
+        <DetailModal
+          bot={detailBot}
+          onClose={() => {
+            setShowDetailModal(false);
+            setDetailBot(null);
+          }}
+        />
+      )}
 
-          {/* Balloons */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={`balloon-${i}`}
-              style={{
-                position: "absolute",
-                bottom: -100,
-                left: `${10 + i * 12}%`,
-                width: 40,
-                height: 50,
-                background: ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#ffeaa7", "#fd79a8", "#a29bfe", "#74b9ff"][i],
-                borderRadius: "50% 50% 50% 50%",
-                animation: `balloon-float ${Math.random() * 3 + 4}s ease-in-out infinite`,
-                animationDelay: `${i * 0.3}s`,
-                opacity: 0.9
-              }}
-            >
-              <div style={{
-                position: "absolute",
-                bottom: -20,
-                left: "50%",
-                width: 1,
-                height: 30,
-                background: "rgba(255,255,255,0.5)",
-                transform: "translateX(-50%)"
-              }} />
+      {/* Success Modal */}
+      {showSuccess && inv && (
+        <div className="sb-modal-overlay" onClick={e => e.target === e.currentTarget && setShowSuccess(false)}>
+          <div className="sb-success-modal">
+            <div className="sb-success-icon">🎉</div>
+            <h3 className="sb-success-title">Congratulations!</h3>
+            <p className="sb-success-subtitle">Your AI bot investment is now live and running.</p>
+            
+            <div className="sb-success-details">
+              {[
+                { label: "Order ID", value: inv.id },
+                { label: "Bot Strategy", value: inv.bot },
+                { label: "User ID", value: inv.user },
+                { label: "Package", value: inv.package },
+                { label: "Amount", value: `$${inv.amount.toFixed(2)}`, highlight: true },
+                { label: "Date", value: inv.date }
+              ].map((item, i) => (
+                <div key={i} className="sb-success-detail">
+                  <span className="sb-success-detail-label">{item.label}</span>
+                  <span className={item.highlight ? 'sb-success-detail-value-highlight' : 'sb-success-detail-value'}>
+                    {item.value}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
 
-          <div style={{
-            background: "var(--bg-1)",
-            borderRadius: 16,
-            padding: 32,
-            maxWidth: 600,
-            maxHeight: "80vh",
-            overflowY: "auto",
-            position: "relative",
-            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-            border: "1px solid var(--border)",
-            zIndex: 10000
-          }}>
             <button
-              onClick={() => setShowWelcomePopup(false)}
-              style={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                background: "none",
-                border: "none",
-                color: "var(--text-1)",
-                fontSize: 24,
-                cursor: "pointer",
-                padding: 8,
-                borderRadius: 8,
-                transition: "all 0.2s ease",
-                zIndex: 10001
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = "none";
-              }}
+              className="sb-success-btn"
+              onClick={() => setShowSuccess(false)}
             >
-              ✕
-            </button>
-            <div style={{
-              textAlign: "center",
-              marginBottom: 24
-            }}>
-              <div style={{ fontSize: 48, marginBottom: 12, animation: "bounce 1s ease infinite" }}>🎉</div>
-              <h2 style={{
-                color: "var(--text-1)",
-                fontSize: 24,
-                fontWeight: 700,
-                margin: 0,
-                marginBottom: 8,
-                textShadow: "0 0 20px rgba(59, 130, 246, 0.5)"
-              }}>
-                Welcome to Roventar Family!
-              </h2>
-              <div style={{
-                height: 3,
-                width: 60,
-                background: "linear-gradient(90deg, #3b82f6, #10b981)",
-                margin: "0 auto",
-                borderRadius: 2,
-                animation: "pulse-glow 2s ease-in-out infinite"
-              }}></div>
-            </div>
-            <div style={{
-              color: "var(--text-1)",
-              lineHeight: 1.8,
-              fontSize: 15
-            }}>
-              <p style={{ margin: "0 0 16px 0" }}>
-                <strong>Dear {userID},</strong>
-              </p>
-              <p style={{ margin: "0 0 16px 0" }}>
-                Welcome to the Roventar Family! We are delighted to have you join our growing community. Thank you for choosing our Online Education Academy and Roventar as your trusted learning and investment partner. Your journey toward smarter investing and professional forex education begins today.
-              </p>
-              <p style={{ margin: "0 0 16px 0" }}>
-                Our dedicated team, expert mentors, and AI-powered strategies are here to support your learning and financial goals. We are committed to providing high-quality education, innovation, transparency, and professional service at every step of your journey.
-              </p>
-              <p style={{ margin: "0 0 16px 0" }}>
-                We wish you success, prosperity, and long-term growth with Roventar. Together, let's build a brighter financial future through knowledge, discipline, and smart investing.
-              </p>
-              <p style={{ margin: "0 0 16px 0" }}>
-                Once again, welcome aboard—we're excited to have you with us!
-              </p>
-              <p style={{ margin: "0 0 24px 0" }}>
-                <strong>Best Wishes,</strong><br />
-                <img src="/stampbackremove.png" alt="Roventar Team" style={{ maxWidth: "120px", height: "auto", borderRadius: "8px", background: "transparent", marginLeft: "-20px" }} />
-              </p>
-            </div>
-            <button
-              onClick={() => setShowWelcomePopup(false)}
-              style={{
-                width: "100%",
-                padding: "12px 24px",
-                background: "linear-gradient(135deg, #3b82f6, #10b981)",
-                color: "white",
-                border: "none",
-                borderRadius: 8,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                animation: "pulse-glow 2s ease-in-out infinite"
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = "scale(1.02)";
-                e.currentTarget.style.boxShadow = "0 10px 25px -5px rgba(59, 130, 246, 0.4)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              Let's Get Started 🚀
+              Done
             </button>
           </div>
         </div>
       )}
-
-      {/* ANIMATION STYLES */}
-      <style jsx global>{`
-        @keyframes confetti-fall {
-          0% {
-            transform: translateY(0) rotate(0deg) scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(600px) rotate(720deg) scale(0.5);
-            opacity: 0;
-          }
-        }
-
-        @keyframes sparkle-pulse {
-          0%, 100% {
-            transform: scale(0.5) rotate(0deg);
-            opacity: 0.3;
-          }
-          50% {
-            transform: scale(1.2) rotate(180deg);
-            opacity: 1;
-          }
-        }
-
-        @keyframes balloon-float {
-          0%, 100% {
-            transform: translateY(0) rotate(-5deg);
-          }
-          50% {
-            transform: translateY(-30px) rotate(5deg);
-          }
-        }
-
-        @keyframes bounce {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-15px);
-          }
-        }
-
-        @keyframes pulse-glow {
-          0%, 100% {
-            opacity: 1;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-          }
-          50% {
-            opacity: 0.8;
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
-          }
-        }
-
-        @keyframes success-pop {
-          0% {
-            transform: scale(0) rotate(-30deg);
-            opacity: 0;
-          }
-          60% {
-            transform: scale(1.2) rotate(5deg);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1) rotate(0deg);
-            opacity: 1;
-          }
-        }
-
-        @keyframes fade-in-up {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .confetti-container {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 1;
-        }
-
-        .confetti-piece {
-          position: absolute;
-          top: -20px;
-          animation: confetti-fall linear infinite;
-        }
-
-        .sparkle {
-          position: absolute;
-          animation: sparkle-pulse ease-in-out infinite;
-        }
-
-        .xmodal {
-          position: relative;
-          z-index: 2;
-          overflow: hidden;
-        }
-      `}</style>
     </div>
   );
 }

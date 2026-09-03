@@ -1,5 +1,3 @@
- 
-
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -20,58 +18,113 @@ export default function ArbionEngine() {
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
+  // Date formatter function - returns "2/9/26" format
+  const formatChartDate = (date) => {
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
+  };
+
   // Derive chart data from trade history
   const chartData = useMemo(() => {
     if (!tradeHistory || tradeHistory.length === 0) {
       return {
         pnlData: Array.from({ length: 90 }, (_, i) => i * 91.57),
+        pnlLabels: Array.from({ length: 90 }, (_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - (89 - i));
+          return formatChartDate(d);
+        }),
         dailyData: Array.from({ length: 30 }, () => Math.floor(60 + Math.random() * 280)),
+        dailyLabels: Array.from({ length: 30 }, (_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() - (29 - i));
+          return formatChartDate(d);
+        }),
         chainData: { solana: 52, ethereum: 31, bsc: 17 }
       };
     }
 
-    // Sort trades by date
+    // Sort trades by date (oldest to newest)
     const sortedTrades = [...tradeHistory].sort((a, b) => {
       return new Date(a.TradeDate) - new Date(b.TradeDate);
     });
 
-    // Calculate cumulative PnL for PnL Curve
+    // Group trades by date for daily aggregation
+    const dailyGroups = {};
+    sortedTrades.forEach((trade) => {
+      const date = new Date(trade.TradeDate);
+      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      if (!dailyGroups[dateKey]) {
+        dailyGroups[dateKey] = {
+          date: date,
+          trades: [],
+          totalProfit: 0,
+          totalPnL: 0
+        };
+      }
+      dailyGroups[dateKey].trades.push(trade);
+      dailyGroups[dateKey].totalProfit += parseFloat(trade.Profit) || 0;
+      dailyGroups[dateKey].totalPnL += parseFloat(trade.PNL) || 0;
+    });
+
+    // Get sorted dates
+    const sortedDates = Object.keys(dailyGroups).sort();
+    
+    // PnL % data (cumulative sum of PnL %)
     const pnlData = [];
-    let cumulative = 0;
-    const recentTrades = sortedTrades.slice(-90);
-    recentTrades.forEach((trade) => {
-      const profit = parseFloat(trade.Profit) || 0;
-      cumulative += profit;
-      pnlData.push(cumulative);
+    const pnlLabels = [];
+    let cumulativePnL = 0;
+    
+    // Get last 90 days of data
+    const recentDates = sortedDates.slice(-90);
+    recentDates.forEach((dateKey) => {
+      const dayData = dailyGroups[dateKey];
+      cumulativePnL += dayData.totalPnL;
+      pnlData.push(cumulativePnL);
+      pnlLabels.push(formatChartDate(dayData.date));
     });
 
-    // Pad with initial value if less than 90
+    // If less than 90 days, pad with zeros at the beginning
     while (pnlData.length < 90) {
+      const dummyDate = new Date();
+      dummyDate.setDate(dummyDate.getDate() - (90 - pnlData.length));
       pnlData.unshift(pnlData[0] || 0);
+      pnlLabels.unshift(formatChartDate(dummyDate));
     }
 
-    // Daily profits
+    // Daily Profits data (last 30 days)
     const dailyData = [];
-    const last30Days = sortedTrades.slice(-30);
-    last30Days.forEach((trade) => {
-      const profit = parseFloat(trade.Profit) || 0;
-      dailyData.push(profit);
+    const dailyLabels = [];
+    const last30Dates = sortedDates.slice(-30);
+    
+    last30Dates.forEach((dateKey) => {
+      const dayData = dailyGroups[dateKey];
+      dailyData.push(dayData.totalProfit);
+      dailyLabels.push(formatChartDate(dayData.date));
     });
 
+    // If less than 30 days, pad with zeros
     while (dailyData.length < 30) {
-      dailyData.push(0);
+      const dummyDate = new Date();
+      dummyDate.setDate(dummyDate.getDate() - (30 - dailyData.length));
+      dailyData.unshift(0);
+      dailyLabels.unshift(formatChartDate(dummyDate));
     }
 
-    // Chain distribution
+    // Chain distribution (by profit)
     const chainDistribution = { Solana: 0, Ethereum: 0, BSC: 0 };
     sortedTrades.forEach((trade) => {
       const market = trade.Market || '';
+      const profit = Math.abs(parseFloat(trade.Profit)) || 0;
       if (market.toLowerCase().includes('solana')) {
-        chainDistribution.Solana += Math.abs(parseFloat(trade.Profit)) || 0;
+        chainDistribution.Solana += profit;
       } else if (market.toLowerCase().includes('ethereum') || market.toLowerCase().includes('eth')) {
-        chainDistribution.Ethereum += Math.abs(parseFloat(trade.Profit)) || 0;
+        chainDistribution.Ethereum += profit;
       } else if (market.toLowerCase().includes('bsc') || market.toLowerCase().includes('binance')) {
-        chainDistribution.BSC += Math.abs(parseFloat(trade.Profit)) || 0;
+        chainDistribution.BSC += profit;
       }
     });
 
@@ -91,28 +144,95 @@ export default function ArbionEngine() {
 
     return {
       pnlData: pnlData.slice(-90),
+      pnlLabels: pnlLabels.slice(-90),
       dailyData: dailyData.slice(-30),
+      dailyLabels: dailyLabels.slice(-30),
       chainData: chainPercentages
+    };
+  }, [tradeHistory]);
+
+  // Calculate dynamic metrics from trade history
+  const metrics = useMemo(() => {
+    if (!tradeHistory || tradeHistory.length === 0) {
+      return {
+        totalProfit: 8241,
+        realizedPnL: 6847,
+        totalTrades: 12847,
+        winLoss: { wins: 1190, losses: 107 },
+        avgProfit: 0.64,
+        profitChange: 0.08,
+        winRate: 91.8
+      };
+    }
+
+    // Total Profit - ALL trades (profit + loss)
+    const totalProfit = tradeHistory.reduce((sum, trade) => {
+      return sum + (parseFloat(trade.Profit) || 0);
+    }, 0);
+   
+
+    // Realized PnL = Only Profit (not Loss) - ONLY POSITIVE PROFITS
+    const realizedPnL = tradeHistory.reduce((sum, trade) => {
+      const profit = parseFloat(trade.Profit) || 0;
+      if (profit > 0) {
+        return sum + profit;
+      }
+      return sum;
+    }, 0);
+
+
+    // Total trades
+    const totalTrades = tradeHistory.length;
+
+    // Win/Loss count
+    const wins = tradeHistory.filter(trade => parseFloat(trade.Profit) > 0).length;
+    const losses = tradeHistory.filter(trade => parseFloat(trade.Profit) < 0).length;
+
+    // Average profit per trade
+    const avgProfit = totalTrades > 0 ? totalProfit / totalTrades : 0;
+
+    // Calculate profit change (compare last trade vs first)
+    const sortedByDate = [...tradeHistory].sort((a, b) => {
+      return new Date(a.TradeDate) - new Date(b.TradeDate);
+    });
+    const firstProfit = sortedByDate.length > 0 ? parseFloat(sortedByDate[0].Profit) || 0 : 0;
+    const lastProfit = sortedByDate.length > 0 ? parseFloat(sortedByDate[sortedByDate.length - 1].Profit) || 0 : 0;
+    const profitChange = lastProfit - firstProfit;
+
+    // Win rate
+    const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
+
+    return {
+      totalProfit: Math.round(totalProfit * 100) / 100,
+      realizedPnL: Math.round(realizedPnL * 100) / 100,
+      totalTrades,
+      winLoss: { wins, losses },
+      avgProfit: Math.round(avgProfit * 100) / 100,
+      profitChange: Math.round(profitChange * 100) / 100,
+      winRate: Math.round(winRate * 100) / 100
     };
   }, [tradeHistory]);
 
   // Total PnL for tag
   const totalPnL = useMemo(() => {
     if (!tradeHistory || tradeHistory.length === 0) return 8241;
-    return tradeHistory.reduce((sum, trade) => sum + (parseFloat(trade.Profit) || 0), 0);
+    return tradeHistory.reduce((sum, trade) => {
+      return sum + (parseFloat(trade.Profit) || 0);
+    }, 0);
   }, [tradeHistory]);
 
   useEffect(() => {
     chartInstances.current.forEach(chart => chart.destroy());
     chartInstances.current = [];
 
+    // PnL Curve Chart
     if (pnlChartRef.current && chartData.pnlData) {
       const chart = new Chart(pnlChartRef.current, {
         type: 'line',
         data: {
-          labels: Array.from({ length: chartData.pnlData.length }, (_, i) => `Day ${i + 1}`),
+          labels: chartData.pnlLabels,
           datasets: [{
-            label: 'PnL',
+            label: 'Cumulative PnL %',
             data: chartData.pnlData,
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -123,33 +243,85 @@ export default function ArbionEngine() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `PnL: ${context.parsed.y.toFixed(2)}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                maxTicksLimit: 10,
+                font: { size: 9 }
+              }
+            },
+            y: {
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            }
+          }
         }
       });
       chartInstances.current.push(chart);
     }
 
+    // Daily Profits Chart
     if (dailyChartRef.current && chartData.dailyData) {
       const chart = new Chart(dailyChartRef.current, {
         type: 'bar',
         data: {
-          labels: Array.from({ length: chartData.dailyData.length }, (_, i) => `Day ${i + 1}`),
+          labels: chartData.dailyLabels,
           datasets: [{
-            label: 'Daily Profit',
+            label: 'Daily Profit ($)',
             data: chartData.dailyData,
-            backgroundColor: 'rgba(139, 92, 246, 0.7)',
+            backgroundColor: chartData.dailyData.map(value => 
+              value >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'
+            ),
             borderRadius: 4
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `Profit: $${context.parsed.y.toFixed(2)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                maxTicksLimit: 10,
+                font: { size: 9 }
+              }
+            },
+            y: {
+              ticks: {
+                callback: function(value) {
+                  return '$' + value;
+                }
+              }
+            }
+          }
         }
       });
       chartInstances.current.push(chart);
     }
 
+    // Chain Distribution Chart
     if (chainChartRef.current && chartData.chainData) {
       const chart = new Chart(chainChartRef.current, {
         type: 'doughnut',
@@ -164,7 +336,15 @@ export default function ArbionEngine() {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom', labels: { color: 'var(--t2)', font: { size: 11 } } } }
+          plugins: { 
+            legend: { 
+              position: 'bottom', 
+              labels: { 
+                color: 'var(--t2)', 
+                font: { size: 11 } 
+              } 
+            }
+          }
         }
       });
       chartInstances.current.push(chart);
@@ -178,21 +358,20 @@ export default function ArbionEngine() {
 
   const showToast = (title, message) => alert(`${title}: ${message}`);
 
-  const AITradingPerformance = tradeHistory?.[0]?.AITradingPerformance;
-  const AIExecutedTrades = tradeHistory?.[0]?.AIExecutedTrades;
-  const PortfolioGrowth = tradeHistory?.[0]?.PortfolioGrowth;
-  const AverageDailyReturn = tradeHistory?.[0]?.AverageDailyReturn;
-
   const urid = useMemo(() => {
     try { return getUserId(); } catch { return null; }
   }, []);
 
+  // Updated date formatter for table - "2/9/26" format
   const formatDate = (value) => {
     if (!value) return { date: '-', time: '' };
     const d = new Date(value);
     if (Number.isNaN(d.getTime())) return { date: String(value), time: '' };
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const year = d.getFullYear().toString().slice(-2);
     return {
-      date: d.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' }),
+      date: `${day}/${month}/${year}`,
       time: d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
     };
   };
@@ -241,7 +420,6 @@ export default function ArbionEngine() {
   useEffect(() => {
     let cancelled = false;
     const fetchTrades = async () => {
-      // if (!urid) { setTradeError('Missing URID'); return; }
       setLoadingTrades(true);
       setTradeError(null);
       try {
@@ -268,9 +446,62 @@ export default function ArbionEngine() {
     <>
       <div id="p-analytics" className="page">
 
-        {/* CHARTS SECTION - Dynamic */}
-        <div className="mb-6" style={{ height: "700px" }}>
-          <TradingViewWidget/>
+        {/* DYNAMIC METRICS CARDS */}
+        <div className="g4">
+          <div className="scard scc">
+            <div className="ml">Total Profit</div>
+            <div className="mv" style={{ color: metrics.totalProfit >= 0 ? "var(--t2)" : "#f87171" }}>
+              ${metrics.totalProfit.toLocaleString()}
+            </div>
+            <div className="mc up">▲ +{metrics.winRate.toFixed(1)}%</div>
+          </div>
+          <div className="scard scc">
+            <div className="ml">Realized PnL</div>
+            <div className="mv" style={{ color: metrics.realizedPnL >= 0 ? "var(--t2)" : "#f87171" }}>
+              ${metrics.realizedPnL.toLocaleString()}
+            </div>
+            <div className="mc up">▲ +${metrics.profitChange.toFixed(2)}</div>
+          </div>
+          <div className="scard scc">
+            <div className="ml">Total Trades</div>
+            <div className="mv">{metrics.totalTrades.toLocaleString()}</div>
+            <div style={{ fontSize: "10px", color: "var(--t2)", marginTop: "6px", fontFamily: "var(--mono)" }}>
+              {metrics.winLoss.wins}W · {metrics.winLoss.losses}L
+            </div>
+          </div>
+          <div className="scard scc">
+            <div className="ml">Avg Profit</div>
+            <div className="mv" style={{ color: metrics.avgProfit >= 0 ? "var(--a)" : "#f87171" }}>
+              ${metrics.avgProfit.toFixed(2)}
+            </div>
+            <div className="mc up">▲ +${metrics.profitChange.toFixed(2)}</div>
+          </div>
+        </div>
+
+        {/* CHARTS SECTION */}
+        <div className="g2">
+          <div className="scard scc">
+            <div className="sh">
+              <div className="st">PnL Curve · 90d</div>
+              <span className="tag tg">+{Math.round(metrics.totalProfit).toLocaleString()}%</span>
+            </div>
+            <div className="cw" style={{ height: "210px" }}>
+              <canvas ref={pnlChartRef} role="img" aria-label="90d PnL Percentage">
+                Cumulative PnL percentage over 90 days.
+              </canvas>
+            </div>
+          </div>
+
+          <div className="scard scc">
+            <div className="sh">
+              <div className="st">Daily Profits · 30d</div>
+            </div>
+            <div className="cw" style={{ height: "210px" }}>
+              <canvas ref={dailyChartRef} role="img" aria-label="Daily profits">
+                Daily profit amounts over 30 days.
+              </canvas>
+            </div>
+          </div>
         </div>
 
         {/* Trade History */}
@@ -412,6 +643,35 @@ export default function ArbionEngine() {
       </div>
 
       <style jsx>{`
+        .g4 {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+
+        .ml {
+          font-size: 12px;
+          color: var(--t2, #8a8f98);
+          font-weight: 500;
+        }
+        .mv {
+          font-size: 22px;
+          font-weight: 700;
+          margin: 4px 0;
+          color: var(--t1, #e5e7eb);
+        }
+        .mc {
+          font-size: 11px;
+          font-weight: 500;
+        }
+        .up {
+          color: #34d399;
+        }
+        .down {
+          color: #f87171;
+        }
+
         .th-full {
           display: block !important;
           width: 100%;
@@ -446,7 +706,7 @@ export default function ArbionEngine() {
         .th-title {
           font-size: 18px;
           font-weight: 600;
-          color: #00000;
+          color: #000000;
         }
         .th-sub {
           font-size: 12px;
@@ -526,7 +786,7 @@ export default function ArbionEngine() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background:linear-gradient(135deg, #03bdad, #00BCD4);
+          background: linear-gradient(135deg, #03bdad, #00BCD4);
           color: #fff;
           font-size: 12px;
           font-weight: 600;
@@ -658,7 +918,7 @@ export default function ArbionEngine() {
         .st {
           font-size: 14px;
           font-weight: 500;
-          color: #00000;
+          color: #000000;
         }
 
         .tag {
@@ -679,7 +939,16 @@ export default function ArbionEngine() {
         }
 
         @media (max-width: 768px) {
+          .g4 {
+            grid-template-columns: 1fr 1fr;
+          }
           .g2 {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .g4 {
             grid-template-columns: 1fr;
           }
         }

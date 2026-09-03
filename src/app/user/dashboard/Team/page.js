@@ -524,7 +524,7 @@ const TeamReferral = () => {
                                                                 </td>
                                                                  <td className="team-referral-main-table-td hidden-md text-center">
                                                                     <span className="team-referral-main-email">
-                                                                        ${member.Teambusiness || "0"}
+                                                                        ${member.teambusiness || "0"}
                                                                     </span>
                                                                 </td>
                                                                 <td className="team-referral-main-table-td text-center">

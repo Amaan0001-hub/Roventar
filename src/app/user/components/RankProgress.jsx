@@ -32,10 +32,19 @@ export default function RankProgress({
     fetchDashboardDetails();
   }, [dispatch]);
 
+  const getGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return "Good Morning";
+  if (hour < 17) return "Good Afternoon";
+  if (hour < 21) return "Good Evening";
+  return "Good Night";
+};
+
 
   const apiFullName =dashboardData?.FullName ||dashboardData?.fullName ||dashboardData?.Name ||"";
   const apiRank =dashboardData?.UserRank ||dashboardData?.userRank || activeRank || "No Rank";
-  const finalTitle = apiFullName? `Good Morning ${apiFullName}`: title;
+  const finalTitle = apiFullName? `${getGreeting()} ${apiFullName}`: title;
   const Activebot = dashboardData?.BotStatus
 
 

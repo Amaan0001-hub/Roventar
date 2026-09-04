@@ -228,7 +228,6 @@ const UserTransfer = () => {
         fundTransferDepositToDeposit(data)
       ).unwrap();
       if (result.statusCode === 200) {
-        console.log("result====>", result)
         toast.success(result.message);
         await dispatch(getfundTransferDepositToDepositReport());
         resetForm();

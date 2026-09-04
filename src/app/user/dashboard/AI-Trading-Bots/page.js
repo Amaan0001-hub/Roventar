@@ -55,7 +55,6 @@ function useLiveMarket() {
     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`);
 
     ws.onopen = () => {
-      console.log("WebSocket Connected to Binance");
       setWsConnected(true);
     };
 
@@ -112,7 +111,6 @@ function useLiveMarket() {
     };
 
     ws.onclose = () => {
-      console.log("WebSocket disconnected");
       setWsConnected(false);
     };
 

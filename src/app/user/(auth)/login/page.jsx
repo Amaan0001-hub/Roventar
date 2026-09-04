@@ -349,16 +349,7 @@ export default function LoginPage() {
       try {
         const decryptedUsername = decryptData(urlUsername);
         const decryptedPassword = decryptData(urlPassword);
-
-        console.log("✅ Decrypted:", {
-          decryptedUsername,
-          decryptedPassword,
-        });
-
-        // ✅ XO ko remove nahi karna hai
         const finalUsername = decryptedUsername;
-
-        console.log("✅ Final username:", finalUsername);
 
         setUsername(finalUsername);
         setPassword(decryptedPassword);

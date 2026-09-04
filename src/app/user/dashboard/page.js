@@ -792,15 +792,15 @@ export default function DashboardPage() {
       value: dashboardData?.[0]?.IncomeWallet ?? 0,
       icon: (<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><circle cx="10" cy="10" r="7" /><path d="M10 6.5v7M7.5 8.3c0-1 .9-1.6 2.5-1.6s2.5.7 2.5 1.7-1 1.4-2.5 1.6c-1.6.2-2.5.7-2.5 1.7s.9 1.7 2.5 1.7 2.5-.6 2.5-1.6" strokeLinecap="round" /></svg>),
       primaryLabel: 'Withdraw',
-      onPrimary: () => router.push('/user/dashboard/withdraw'),
+      onPrimary: () => router.push('/user/dashboard/fund-director?tab=withdraw'),
     },
     {
       key: 'trading',
       label: 'Trading Wallet',
       value: dashboardData?.[0]?.TradingWallet ?? 0,
       icon: (<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><polyline points="2,14 6,8 10,11 14,5 18,8" /></svg>),
-      primaryLabel: 'Trade',
-      onPrimary: () => router.push('/user/dashboard/trade'),
+      primaryLabel: 'Withdraw',
+      onPrimary: () => router.push('/user/dashboard/fund-director?tab=withdraw'),
     },
     {
       key: 'deposit',
@@ -808,7 +808,7 @@ export default function DashboardPage() {
       value: dashboardData?.[0]?.DepositWallet ?? 0,
       icon: (<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" width="18" height="18"><rect x="3" y="6" width="14" height="10" rx="2" /><path d="M3 9h14" strokeLinecap="round" /></svg>),
       primaryLabel: 'Deposit',
-      onPrimary: () => router.push('/user/dashboard/deposit'),
+      onPrimary: () => router.push('/user/dashboard/fund-director'),
     },
   ];
 
@@ -1303,7 +1303,7 @@ export default function DashboardPage() {
                   <div className="dx-stat-label">{w.label}</div>
                   <div className="dx-stat-value mb-3">${Number(w.value || 0).toFixed(2)}</div>
                   <div className="d-flex gap-2">
-                    <button type="button" className="btn dx-btn-outline flex-fill" onClick={() => router.push('/user/dashboard/wallet')}>View Wallet</button>
+                    <button type="button" className="btn dx-btn-outline flex-fill" onClick={() => router.push('/user/dashboard/wallet-statement')}>View Wallet</button>
                     <button type="button" className="btn dx-btn-primary flex-fill" onClick={w.onPrimary}>{w.primaryLabel}</button>
                   </div>
                 </div>
@@ -1357,13 +1357,18 @@ export default function DashboardPage() {
                   </div>
                   <div className="col-3">
                     <div className="dx-mini-stat">
-                      <div className="dx-mini-stat-value" id="powerBoosterStatus">{dashboardData?.[0]?.PowerBoosterStatus}</div>
+                      <div className="dx-mini-stat-value" id="powerBoosterStatus">
+                        {dashboardData?.[0]?.ac_totalQualifyBoot > 0
+                          ? "Active"
+                          : "Inactive"}
+                      </div>
+
                       <div className="dx-mini-stat-label">Boost Status</div>
                     </div>
                   </div>
                   <div className="col-3">
                     <div className="dx-mini-stat">
-                      <div className="dx-mini-stat-value">{dashboardData?.[0]?.BoosterValue}</div>
+                      <div className="dx-mini-stat-value">{dashboardData?.[0]?.ac_totalQualifyBoot}X</div>
                       <div className="dx-mini-stat-label">Boost Power</div>
                     </div>
                   </div>

@@ -927,12 +927,8 @@ export default function InvestmentHistory() {
         // Call the API
         const result = await dispatch(getRechargetransactionHIstory()).unwrap();
         
-        console.log('API Response:', result); // For debugging
-        
         let historyData = [];
-        
-        // Handle the response structure from your API
-        // Response: { statusCode: 200, message: "Staking Order Report", data: [...] }
+      
         if (result?.data && Array.isArray(result.data)) {
           historyData = result.data;
         } else if (Array.isArray(result)) {
@@ -952,9 +948,7 @@ export default function InvestmentHistory() {
           }
         }
         
-        // Filter out invalid items
         historyData = historyData.filter(item => item && typeof item === 'object' && (item.Rkprice !== undefined || item.CategoryName));
-        
         setTransactions(historyData);
         
         if (historyData.length === 0) {
@@ -1148,17 +1142,6 @@ export default function InvestmentHistory() {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="sb-footer">
-          <div className="sb-footer-inner">
-            <div>
-              <span className="sb-footer-label">📈 Investment History:</span> All your AI bot investments
-            </div>
-            <div>
-              Provider: <span className="sb-footer-provider">SonicBot AI</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

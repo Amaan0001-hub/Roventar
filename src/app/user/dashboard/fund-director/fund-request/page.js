@@ -275,7 +275,7 @@ export default function FundRequest() {
                                     Important Notes:
                                   </p>
                                   <ul className="notes-list">
-                                    <li>Only send USDT to this address</li>
+                                    <li>Only send BEP20 to this address</li>
                                     <li>
                                       Make sure you are using the correct
                                       network

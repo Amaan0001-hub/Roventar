@@ -203,7 +203,7 @@ useEffect(() => {
               <div className="important-notes">
                 <p className="notes-title">Important Notes:</p>
                 <ul className="notes-list">
-                  <li>Only send USDT to this address</li>
+                  <li>Only send BEP20 to this address</li>
                   <li>Make sure you are using the correct network</li>
                   <li>Minimum deposit: $10 USD equivalent</li>
                   <li>Deposits will be credited after network confirmation</li>

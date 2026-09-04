@@ -339,41 +339,7 @@ export default function LoginPage() {
     }
   }
 
-  // useEffect(() => {
-  //   const urlParams = new URLSearchParams(window.location.search);
-  //   const urlUsername = urlParams.get("username");
-  //   const urlPassword = urlParams.get("password");
-
-  //   if (urlUsername && urlPassword) {
-  //     try {
-  //       const decryptedUsername = decryptData(urlUsername);
-  //       const decryptedPassword = decryptData(urlPassword);
-
-  //       console.log("✅ Decrypted:", { decryptedUsername, decryptedPassword });
-
-  //       // ✅ Sirf EK "XO" hatao
-  //       let cleanUsername = decryptedUsername;
-  //       if (cleanUsername && cleanUsername.startsWith("XO")) {
-  //         cleanUsername = cleanUsername.substring(2);
-  //       }
-
-  //       console.log("✅ Final username:", cleanUsername);
-
-  //       setUsername(cleanUsername);
-  //       setPassword(decryptedPassword);
-  //       setIsVerified(true);
-
-  //       setTimeout(() => {
-  //         autoLogin(cleanUsername, decryptedPassword);
-  //       }, 300);
-
-  //     } catch (error) {
-  //       console.error("❌ Error:", error);
-  //       toast.error("Invalid login link");
-  //     }
-  //   }
-  // }, []);
-  useEffect(() => {
+    useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
 
     const urlUsername = urlParams.get("username");

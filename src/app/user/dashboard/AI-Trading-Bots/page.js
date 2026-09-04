@@ -20,6 +20,7 @@ import {
   Sun,
   Moon,
   Eye,
+  Download,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getActiveProducts } from "@/app/redux/slices/productSlice";
@@ -193,13 +194,14 @@ const bots = [
     confidence: "82%",
     timeframe: "5M",
     market: "Forex",
+    myfxbookLink: "https://www.myfxbook.com/members/SonicExperts/sonic-ai/12076857",
   
     apr: "19.8%",
     winRate: "71.3%",
     traders: "2,341",
   },
   {
-    name: "SONIC FOREX AI",
+    name: "REVOLUT AI",
     subtitle: "Trend Following Strategy",
     icon: "🧠",
     iconBg: "sb-icon-purple",
@@ -213,6 +215,7 @@ const bots = [
     confidence: "76%",
     timeframe: "15M",
     market: "Forex",
+    myfxbookLink: "https://www.myfxbook.com/members/SonicExperts/sonic-ai/12076857",
    
     apr: "21.4%",
     winRate: "68.9%",
@@ -233,6 +236,7 @@ const bots = [
     confidence: "64%",
     timeframe: "1H",
     market: "Forex",
+    myfxbookLink: "https://www.myfxbook.com/lv/members/pg_forexoffecial/phantom-bot/12073391",
    
     apr: "15.2%",
     winRate: "63.1%",
@@ -254,6 +258,7 @@ const bots = [
     timeframe: "15M",
     market: "Forex",
     risk: "Medium",
+    myfxbookLink: "https://www.myfxbook.com/members/MT4Sniper/pip-sniper/9468462",
    
     winRate: "72.6%",
     traders: "1,654",
@@ -273,6 +278,7 @@ const bots = [
     confidence: "68%",
     timeframe: "15M",
     market: "Commodities",
+    myfxbookLink: "https://www.myfxbook.com/members/FXEAMASTER/gold-rush/9875023",
 
     apr: "23.6%",
     winRate: "70.4%",
@@ -703,7 +709,7 @@ function InvestModal({ bot, onClose, onSubmit, walletBalance, isLoading }) {
           <label className="sb-modal-label">User ID *</label>
           <input
             className="sb-modal-input"
-            placeholder="Enter User ID (e.g. X0100001)"
+            placeholder="Enter User ID (e.g. R123445)"
             value={uid}
             onChange={e => setUid(e.target.value)}
           />
@@ -856,7 +862,7 @@ const styles = `
     min-height: 100vh;
     background: var(--sb-bg-2);
     color: var(--sb-text-1);
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     max-width: 100vw;
     overflow-x: hidden;
   }
@@ -894,6 +900,7 @@ const styles = `
     font-weight: 700;
     color: var(--sb-text-1);
     margin: 0;
+    font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
   }
 
   .sb-header-subtitle {
@@ -907,8 +914,7 @@ const styles = `
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    width: 100%;
-    justify-content: flex-start;
+    margin-left: auto;
   }
 
   .sb-header-badge {
@@ -1135,6 +1141,7 @@ const styles = `
     margin: 0;
     letter-spacing: 0.02em;
     word-break: break-word;
+    font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
   }
 
   .sb-card-subtitle {
@@ -1662,6 +1669,7 @@ const styles = `
     font-weight: 700;
     color: var(--sb-text-1);
     margin: 0;
+    font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
   }
 
   .sb-modal-subtitle {
@@ -1839,8 +1847,9 @@ const styles = `
   .sb-success-title {
     font-size: 20px;
     font-weight: 700;
-    color: var(--sb-green);
-    margin-bottom: 6px;
+    color: var(--sb-text-1);
+    margin-bottom: 8px;
+    font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
   }
 
   .sb-success-subtitle {
@@ -1960,13 +1969,24 @@ const styles = `
   }
 
   .sb-loading-icon {
-    font-size: 40px;
+    font-size: 48px;
     margin-bottom: 16px;
+    animation: sb-bounce 1.5s ease-in-out infinite;
   }
 
   .sb-loading-text {
     font-size: 18px;
+    font-weight: 600;
     color: var(--sb-text-1);
+  }
+
+  @keyframes sb-bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 
   /* ===== TAB CONTENT TRANSITION ===== */
@@ -2301,16 +2321,41 @@ export default function SonicScalper() {
   const [inv, setInv] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailBot, setDetailBot] = useState(null);
+  const [cssLoaded, setCssLoaded] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
   // Inject styles
   useEffect(() => {
     const styleEl = document.createElement('style');
     styleEl.innerHTML = styles;
     document.head.appendChild(styleEl);
+    
+    // Mark CSS as loaded after a small delay to ensure it's applied
+    setTimeout(() => {
+      setCssLoaded(true);
+    }, 100);
+    
     return () => {
       document.head.removeChild(styleEl);
     };
   }, []);
+
+  // Check if all initial data is loaded
+  useEffect(() => {
+    if (
+      cssLoaded &&
+      !walletLoading &&
+      marketPrices &&
+      Object.keys(marketPrices).length > 0 &&
+      chartData &&
+      chartData.length > 0
+    ) {
+      // Add a small delay to ensure smooth transition
+      setTimeout(() => {
+        setInitialDataLoaded(true);
+      }, 300);
+    }
+  }, [cssLoaded, walletLoading, marketPrices, chartData]);
 
   // Check for saved theme preference
   useEffect(() => {
@@ -2361,8 +2406,767 @@ export default function SonicScalper() {
 
   // Handle view details button click
   const handleViewDetails = (bot) => {
-    setDetailBot(bot);
-    setShowDetailModal(true);
+    if (bot?.myfxbookLink) {
+      window.open(
+        bot.myfxbookLink,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+  };
+
+  // Handle download invoice
+  const handleDownloadInvoice = (invoiceData) => {
+    const invoiceNo = invoiceData.id || `INV-${Date.now()}`;
+    const userName = invoiceData.user || 'User';
+    const userId = invoiceData.uid || 'N/A';
+    const amount = invoiceData.amount || 0;
+    const orderDate = invoiceData.date || new Date().toLocaleDateString();
+    const status = 'Active';
+    const roiValue = invoiceData.roi || '20';
+    const d = {
+      bot: invoiceData.bot,
+      package: invoiceData.package,
+      CategoryName: invoiceData.bot,
+      PackageName: invoiceData.package
+    };
+
+    const invoiceHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Roventar Invoice ${invoiceNo}</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                background: #f0f2f5;
+                padding: 10px;
+                font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+
+            /* ===== MAIN CONTAINER ===== */
+            .invoice {
+                max-width: 780px;
+                width: 100%;
+                background: #ffffff;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(14, 156, 152, 0.12);
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* ===== TOP BAR ===== */
+            .top-bar {
+                background: linear-gradient(135deg, #0e9c98, #18c7c2);
+                padding: 12px 28px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 3px solid #0a7a76;
+            }
+
+            .top-bar .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .top-bar .brand .logo-img {
+                width: 44px;
+                height: 44px;
+                object-fit: contain;
+                border-radius: 10px;
+                background: rgba(255, 255, 255, 0.15);
+                padding: 4px;
+            }
+
+            .top-bar .brand .brand-text h1 {
+                font-size: 18px;
+                font-weight: 800;
+                color: #ffffff;
+                letter-spacing: 1px;
+                margin: 0;
+                line-height: 1.2;
+            }
+
+            .top-bar .brand .brand-text span {
+                font-size: 9px;
+                color: rgba(255, 255, 255, 0.85);
+                font-weight: 400;
+                display: block;
+                letter-spacing: 0.5px;
+            }
+
+            .top-bar .invoice-tag {
+                text-align: right;
+            }
+
+            .top-bar .invoice-tag .label {
+                font-size: 8px;
+                color: rgba(255, 255, 255, 0.7);
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                font-weight: 600;
+            }
+
+            .top-bar .invoice-tag .number {
+                font-size: 13px;
+                font-weight: 700;
+                color: #ffffff;
+                letter-spacing: 0.3px;
+            }
+
+            /* ===== HEADER ===== */
+            .header {
+                background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+                padding: 16px 28px 14px;
+                border-bottom: 1px solid #99f6e4;
+            }
+
+            .header-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .header-left .greeting {
+                font-size: 20px;
+                font-weight: 700;
+                color: #12263a;
+            }
+
+            .header-left .greeting span {
+                color: #0e9c98;
+            }
+
+            .header-left .sub {
+                font-size: 12px;
+                color: #647785;
+                font-weight: 400;
+                margin-top: 1px;
+            }
+
+            .header-right {
+                text-align: right;
+            }
+
+            .header-right .amount-label {
+                font-size: 10px;
+                color: #0e9c98;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 700;
+            }
+
+            .header-right .amount-wrapper {
+                display: flex;
+                align-items: baseline;
+                justify-content: flex-end;
+                gap: 4px;
+            }
+
+            .header-right .amount {
+                font-size: 28px;
+                font-weight: 900;
+                color: #12263a;
+                line-height: 1.1;
+                letter-spacing: -0.5px;
+            }
+
+            .header-right .currency {
+                font-size: 14px;
+                font-weight: 600;
+                color: #0e9c98;
+                letter-spacing: 0.5px;
+            }
+
+            /* ===== STATUS ROW ===== */
+            .status-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 28px;
+                background: #ffffff;
+                border-bottom: 1px solid #99f6e4;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .status-row .date {
+                font-size: 12px;
+                color: #647785;
+                font-weight: 500;
+            }
+
+            .status-row .date strong {
+                color: #12263a;
+                font-weight: 700;
+            }
+
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                color: #10b981;
+                padding: 0;
+                background: transparent;
+                border: none;
+            }
+
+            /* ===== BODY ===== */
+            .body {
+                padding: 14px 28px 10px;
+                background: #ffffff;
+            }
+
+            /* ===== SECTIONS ===== */
+            .section {
+                margin-bottom: 18px;
+            }
+
+            .section:last-of-type {
+                margin-bottom: 0;
+            }
+
+            .section-title {
+                font-size: 10px;
+                font-weight: 800;
+                color: #12263a;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+                border-bottom: 2px solid #99f6e4;
+            }
+
+            .section-title .icon {
+                margin-right: 6px;
+                font-size: 13px;
+            }
+
+            /* ===== GRID ===== */
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 8px;
+            }
+
+            .grid-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            /* ===== CARD ===== */
+            .card {
+                background: #f0fdfa;
+                border-radius: 10px;
+                padding: 8px 14px;
+                border: 1px solid #99f6e4;
+            }
+
+            .card .label {
+                font-size: 9px;
+                font-weight: 700;
+                color: #0e9c98;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                margin-bottom: 2px;
+            }
+
+            .card .value {
+                font-size: 14px;
+                font-weight: 700;
+                color: #12263a;
+                letter-spacing: -0.2px;
+            }
+
+            .card .value-sm {
+                font-size: 13px;
+                font-weight: 600;
+                color: #12263a;
+            }
+
+            /* ===== HIGHLIGHT BOX ===== */
+            .highlight-box {
+                background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+                border: 2px solid #5eead4;
+                border-radius: 10px;
+                padding: 10px 18px;
+                display: flex;
+                justification: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 2px;
+            }
+
+            .highlight-box .left .label {
+                font-size: 10px;
+                font-weight: 700;
+                color: #0e9c98;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .highlight-box .left .value {
+                font-size: 16px;
+                font-weight: 800;
+                color: #12263a;
+                margin-top: 1px;
+                letter-spacing: -0.3px;
+            }
+
+            .highlight-box .right {
+                text-align: right;
+            }
+
+            .highlight-box .right .label {
+                font-size: 10px;
+                font-weight: 700;
+                color: #0e9c98;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .highlight-box .right .value {
+                font-size: 18px;
+                font-weight: 900;
+                color: #0e9c98;
+                margin-top: 1px;
+                letter-spacing: -0.5px;
+            }
+
+            /* ===== COMPANY ADDRESS ===== */
+            .company-address {
+                background: #f0fdfa;
+                padding: 8px 18px;
+                border-radius: 10px;
+                border: 1px solid #99f6e4;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .company-address .address-text {
+                font-size: 10px;
+                color: #647785;
+                line-height: 1.5;
+            }
+
+            .company-address .address-text strong {
+                color: #12263a;
+            }
+
+            /* ===== STAMP ONLY - RIGHT SIDE ===== */
+            .stamp-section {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 2px dashed #99f6e4;
+            }
+
+            .stamp-box {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+            }
+
+            .stamp-box .stamp-label {
+                font-size: 7px;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 600;
+            }
+
+            .stamp-box .stamp-image {
+                width: 120px;
+                height: 120px;
+                object-fit: contain;
+                border-radius: 8px;
+                background: #ffffff;
+                padding: 4px;
+            }
+
+            /* ===== FOOTER ===== */
+            .footer {
+                background: #f0fdfa;
+                padding: 10px 28px 8px;
+                text-align: center;
+                border-top: 2px solid #99f6e4;
+            }
+
+            .footer .brand-name {
+                font-size: 14px;
+                font-weight: 800;
+                color: #12263a;
+                letter-spacing: 1px;
+            }
+
+            .footer .brand-name span {
+                color: #0e9c98;
+            }
+
+            .footer .divider {
+                width: 25px;
+                height: 2px;
+                background: linear-gradient(90deg, #0e9c98, #18c7c2);
+                margin: 4px auto;
+                border-radius: 2px;
+            }
+
+            .footer p {
+                font-size: 10px;
+                color: #12263a;
+                font-weight: 500;
+                line-height: 1.4;
+            }
+
+            .footer .note {
+                font-size: 7px;
+                color: #6b7280;
+                font-weight: 500;
+                margin-top: 3px;
+                letter-spacing: 0.3px;
+            }
+
+            /* ===== RESPONSIVE ===== */
+            @media (max-width: 700px) {
+                .top-bar {
+                    flex-direction: column;
+                    gap: 6px;
+                    padding: 10px 16px;
+                    text-align: center;
+                }
+                .top-bar .invoice-tag {
+                    text-align: center;
+                }
+                .header {
+                    padding: 12px 16px;
+                }
+                .header-content {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .header-right {
+                    text-align: left;
+                    width: 100%;
+                }
+                .header-right .amount-wrapper {
+                    justify-content: flex-start;
+                }
+                .header-right .amount {
+                    font-size: 24px;
+                }
+                .body {
+                    padding: 10px 16px;
+                }
+                .grid-3 {
+                    grid-template-columns: 1fr 1fr;
+                }
+                .status-row {
+                    padding: 6px 16px;
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .footer {
+                    padding: 8px 16px;
+                }
+                .stamp-section {
+                    justify-content: center;
+                }
+                .company-address {
+                    flex-direction: column;
+                    text-align: center;
+                }
+                .stamp-box .stamp-image {
+                    width: 100px;
+                    height: 100px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .grid-3 {
+                    grid-template-columns: 1fr;
+                }
+                .top-bar .brand h1 {
+                    font-size: 16px;
+                }
+                .header-left .greeting {
+                    font-size: 17px;
+                }
+            }
+
+            /* ===== PRINT ===== */
+            @media print {
+                body {
+                    background: #ffffff;
+                    padding: 0;
+                    margin: 0;
+                }
+                .invoice {
+                    box-shadow: none;
+                    border-radius: 0;
+                    max-width: 100%;
+                }
+                .top-bar {
+                    background: linear-gradient(135deg, #0e9c98, #18c7c2) !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .top-bar .brand .logo-img {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .status-badge {
+                    color: #10b981 !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .highlight-box {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .card {
+                    background: #f0fdfa !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .footer {
+                    background: #f0fdfa !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .header {
+                    background: linear-gradient(135deg, #f0fdfa, #ccfbf1) !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .company-address {
+                    background: #f0fdfa !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .stamp-image {
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .stamp-section {
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="invoice">
+
+            <!-- ===== TOP BAR ===== -->
+            <div class="top-bar">
+                <div class="brand">
+                    <img src="/logo.png" alt="Roventar Logo" class="logo-img" />
+                    <div class="brand-text">
+                        <h1>Roventar</h1>
+                        <span>Smart Trading · Better Future</span>
+                    </div>
+                </div>
+                <div class="invoice-tag">
+                    <div class="label">Invoice Number</div>
+                    <div class="number">#${invoiceNo}</div>
+                </div>
+            </div>
+
+            <!-- ===== HEADER ===== -->
+            <div class="header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <div class="greeting">
+                            Hello, <span>${userName}</span>
+                        </div>
+                        <div class="sub">Thank you for investing with Roventar</div>
+                    </div>
+                    <div class="header-right">
+                        <div class="amount-label">Total Investment</div>
+                        <div class="amount-wrapper">
+                            <span class="amount">$${amount.toFixed(2)}</span>
+                            <span class="currency">USD</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== STATUS ROW ===== -->
+            <div class="status-row">
+                <div class="date">
+                    📅 <strong>Transaction Date:</strong> ${orderDate}
+                </div>
+                <div>
+                    <span class="status-badge">${status}</span>
+                </div>
+            </div>
+
+            <!-- ===== BODY ===== -->
+            <div class="body">
+
+                <!-- User Details -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">👤</span> User Details
+                    </div>
+                    <div class="grid">
+                        <div class="card">
+                            <div class="label">Username</div>
+                            <div class="value">${userName}</div>
+                        </div>
+                        <div class="card">
+                            <div class="label">User ID</div>
+                            <div class="value value-sm">${userId}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Package Details -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">🤖</span> Package Details
+                    </div>
+                    <div class="grid grid-3">
+                        <div class="card">
+                            <div class="label">Strategy</div>
+                            <div class="value">${d.CategoryName || d.bot || "N/A"}</div>
+                        </div>
+                        <div class="card">
+                            <div class="label">Package</div>
+                            <div class="value">${d.PackageName || d.package || "N/A"}</div>
+                        </div>
+                        <div class="card">
+                            <div class="label">APY</div>
+                            <div class="value">${typeof roiValue === 'number' ? roiValue.toFixed(2) : roiValue}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investment Summary -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">💰</span> Investment Summary
+                    </div>
+                    <div class="highlight-box">
+                        <div class="left">
+                            <div class="label">Package</div>
+                            <div class="value">${d.PackageName || d.package || "N/A"}</div>
+                        </div>
+                        <div class="right">
+                            <div class="label">Amount</div>
+                            <div class="value">$${amount.toFixed(2)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== COMPANY ADDRESS ===== -->
+                <div class="section" style="margin-bottom: 4px;">
+                    <div class="section-title">
+                        <span class="icon">🏢</span> Company Details
+                    </div>
+                <div class="company-address">
+    <div class="address-text">
+        <strong>ROVENTAR TRADING LLC</strong><br />
+        Registered Agent: As per Articles of Organization<br />
+        State of Missouri, USA<br />
+        Date Filed: 08/26/2026
+    </div>
+
+    <div class="address-text" style="text-align: right;">
+        <strong>Email:</strong> support@roventar.com<br />
+        <strong>Phone:</strong> +1 (800) 555-0199
+    </div>
+</div>
+                </div>
+
+                <!-- ===== STAMP ONLY - RIGHT SIDE ===== -->
+                <div class="stamp-section">
+                    <div class="stamp-box">
+                        <span class="stamp-label">Company Stamp</span>
+                        <img src="/stampbackremove.png" alt="Roventar CAPITAL MANAGEMENT LLC Stamp" class="stamp-image" />
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===== FOOTER ===== -->
+            <div class="footer">
+                <div class="brand-name">✦ Rove<span>ntar</span></div>
+                <div class="divider"></div>
+                <p>
+                    Thank you for trusting Roventar with your investment.<br />
+                    Our AI-driven strategies are working to grow your wealth.
+                </p>
+                <div class="note">
+                    © ${new Date().getFullYear()} Roventar · All Rights Reserved · Computer Generated Invoice
+                </div>
+            </div>
+
+        </div>
+    </body>
+    </html>
+    `;
+
+    // Create a temporary div to hold the invoice
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = invoiceHTML;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+
+    // Generate PDF using html2pdf
+    const element = tempDiv.querySelector('.invoice');
+    const opt = {
+      margin: 10,
+      filename: `Roventar_Invoice_${invoiceNo}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Wait for html2pdf to load, then generate PDF
+    if (typeof html2pdf !== 'undefined') {
+      html2pdf().set(opt).from(element).save().then(() => {
+        document.body.removeChild(tempDiv);
+      });
+    } else {
+      // Fallback: load html2pdf dynamically
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => {
+        html2pdf().set(opt).from(element).save().then(() => {
+          document.body.removeChild(tempDiv);
+        });
+      };
+      document.head.appendChild(script);
+    }
   };
 
   // Handle investment submission
@@ -2399,7 +3203,7 @@ export default function SonicScalper() {
       };
 
       const o = {
-        id: `XFX-${Date.now()}`,
+        id: `R-${Date.now()}`,
         bot: bot.name,
         logo: bot.icon || "🤖",
         user: uname,
@@ -2521,7 +3325,7 @@ export default function SonicScalper() {
     );
   };
 
-  if (loading) {
+  if (loading || !initialDataLoaded) {
     return (
       <div className="sb-loading">
         <div className="sb-loading-content">
@@ -2565,14 +3369,7 @@ export default function SonicScalper() {
             
            
             
-            <div className="sb-header-badge">
-              <Zap size={13} className="sb-header-badge-icon" />
-              <span className="sb-header-badge-text">{bots.length} Active Bots</span>
-            </div>
-            <div className="sb-header-status">
-              <span className={`sb-status-indicator ${wsConnected ? 'sb-status-indicator-live' : 'sb-status-indicator-offline'}`} />
-              <span className="sb-status-label">{wsConnected ? 'Live Data' : 'Demo Mode'}</span>
-            </div>
+            
             <div className="sb-header-wallet">
               <span className="sb-header-wallet-text">Wallet: ${walletBalance.toLocaleString()}</span>
             </div>
@@ -2601,22 +3398,7 @@ export default function SonicScalper() {
               ))}
             </div>
 
-            {/* Footer */}
-            <div className="sb-footer">
-              <div className="sb-footer-inner">
-                <div>
-                  <span className="sb-footer-label">⚡ Live Data:</span>{" "}
-                  {wsConnected ? 'Connected to Binance WebSocket' : 'Using simulated data (fallback mode)'}
-                </div>
-                <div className="sb-footer-status">
-                  <span className={`sb-footer-dot ${wsConnected ? 'sb-footer-dot-live' : 'sb-footer-dot-sim'}`} />
-                  <span>{wsConnected ? 'Real-time' : 'Simulated'} Market Data</span>
-                </div>
-                <div>
-                  Data Provider: <span className="sb-footer-provider">Twelve Data</span>
-                </div>
-              </div>
-            </div>
+           
           </div>
         ) : (
           <InvestmentHistory />
@@ -2674,12 +3456,23 @@ export default function SonicScalper() {
               ))}
             </div>
 
-            <button
-              className="sb-success-btn"
-              onClick={() => setShowSuccess(false)}
-            >
-              Done
-            </button>
+            <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+              <button
+                className="sb-success-btn"
+                onClick={() => handleDownloadInvoice(inv)}
+                style={{ background: 'var(--sb-text-2)', flex: 1 }}
+              >
+                <Download size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                Download Invoice
+              </button>
+              <button
+                className="sb-success-btn"
+                onClick={() => setShowSuccess(false)}
+                style={{ flex: 1 }}
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

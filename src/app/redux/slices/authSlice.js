@@ -84,7 +84,6 @@ export const adminLogin = createAsyncThunk(
         loginData
         
       );
-      console.log("testt",response?.data?.Role)
 
       if (response.statusCode === 409) {
         toast.error(response.message);

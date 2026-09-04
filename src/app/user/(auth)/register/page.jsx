@@ -687,7 +687,6 @@ export default function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Form submitted", formData)
     if (!validateForm()) {
       console.log("Form validation failed", errors)
       return
@@ -715,10 +714,8 @@ export default function SignupPage() {
         introSide: formData.introSide || "L",
         otPregpage: ""
       }
-      console.log("Sending registration payload:", payload)
 
       const res = await dispatch(userRegistration(payload)).unwrap()
-      console.log("Registration response:", res)
 
       if (res?.statusCode !== 200) throw new Error(res?.message || "Signup failed")
 

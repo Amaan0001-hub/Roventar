@@ -1096,7 +1096,7 @@ export default function DashboardPage() {
                   <CircularGauge
                     percent={rankLevels.find(r => r.status === 'current')?.progress || 0}
                     size={110} stroke={9} colorFrom="#5eead4" colorTo="#0d9488" gradId="rankGrad"
-                    centerTop={dashboardData?.[0]?.UserRank || 'N/A'}
+                    centerTop={dashboardData?.[0]?.Ac_BoostRank || 'N/A'}
                     centerBottom={`${(dashboardData?.[0]?.ac_totalQualifyBoot || 0) * 100}%`}
                   />
                 </div>
@@ -1111,7 +1111,7 @@ export default function DashboardPage() {
                     <div className="fw-bold" style={{ color: "#f59e0b" }}>${(dashboardData?.[0]?.InvestmenELimit || 0).toFixed(2) || "0.00"}</div>
                   </div>
                   <div className="col-4">
-                    <div className="dx-mini-stat-label">4X Boost</div>
+                    <div className="dx-mini-stat-label">{dashboardData?.[0]?.ac_totalQualifyBoot}X Boost</div>
                     <div className="fw-bold" style={{ color: "#10b981" }}>${(dashboardData?.[0]?.EarningLimit || 0).toFixed(2) || "0.00"}</div>
                   </div>
                 </div>

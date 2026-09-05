@@ -860,7 +860,7 @@ function HistoryCard({ transaction, index }) {
           <div className="sb-history-stat-item">
             <p className="sb-history-stat-label">Type</p>
             <p className="sb-history-stat-value" style={{ color: 'var(--sb-amber)' }}>
-              {transaction.type || 'Standard'}
+              {transaction.PackageName || 'Standard'}
             </p>
           </div>
         </div>

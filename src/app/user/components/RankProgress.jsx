@@ -1,9 +1,10 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserDashboardDetails } from "../../redux/slices/authSlice";
+import Link from "next/link";
+import { FiExternalLink } from "react-icons/fi";
 
 export default function RankProgress({
   totQualifyRnk = 0,
@@ -33,20 +34,26 @@ export default function RankProgress({
   }, [dispatch]);
 
   const getGreeting = () => {
-  const hour = new Date().getHours();
+    const hour = new Date().getHours();
 
-  if (hour < 12) return "Good Morning";
-  if (hour < 17) return "Good Afternoon";
-  if (hour < 21) return "Good Evening";
-  return "Good Night";
-};
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    if (hour < 21) return "Good Evening";
+    return "Good Night";
+  };
 
-
-  const apiFullName =dashboardData?.FullName ||dashboardData?.fullName ||dashboardData?.Name ||"";
-  const apiRank =dashboardData?.UserRank ||dashboardData?.userRank || activeRank || "No Rank";
-  const finalTitle = apiFullName? `${getGreeting()} ${apiFullName}`: title;
-  const Activebot = dashboardData?.BotStatus
-
+  const apiFullName =
+    dashboardData?.FullName ||
+    dashboardData?.fullName ||
+    dashboardData?.Name ||
+    "";
+  const apiRank =
+    dashboardData?.UserRank ||
+    dashboardData?.userRank ||
+    activeRank ||
+    "No Rank";
+  const finalTitle = apiFullName ? `${getGreeting()} ${apiFullName}` : title;
+  const Activebot = dashboardData?.BotStatus;
 
   const ACCENT = "var(--brand-cyan, #14b8a6)";
   const ACCENT_2 = "var(--brand-cyan2, #0ea5a4)";
@@ -58,8 +65,7 @@ export default function RankProgress({
       border: "1px solid #ddebec",
       borderRadius: "1.5rem",
       overflow: "hidden",
-      boxShadow:
-        "0 1px 2px var(--shadow, rgba(16,40,60,0.04))",
+      boxShadow: "0 1px 2px var(--shadow, rgba(16,40,60,0.04))",
       margin: "1rem 0",
       color: "var(--text-1)",
     },
@@ -130,8 +136,6 @@ export default function RankProgress({
       overflow: "hidden",
     },
 
-  
-
     right: {
       flex: "1 1 320px",
       display: "flex",
@@ -143,28 +147,33 @@ export default function RankProgress({
   };
 
   return (
-    <div
-      className="rpc-hero card"
-      style={styles.hero}
-    >
+    <div className="rpc-hero card" style={styles.hero}>
       <div>
-        <div
-          className="row align-items-center"
-          style={styles.row}
-        >
+        <div className="row align-items-center" style={styles.row}>
           {/* =====================================================
               LEFT SIDE
           ====================================================== */}
 
           <div style={styles.left}>
-
             {/* EYEBROW */}
-            <div style={styles.eyebrow}>
+            {/* <div style={styles.eyebrow}>
               <div className="dx-avatar">
                 <TrophyIcon />
               </div>
 
               <span>ROVENTAR ECOSYSTEM</span>
+            </div> */}
+            <div style={styles.eyebrow}>
+              <Link href="#" className="ecosystem-link">
+                <div className="dx-avatar">
+                  {/* <TrophyIcon /> */}
+                  <FiExternalLink className="redirect-icon" />
+                </div>
+
+                <span>ROVENTAR TRADE</span>
+
+                {/* <FiExternalLink className="redirect-icon" /> */}
+              </Link>
             </div>
 
             {/* =================================================
@@ -172,15 +181,11 @@ export default function RankProgress({
                 API FullName => Good Morning Robo Fx
             ================================================= */}
 
-            <h3 style={styles.title}>
-              {finalTitle}
-            </h3>
+            <h3 style={styles.title}>{finalTitle}</h3>
 
             {/* DESCRIPTION */}
 
-            <p style={styles.desc}>
-              {description}
-            </p>
+            <p style={styles.desc}>{description}</p>
 
             {/* =================================================
                 RANK / STATUS
@@ -189,7 +194,6 @@ export default function RankProgress({
             <div className="mb-4">
               <div className="flex-grow-1">
                 <div className="d-flex flex-wrap gap-2">
-
                   {/* Rank */}
 
                   <span className="dx-badge-chip">
@@ -199,12 +203,7 @@ export default function RankProgress({
                   {/* Trading Package */}
 
                   <span className="dx-badge-chip success">
-                    <svg
-                      width="11"
-                      height="11"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                    >
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                       <polyline
                         points="2,8 5.5,11.5 14,3.5"
                         stroke="currentColor"
@@ -213,19 +212,13 @@ export default function RankProgress({
                         strokeLinejoin="round"
                       />
                     </svg>
-
                     Trading Package Active
                   </span>
 
                   {/* Account */}
 
                   <span className="dx-badge-chip success">
-                    <svg
-                      width="11"
-                      height="11"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                    >
+                    <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                       <polyline
                         points="2,8 5.5,11.5 14,3.5"
                         stroke="currentColor"
@@ -234,16 +227,11 @@ export default function RankProgress({
                         strokeLinejoin="round"
                       />
                     </svg>
-
                     Account Active
                   </span>
-
                 </div>
               </div>
             </div>
-
-           
-
           </div>
 
           {/* =====================================================
@@ -252,12 +240,12 @@ export default function RankProgress({
 
           <div style={styles.right}>
             <img
-              src="/banner-img.png"
+              // src="/banner-img.png"
+              src="/banner1.png"
               alt={apiRank || "Rank"}
               className="Rank-img rpc-rankImg"
             />
           </div>
-
         </div>
       </div>
     </div>

@@ -14,6 +14,7 @@ import {
   getAllMenu,
   getToken, getRequest, getRequestWithToken,
   setAdminToken,
+  sendOtpUserRegistration,
 } from "../../api/auth";
 import cookies from "js-cookie";
 import { act } from "react";
@@ -38,8 +39,9 @@ const API_ENDPOINTS = {
   GET_USER_DASHBOARD_DETAILS: "/Authentication/userDashboardDetails",
   UPDATE_USER_PROFILE: "/Authentication/updateUserProfile",
   UPDATE_USER_PROFILE_ADMIN: "/Authentication/updateUserProfileAdmin",
-  UPDATE_PASSWORD:"/Authentication/changePassword",
-  GET_PROFILE_DETAILS: '/WalletReport/getProfileDetails'
+  UPDATE_PASSWORD: "/Authentication/changePassword",
+  GET_PROFILE_DETAILS: '/WalletReport/getProfileDetails',
+  SEND_OTP_USER_REGISTRATION: "/SMTPServices/sendOtpUserrehistration"
 };
 
 export const appLogin = createAsyncThunk(
@@ -79,10 +81,10 @@ export const adminLogin = createAsyncThunk(
         password: data.password
       };
       const response = await postRequestWithToken(
-        
+
         API_ENDPOINTS.ADMIN_LOGIN,
         loginData
-        
+
       );
 
       if (response.statusCode === 409) {
@@ -90,12 +92,12 @@ export const adminLogin = createAsyncThunk(
       }
 
       const token = response.token || response.data?.token;
-    cookies.set("Role", String(response?.data?.Role ?? ""), {
-      expires: 7,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-    });
+      cookies.set("Role", String(response?.data?.Role ?? ""), {
+        expires: 7,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+      });
       setToken(token);
       setAdminToken(token);
       return response;
@@ -355,6 +357,21 @@ export const sendWithdrawalOtpRequest = createAsyncThunk(
   }
 );
 
+export const sendOtpForUserRegistration = createAsyncThunk(
+  "auth/sendOtpForUserRegistration",
+  async (emailId, { rejectWithValue }) => {
+    try {
+      const response = await sendOtpUserRegistration(emailId);
+      return response;
+    } catch (error) {
+      console.error("API Error:", error.response?.data || error.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to send OTP"
+      );
+    }
+  }
+);
+
 
 export const validateOtp = createAsyncThunk(
   "auth/validateOtp",
@@ -483,7 +500,7 @@ const authSlice = createSlice({
     referralDataByLoginIdError: null,
     UserdashboardData: null,
     UserSummaryData: null,
-    updateUserData:null,
+    updateUserData: null,
     profileData: null,
     sendOtpFundRequestIncomeData: null,
     updateUserAdminData: null
@@ -761,7 +778,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-       .addCase(sendOtpRequestwalletaddress.pending, (state) => {
+      .addCase(sendOtpRequestwalletaddress.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -775,7 +792,7 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-        .addCase(updateUser.pending, (state) => {
+      .addCase(updateUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })

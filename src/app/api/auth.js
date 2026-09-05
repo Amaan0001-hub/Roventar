@@ -636,7 +636,7 @@ export const postImageWithParams = async (endpoint, data, imageFile) => {
   }
 
   const queryParams = {
-    ...data, 
+    ...data,
   };
 
   const response = await axios.post(`${BASE_URL}${endpoint}`, formData, {
@@ -727,6 +727,24 @@ export const getAllMenu = async (adminUserId) => {
     return response.data;
   } catch (error) {
     console.error("Get All Menu API Call Failed:", error);
+    throw error;
+  }
+};
+
+export const sendOtpUserRegistration = async (emailId) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/SMTPServices/sendOtpUserrehistration`,
+      { emailId },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Send OTP User Registration API Call Failed:", error);
     throw error;
   }
 };

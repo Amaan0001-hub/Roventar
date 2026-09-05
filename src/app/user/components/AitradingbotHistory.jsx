@@ -753,9 +753,9 @@ function HistoryCard({ transaction, index }) {
       const parts = dateString.split('-');
       if (parts.length === 3) {
         const date = new Date(parts[2], parts[1] - 1, parts[0]);
-        return date.toLocaleDateString('en-US', { 
-          day: '2-digit', 
-          month: 'short', 
+        return date.toLocaleDateString('en-US', {
+          day: '2-digit',
+          month: 'short',
           year: 'numeric'
         });
       }
@@ -816,31 +816,38 @@ function HistoryCard({ transaction, index }) {
           </span>
         </div>
 
-        {/* Package and Date in one row */}
+
+
+        <div className="sb-history-detail-row">
+          <span className="sb-history-detail-label">limit Package</span>
+          <span>
+            <span className={`sb-package-badge ${getPackageColor(transaction.PackageName)}`}>
+              {transaction.PackageName || 'Basic'}
+            </span>
+          </span>
+        </div>
+
+
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          {/* Activated By */}
           <div className="sb-history-detail-row">
-            <span className="sb-history-detail-label">Package</span>
-            <span>
-              <span className={`sb-package-badge ${getPackageColor(transaction.PackageName)}`}>
-                {transaction.PackageName || 'Basic'}
-              </span>
+            <span className="sb-history-detail-label">Activated By</span>
+            <span className="sb-history-detail-value" style={{ fontSize: '12px' }}>
+              {transaction.AuthLogin || 'Welcome'}
             </span>
           </div>
+
           <div className="sb-history-detail-row">
             <span className="sb-history-detail-label">Date</span>
             <span className="sb-history-detail-value" style={{ fontSize: '11px' }}>
               {formatDate(transaction.OrderDate)}
             </span>
           </div>
+
+
         </div>
 
-        {/* Activated By */}
-        <div className="sb-history-detail-row">
-          <span className="sb-history-detail-label">Activated By</span>
-          <span className="sb-history-detail-value" style={{ fontSize: '12px' }}>
-            {transaction.AuthLogin || 'Welcome'}
-          </span>
-        </div>
 
         {/* Bottom Stats */}
         <div className="sb-history-stats-grid">
@@ -921,15 +928,15 @@ export default function InvestmentHistory() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Get userId from auth
         const userId = getUserId();
-        
+
         // Call the API
         const result = await dispatch(getRechargetransactionHIstory()).unwrap();
-        
+
         let historyData = [];
-      
+
         if (result?.data && Array.isArray(result.data)) {
           historyData = result.data;
         } else if (Array.isArray(result)) {
@@ -948,10 +955,10 @@ export default function InvestmentHistory() {
             }
           }
         }
-        
+
         historyData = historyData.filter(item => item && typeof item === 'object' && (item.Rkprice !== undefined || item.CategoryName));
         setTransactions(historyData);
-        
+
         if (historyData.length === 0) {
           console.log('No transaction data found in response');
         }
@@ -970,18 +977,18 @@ export default function InvestmentHistory() {
   // Filter transactions
   const filteredTransactions = transactions.filter(item => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       (item.CategoryName || '').toLowerCase().includes(searchLower) ||
       (item.productName || '').toLowerCase().includes(searchLower) ||
       (item.PackageName || '').toLowerCase().includes(searchLower) ||
       (item.AuthLogin || '').toLowerCase().includes(searchLower);
-    
-    const matchesPackage = packageFilter === 'all' || 
+
+    const matchesPackage = packageFilter === 'all' ||
       (item.PackageName || '').toLowerCase().includes(packageFilter.toLowerCase());
-    
+
     // All transactions are "Active" so status filter always matches
     const matchesStatus = statusFilter === 'all' || statusFilter === 'active';
-    
+
     return matchesSearch && matchesStatus && matchesPackage;
   });
 
@@ -1008,7 +1015,7 @@ export default function InvestmentHistory() {
 
     // Use the summary data from the first transaction (all have same summary)
     const first = transactions[0];
-    
+
     return {
       total: first.TotalInvestment || transactions.reduce((sum, item) => {
         const amount = parseFloat(item.Rkprice || 0);
@@ -1050,25 +1057,6 @@ export default function InvestmentHistory() {
               ${typeof stats.total === 'number' ? stats.total.toFixed(2) : '0.00'}
             </p>
             <p className="sb-stat-sub">User Investment</p>
-          </div>
-          <div className="sb-stat-card">
-            <p className="sb-stat-label">Income Limit</p>
-            <p className="sb-stat-value sb-stat-value-amber">
-              ${typeof stats.income === 'number' ? stats.income.toFixed(2) : '0.00'}
-            </p>
-            <p className="sb-stat-sub">Income</p>
-          </div>
-          <div className="sb-stat-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <p className="sb-stat-label">Limit / Remaining</p>
-              <p className="sb-stat-value sb-stat-value-purple">
-                ${typeof stats.remaining === 'number' ? stats.remaining.toFixed(2) : '0.00'}
-              </p>
-              <p className="sb-stat-sub">
-                ${typeof stats.limit === 'number' ? stats.limit.toFixed(2) : '0.00'}
-              </p>
-            </div>
-         
           </div>
         </div>
 
@@ -1124,8 +1112,8 @@ export default function InvestmentHistory() {
         <div className="sb-cards-grid">
           {filteredTransactions.length > 0 ? (
             filteredTransactions.map((transaction, index) => (
-              <HistoryCard 
-                key={transaction.id || transaction.transactionId || index} 
+              <HistoryCard
+                key={transaction.id || transaction.transactionId || index}
                 transaction={transaction}
                 index={index}
               />

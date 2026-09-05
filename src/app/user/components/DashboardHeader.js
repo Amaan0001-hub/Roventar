@@ -19,7 +19,7 @@ import {
   FiChevronRight,
   FiTrendingUp,
   FiLogOut,
-  FiAward ,
+  FiAward,
   FiBookOpen // Added for Fund Director icon
 } from "react-icons/fi";
 import { FaBitcoin } from "react-icons/fa";
@@ -89,72 +89,37 @@ export default function DashboardHeader({
           <span className="npip pg"></span>
         </Link>
 
-        <Link href="/user/dashboard/analytics" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/analytics' ? 'on' : '')}>
-          <span className="ic">
-            <FiBarChart2 />
-          </span>
-          <span>Analytics</span>
-        </Link>
 
-        {/* <Link href="/user/dashboard/simulate" className="ni">
-          <span className="ic">
-            <FiCpu />
-          </span>
-          <span>Simulate</span>
-          <span className="nbadge">BETA</span>
-        </Link> */}
-
-        {/* <Link href="/user/dashboard/auto-trade" className="ni">
-          <span className="ic">
-            <FiRefreshCw />
-          </span>
-          <span>Auto-Trade</span>
-          <span className="npip py"></span>
-        </Link> */}
-
-        {/* Fund Director Menu Item - Added here */}
-        <Link href="/user/dashboard/fund-director" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/fund-director' ? 'on' : '')}>
-          <span className="ic">
-            <FiTrendingUp />
-          </span>
-          <span>Fund Director</span>
-        </Link>
         <Link href="/user/dashboard/Team" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/Team' ? 'on' : '')}>
           <span className="ic">
             <FiUsers />
           </span>
           <span>Genealogy</span>
         </Link>
-         <Link href="/user/dashboard/crypto-terminal" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/crypto-terminal' ? 'on' : '')}>
+        <Link href="/user/dashboard/my-rewards" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/my-rewards' ? 'on' : '')}>
+          <span className="ic">
+            <FiAward />
+          </span>
+          <span>Rank Progress</span>
+        </Link>
+        <Link href="/user/dashboard/crypto-terminal" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/crypto-terminal' ? 'on' : '')}>
           <span className="ic">
             <FaBitcoin />
           </span>
           <span>Crypto Terminal</span>
         </Link>
-        {/* <Link href="/user/dashboard/lms" className={"ni " + (pathname === '/user/dashboard/lms' ? 'on' : '')}>
+        <Link href="/user/dashboard/ai-assistant" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/ai-assistant' ? 'on' : '')}>
           <span className="ic">
-            <FiBookOpen />
+            <FiCpu />
           </span>
-          <span>Academy</span>
-        </Link> */}
+          <span>AI Assistant Demo</span>
+        </Link>
       </div>
 
       <div className="nb">
         <div className="nlbl">Finance</div>
 
-        {/* <Link href="/user/dashboard/wallet" className="ni">
-          <span className="ic">
-            <FiCreditCard />
-          </span>
-          <span>Wallet</span>
-        </Link> */}
 
-        {/* <Link href="/user/dashboard/community" className="ni">
-          <span className="ic">
-          
-          </span>
-          <span>Community</span>
-        </Link> */}
         <Link href="/user/dashboard/income-statement" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/income-statement' ? 'on' : '')}>
           <span className="ic">
             <FiCreditCard />
@@ -170,17 +135,19 @@ export default function DashboardHeader({
           <span>Wallet Statement</span>
         </Link>
 
-        <Link href="/user/dashboard/my-rewards" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/my-rewards' ? 'on' : '')}>
+        <Link href="/user/dashboard/analytics" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/analytics' ? 'on' : '')}>
           <span className="ic">
-            <FiAward />
+            <FiBarChart2 />
           </span>
-          <span>Rank Progress</span>
+          <span>Analytics</span>
         </Link>
-         <Link href="/user/dashboard/ai-assistant" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/ai-assistant' ? 'on' : '')}>
+
+        {/* Fund Director Menu Item - Added here */}
+        <Link href="/user/dashboard/fund-director" onClick={handleNavClick} className={"ni " + (pathname === '/user/dashboard/fund-director' ? 'on' : '')}>
           <span className="ic">
-            <FiCpu />
+            <FiTrendingUp />
           </span>
-          <span>AI Assistant Demo</span>
+          <span>Fund Director</span>
         </Link>
       </div>
 
@@ -206,61 +173,10 @@ export default function DashboardHeader({
           </span>
           <span>Logout</span>
         </Link>
-        {/* <div
-          onClick={handleSignOut}
-          className="ni"
-          style={{
-            cursor: 'pointer',
-            background: 'rgba(220, 38, 38, 0.1)',
-            color: '#ef4444',
-            borderRadius: '8px',
-            padding: '8px 12px',
-            border: '1px solid rgba(220, 38, 38, 0.2)',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(220, 38, 38, 0.2)';
-            e.currentTarget.style.border = '1px solid rgba(220, 38, 38, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(220, 38, 38, 0.1)';
-            e.currentTarget.style.border = '1px solid rgba(220, 38, 38, 0.2)';
-          }}
-        >
-          <span className="ic">
-            <FiLogOut />
-          </span>
-          <span>Sign Out</span>
-        </div> */}
 
-        {/* <Link href="/user/dashboard/settings" className="ni">
-          <span className="ic">
-            <FiSettings />
-          </span>
-          <span>Settings</span>
-        </Link> */}
+
       </div>
-      {/* 
-      <div className="sb-bot">
-        <div className="urow">
-          <div className="uava">A</div>
 
-          <div className="uinfo">
-            <div className="uname">arbion123</div>
-            <div className="ulvl">★ PRO TRADER · LV.12</div>
-          </div>
-
-          <div className="uarr">
-            <FiChevronRight />
-          </div>
-        </div>
-
-        <div className="chs">
-          <div className="cp eth">ETH</div>
-          <div className="cp sol">SOL</div>
-          <div className="cp bsc">BSC</div>
-        </div>
-      </div> */}
     </aside>
   );
 }

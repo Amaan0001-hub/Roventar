@@ -845,9 +845,10 @@ function HistoryCard({ transaction, index }) {
         {/* Bottom Stats */}
         <div className="sb-history-stats-grid">
           <div className="sb-history-stat-item">
-            <p className="sb-history-stat-label">ROI</p>
+            <p className="sb-history-stat-label">APY</p>
             <p className="sb-history-stat-value" style={{ color: 'var(--sb-green)' }}>
-              {formatROI(transaction.rOI)}
+              {/* {formatROI(transaction?.APY)} */}
+              {transaction?.APY}
             </p>
           </div>
           <div className="sb-history-stat-item sb-history-stat-border">

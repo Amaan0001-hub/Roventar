@@ -213,8 +213,8 @@ export default function ArbionEngine() {
   const [transactions, setTransactions] = useState([]);
 
   // Stats values
-  const [totalProfit, setTotalProfit] = useState(2483921.52);
-  const [totalTransactions, setTotalTransactions] = useState(1248932);
+  const [totalProfit, setTotalProfit] = useState(480000.52);
+  const [totalTransactions, setTotalTransactions] = useState(1500);
   const [successRate, setSuccessRate] = useState(99.96);
 
   const [loading, setLoading] = useState(true);

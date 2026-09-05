@@ -125,9 +125,9 @@ function useLiveMarket() {
         const simulatedPrice = 43000 + (Math.random() - 0.5) * 200;
         setLivePrice(simulatedPrice);
         setLastUpdate(Date.now());
-        
+
         setPriceChange((Math.random() - 0.5) * 0.5);
-        
+
         setChartData((prev) => {
           const newData = [...prev, simulatedPrice];
           if (newData.length > 50) return newData.slice(-50);
@@ -193,7 +193,7 @@ const bots = [
     timeframe: "5M",
     market: "Forex",
     myfxbookLink: "https://www.myfxbook.com/members/SonicExperts/sonic-ai/12076857",
-  
+
     apr: "19.8%",
     winRate: "71.3%",
     traders: "2,341",
@@ -214,7 +214,7 @@ const bots = [
     timeframe: "15M",
     market: "Forex",
     myfxbookLink: "https://www.myfxbook.com/members/SonicExperts/sonic-ai/12076857",
-   
+
     apr: "21.4%",
     winRate: "68.9%",
     traders: "1,892",
@@ -235,7 +235,7 @@ const bots = [
     timeframe: "1H",
     market: "Forex",
     myfxbookLink: "https://www.myfxbook.com/lv/members/pg_forexoffecial/phantom-bot/12073391",
-   
+
     apr: "15.2%",
     winRate: "63.1%",
     traders: "1,276",
@@ -257,7 +257,7 @@ const bots = [
     market: "Forex",
     risk: "Medium",
     myfxbookLink: "https://www.myfxbook.com/members/MT4Sniper/pip-sniper/9468462",
-   
+
     winRate: "72.6%",
     traders: "1,654",
   },
@@ -334,7 +334,7 @@ function MiniChart({ data = [] }) {
 
 function MarketRow({ symbol, marketPrices, livePrice }) {
   const market = marketPrices?.[symbol];
-  
+
   if (!market) {
     return (
       <div className="sb-market-row sb-market-loading">
@@ -348,7 +348,7 @@ function MarketRow({ symbol, marketPrices, livePrice }) {
   const change = parseFloat(market.change);
   const positive = market.positive;
 
-  const formattedPrice = symbol === "XAU/USD" 
+  const formattedPrice = symbol === "XAU/USD"
     ? price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : price.toFixed(5);
 
@@ -400,10 +400,10 @@ function BotCard({ bot, marketPrices, lastUpdate, chartData, livePrice, wsConnec
             <p className="sb-section-label">Live Market</p>
             <div className="sb-market-list">
               {bot.symbols.map((symbol) => (
-                <MarketRow 
-                  key={symbol} 
-                  symbol={symbol} 
-                  marketPrices={marketPrices} 
+                <MarketRow
+                  key={symbol}
+                  symbol={symbol}
+                  marketPrices={marketPrices}
                   livePrice={livePrice}
                 />
               ))}
@@ -425,7 +425,7 @@ function BotCard({ bot, marketPrices, lastUpdate, chartData, livePrice, wsConnec
                 <p className="sb-detail-label">Market</p>
                 <p className="sb-detail-value">{bot.market}</p>
               </div>
-            
+
             </div>
           </div>
 
@@ -446,10 +446,9 @@ function BotCard({ bot, marketPrices, lastUpdate, chartData, livePrice, wsConnec
               </div>
               <div className="sb-indicator-item">
                 <span className="sb-indicator-label">Trend</span>
-                <span className={`sb-indicator-value ${
-                  bot.trend === "Uptrend" ? "sb-indicator-uptrend" : 
+                <span className={`sb-indicator-value ${bot.trend === "Uptrend" ? "sb-indicator-uptrend" :
                   bot.trend === "Downtrend" ? "sb-indicator-downtrend" : "sb-indicator-sideways"
-                }`}>
+                  }`}>
                   {bot.trend}
                 </span>
               </div>
@@ -483,7 +482,7 @@ function BotCard({ bot, marketPrices, lastUpdate, chartData, livePrice, wsConnec
             {/* Action Buttons */}
             <div className="sb-action-buttons">
               {/* View Details Button */}
-              <button 
+              <button
                 onClick={() => onViewDetails(bot)}
                 className="sb-view-btn"
               >
@@ -492,7 +491,7 @@ function BotCard({ bot, marketPrices, lastUpdate, chartData, livePrice, wsConnec
               </button>
 
               {/* Invest Now Button */}
-              <button 
+              <button
                 onClick={() => onInvest(bot)}
                 className="sb-invest-btn"
               >
@@ -590,17 +589,17 @@ function InvestModal({ bot, onClose, onSubmit, walletBalance, isLoading }) {
   // Get package name based on trading amount
   const getPackageNameByAmount = (amount) => {
     if (!amount || isNaN(amount)) return null;
-    
+
     // Check if amount is within valid range
     if (amount < 100) return "Minimum $100 required";
     if (amount > 14999) return "Maximum $14,999 allowed";
-    
+
     // Package determination based on trading amount
     if (amount >= 100 && amount <= 999) return "Basic";
     else if (amount >= 1000 && amount <= 4999) return "Standard";
     else if (amount >= 5000 && amount <= 9999) return "Elite";
     else if (amount >= 10000 && amount <= 14999) return "Growth";
-    
+
     return null;
   };
 
@@ -629,7 +628,7 @@ function InvestModal({ bot, onClose, onSubmit, walletBalance, isLoading }) {
       setAmountError(`Insufficient balance! Your wallet balance is $${walletBalance.toLocaleString()}`);
       return false;
     }
-    
+
     setAmountError("");
     return true;
   };
@@ -739,7 +738,7 @@ function InvestModal({ bot, onClose, onSubmit, walletBalance, isLoading }) {
             type="number"
             step="1"
             className={`sb-modal-input ${amountError ? "sb-modal-input-error" : ""}`}
-            placeholder="Enter amount between $100 - $14,999"
+            placeholder="Enter amount between"
             value={customAmount}
             onChange={handleAmountChange}
           />
@@ -764,13 +763,13 @@ function InvestModal({ bot, onClose, onSubmit, walletBalance, isLoading }) {
           className="sb-modal-submit"
           onClick={handleSubmit}
           disabled={
-            !uname || 
-            isLoading || 
-            isFetchingUser || 
-            !customAmount || 
-            amountError || 
-            parseFloat(customAmount) < 100 || 
-            parseFloat(customAmount) > 14999 || 
+            !uname ||
+            isLoading ||
+            isFetchingUser ||
+            !customAmount ||
+            amountError ||
+            parseFloat(customAmount) < 100 ||
+            parseFloat(customAmount) > 14999 ||
             walletBalance < parseFloat(customAmount || 0)
           }
         >
@@ -2300,14 +2299,14 @@ export default function SonicScalper() {
   const activeProductsData = useSelector(activeProducts);
   const [activeTab, setActiveTab] = useState('bots');
   const [isDarkMode, setIsDarkMode] = useState(false);
-  
-  const { 
-    livePrice, 
-    priceChange, 
-    chartData, 
-    wsConnected, 
-    lastUpdate, 
-    marketPrices 
+
+  const {
+    livePrice,
+    priceChange,
+    chartData,
+    wsConnected,
+    lastUpdate,
+    marketPrices
   } = useLiveMarket();
 
   const [walletBalance, setWalletBalance] = useState(0);
@@ -2327,12 +2326,12 @@ export default function SonicScalper() {
     const styleEl = document.createElement('style');
     styleEl.innerHTML = styles;
     document.head.appendChild(styleEl);
-    
+
     // Mark CSS as loaded after a small delay to ensure it's applied
     setTimeout(() => {
       setCssLoaded(true);
     }, 100);
-    
+
     return () => {
       document.head.removeChild(styleEl);
     };
@@ -2444,7 +2443,7 @@ export default function SonicScalper() {
             }
             
             body {
-                background: #f0f2f5;
+                background: #e8e8e8;
                 padding: 10px;
                 font-family: "Inter", -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
                 display: flex;
@@ -2460,51 +2459,41 @@ export default function SonicScalper() {
                 background: #ffffff;
                 border-radius: 12px;
                 overflow: hidden;
-                box-shadow: 0 20px 60px rgba(14, 156, 152, 0.12);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
 
             /* ===== TOP BAR ===== */
             .top-bar {
-                background: linear-gradient(135deg, #0e9c98, #18c7c2);
+                background: #1a1a1a;
                 padding: 12px 28px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                border-bottom: 3px solid #0a7a76;
+                border-bottom: 3px solid #333333;
             }
 
             .top-bar .brand {
                 display: flex;
-                align-items: center;
-                gap: 10px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
             }
 
             .top-bar .brand .logo-img {
-                width: 44px;
-                height: 44px;
+                width: 100%;
+                max-width: 180px;
+                height: auto;
                 object-fit: contain;
-                border-radius: 10px;
-                background: rgba(255, 255, 255, 0.15);
-                padding: 4px;
-            }
-
-            .top-bar .brand .brand-text h1 {
-                font-size: 18px;
-                font-weight: 800;
-                color: #ffffff;
-                letter-spacing: 1px;
-                margin: 0;
-                line-height: 1.2;
-            }
-
-            .top-bar .brand .brand-text span {
-                font-size: 9px;
-                color: rgba(255, 255, 255, 0.85);
-                font-weight: 400;
+                background: transparent;
+                padding: 0;
+                border-radius: 0;
                 display: block;
-                letter-spacing: 0.5px;
+            }
+
+            .top-bar .brand .brand-text {
+                display: none;
             }
 
             .top-bar .invoice-tag {
@@ -2513,7 +2502,7 @@ export default function SonicScalper() {
 
             .top-bar .invoice-tag .label {
                 font-size: 8px;
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(255, 255, 255, 0.6);
                 text-transform: uppercase;
                 letter-spacing: 1.5px;
                 font-weight: 600;
@@ -2528,9 +2517,9 @@ export default function SonicScalper() {
 
             /* ===== HEADER ===== */
             .header {
-                background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+                background: #f5f5f5;
                 padding: 16px 28px 14px;
-                border-bottom: 1px solid #99f6e4;
+                border-bottom: 1px solid #d0d0d0;
             }
 
             .header-content {
@@ -2544,16 +2533,16 @@ export default function SonicScalper() {
             .header-left .greeting {
                 font-size: 20px;
                 font-weight: 700;
-                color: #12263a;
+                color: #1a1a1a;
             }
 
             .header-left .greeting span {
-                color: #0e9c98;
+                color: #444444;
             }
 
             .header-left .sub {
                 font-size: 12px;
-                color: #647785;
+                color: #666666;
                 font-weight: 400;
                 margin-top: 1px;
             }
@@ -2564,7 +2553,7 @@ export default function SonicScalper() {
 
             .header-right .amount-label {
                 font-size: 10px;
-                color: #0e9c98;
+                color: #555555;
                 text-transform: uppercase;
                 letter-spacing: 1px;
                 font-weight: 700;
@@ -2580,7 +2569,7 @@ export default function SonicScalper() {
             .header-right .amount {
                 font-size: 28px;
                 font-weight: 900;
-                color: #12263a;
+                color: #1a1a1a;
                 line-height: 1.1;
                 letter-spacing: -0.5px;
             }
@@ -2588,7 +2577,7 @@ export default function SonicScalper() {
             .header-right .currency {
                 font-size: 14px;
                 font-weight: 600;
-                color: #0e9c98;
+                color: #555555;
                 letter-spacing: 0.5px;
             }
 
@@ -2599,19 +2588,19 @@ export default function SonicScalper() {
                 align-items: center;
                 padding: 8px 28px;
                 background: #ffffff;
-                border-bottom: 1px solid #99f6e4;
+                border-bottom: 1px solid #d0d0d0;
                 flex-wrap: wrap;
                 gap: 6px;
             }
 
             .status-row .date {
                 font-size: 12px;
-                color: #647785;
+                color: #666666;
                 font-weight: 500;
             }
 
             .status-row .date strong {
-                color: #12263a;
+                color: #1a1a1a;
                 font-weight: 700;
             }
 
@@ -2623,7 +2612,7 @@ export default function SonicScalper() {
                 font-weight: 800;
                 text-transform: uppercase;
                 letter-spacing: 0.8px;
-                color: #10b981;
+                color: #333333;
                 padding: 0;
                 background: transparent;
                 border: none;
@@ -2647,12 +2636,12 @@ export default function SonicScalper() {
             .section-title {
                 font-size: 10px;
                 font-weight: 800;
-                color: #12263a;
+                color: #1a1a1a;
                 text-transform: uppercase;
                 letter-spacing: 1.5px;
                 margin-bottom: 10px;
                 padding-bottom: 6px;
-                border-bottom: 2px solid #99f6e4;
+                border-bottom: 2px solid #cccccc;
             }
 
             .section-title .icon {
@@ -2673,16 +2662,16 @@ export default function SonicScalper() {
 
             /* ===== CARD ===== */
             .card {
-                background: #f0fdfa;
+                background: #f5f5f5;
                 border-radius: 10px;
                 padding: 8px 14px;
-                border: 1px solid #99f6e4;
+                border: 1px solid #d0d0d0;
             }
 
             .card .label {
                 font-size: 9px;
                 font-weight: 700;
-                color: #0e9c98;
+                color: #555555;
                 text-transform: uppercase;
                 letter-spacing: 0.8px;
                 margin-bottom: 2px;
@@ -2691,24 +2680,24 @@ export default function SonicScalper() {
             .card .value {
                 font-size: 14px;
                 font-weight: 700;
-                color: #12263a;
+                color: #1a1a1a;
                 letter-spacing: -0.2px;
             }
 
             .card .value-sm {
                 font-size: 13px;
                 font-weight: 600;
-                color: #12263a;
+                color: #1a1a1a;
             }
 
             /* ===== HIGHLIGHT BOX ===== */
             .highlight-box {
-                background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
-                border: 2px solid #5eead4;
+                background: #f0f0f0;
+                border: 2px solid #aaaaaa;
                 border-radius: 10px;
                 padding: 10px 18px;
                 display: flex;
-                justification: space-between;
+                justify-content: space-between;
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 8px;
@@ -2718,7 +2707,7 @@ export default function SonicScalper() {
             .highlight-box .left .label {
                 font-size: 10px;
                 font-weight: 700;
-                color: #0e9c98;
+                color: #555555;
                 text-transform: uppercase;
                 letter-spacing: 1px;
             }
@@ -2726,7 +2715,7 @@ export default function SonicScalper() {
             .highlight-box .left .value {
                 font-size: 16px;
                 font-weight: 800;
-                color: #12263a;
+                color: #1a1a1a;
                 margin-top: 1px;
                 letter-spacing: -0.3px;
             }
@@ -2738,7 +2727,7 @@ export default function SonicScalper() {
             .highlight-box .right .label {
                 font-size: 10px;
                 font-weight: 700;
-                color: #0e9c98;
+                color: #555555;
                 text-transform: uppercase;
                 letter-spacing: 1px;
             }
@@ -2746,17 +2735,17 @@ export default function SonicScalper() {
             .highlight-box .right .value {
                 font-size: 18px;
                 font-weight: 900;
-                color: #0e9c98;
+                color: #333333;
                 margin-top: 1px;
                 letter-spacing: -0.5px;
             }
 
             /* ===== COMPANY ADDRESS ===== */
             .company-address {
-                background: #f0fdfa;
+                background: #f5f5f5;
                 padding: 8px 18px;
                 border-radius: 10px;
-                border: 1px solid #99f6e4;
+                border: 1px solid #d0d0d0;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -2766,12 +2755,12 @@ export default function SonicScalper() {
 
             .company-address .address-text {
                 font-size: 10px;
-                color: #647785;
+                color: #666666;
                 line-height: 1.5;
             }
 
             .company-address .address-text strong {
-                color: #12263a;
+                color: #1a1a1a;
             }
 
             /* ===== STAMP ONLY - RIGHT SIDE ===== */
@@ -2781,7 +2770,7 @@ export default function SonicScalper() {
                 align-items: center;
                 margin-top: 8px;
                 padding-top: 8px;
-                border-top: 2px dashed #99f6e4;
+                border-top: 2px dashed #cccccc;
             }
 
             .stamp-box {
@@ -2793,7 +2782,7 @@ export default function SonicScalper() {
 
             .stamp-box .stamp-label {
                 font-size: 7px;
-                color: #6b7280;
+                color: #888888;
                 text-transform: uppercase;
                 letter-spacing: 1px;
                 font-weight: 600;
@@ -2810,41 +2799,41 @@ export default function SonicScalper() {
 
             /* ===== FOOTER ===== */
             .footer {
-                background: #f0fdfa;
+                background: #f5f5f5;
                 padding: 10px 28px 8px;
                 text-align: center;
-                border-top: 2px solid #99f6e4;
+                border-top: 2px solid #cccccc;
             }
 
             .footer .brand-name {
                 font-size: 14px;
                 font-weight: 800;
-                color: #12263a;
+                color: #1a1a1a;
                 letter-spacing: 1px;
             }
 
             .footer .brand-name span {
-                color: #0e9c98;
+                color: #555555;
             }
 
             .footer .divider {
                 width: 25px;
                 height: 2px;
-                background: linear-gradient(90deg, #0e9c98, #18c7c2);
+                background: #555555;
                 margin: 4px auto;
                 border-radius: 2px;
             }
 
             .footer p {
                 font-size: 10px;
-                color: #12263a;
+                color: #1a1a1a;
                 font-weight: 500;
                 line-height: 1.4;
             }
 
             .footer .note {
                 font-size: 7px;
-                color: #6b7280;
+                color: #888888;
                 font-weight: 500;
                 margin-top: 3px;
                 letter-spacing: 0.3px;
@@ -2857,6 +2846,13 @@ export default function SonicScalper() {
                     gap: 6px;
                     padding: 10px 16px;
                     text-align: center;
+                }
+                .top-bar .brand {
+                    align-items: center;
+                    width: 100%;
+                }
+                .top-bar .brand .logo-img {
+                    max-width: 150px;
                 }
                 .top-bar .invoice-tag {
                     text-align: center;
@@ -2909,8 +2905,8 @@ export default function SonicScalper() {
                 .grid-3 {
                     grid-template-columns: 1fr;
                 }
-                .top-bar .brand h1 {
-                    font-size: 16px;
+                .top-bar .brand .logo-img {
+                    max-width: 120px;
                 }
                 .header-left .greeting {
                     font-size: 17px;
@@ -2930,7 +2926,7 @@ export default function SonicScalper() {
                     max-width: 100%;
                 }
                 .top-bar {
-                    background: linear-gradient(135deg, #0e9c98, #18c7c2) !important;
+                    background: #1a1a1a !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
@@ -2939,7 +2935,7 @@ export default function SonicScalper() {
                     print-color-adjust: exact;
                 }
                 .status-badge {
-                    color: #10b981 !important;
+                    color: #333333 !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
@@ -2948,22 +2944,22 @@ export default function SonicScalper() {
                     print-color-adjust: exact;
                 }
                 .card {
-                    background: #f0fdfa !important;
+                    background: #f5f5f5 !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
                 .footer {
-                    background: #f0fdfa !important;
+                    background: #f5f5f5 !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
                 .header {
-                    background: linear-gradient(135deg, #f0fdfa, #ccfbf1) !important;
+                    background: #f5f5f5 !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
                 .company-address {
-                    background: #f0fdfa !important;
+                    background: #f5f5f5 !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
@@ -2976,6 +2972,11 @@ export default function SonicScalper() {
                     break-inside: avoid;
                 }
             }
+                .brand-logo-span {
+                color: #fff;
+                font-weight: 400;
+                font-size: 12px;
+                }
         </style>
     </head>
 
@@ -2986,10 +2987,7 @@ export default function SonicScalper() {
             <div class="top-bar">
                 <div class="brand">
                     <img src="/logo.png" alt="Roventar Logo" class="logo-img" />
-                    <div class="brand-text">
-                        <h1>Roventar</h1>
-                        <span>Smart Trading · Better Future</span>
-                    </div>
+                    <span class="brand-logo-span">Smart Trading · Better Future</span>
                 </div>
                 <div class="invoice-tag">
                     <div class="label">Invoice Number</div>
@@ -3131,7 +3129,6 @@ export default function SonicScalper() {
     </body>
     </html>
     `;
-
     // Create a temporary div to hold the invoice
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = invoiceHTML;
@@ -3170,11 +3167,11 @@ export default function SonicScalper() {
   // Handle investment submission
   const handleInvestSubmit = async ({ uid, uname, userURID, amount, bot }) => {
     setIsProcessing(true);
-    
+
     try {
       const currentUserURID = getUserId();
       const productId = bot.id || bot.productId;
-      
+
       const requestBody = {
         productId: productId,
         byLoginId: uid,
@@ -3237,7 +3234,7 @@ export default function SonicScalper() {
   // Detail Modal Component
   const DetailModal = ({ bot, onClose }) => {
     if (!bot) return null;
-    
+
     return (
       <div className="sb-modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
         <div className="sb-modal" style={{ maxWidth: '500px' }}>
@@ -3248,7 +3245,7 @@ export default function SonicScalper() {
             </div>
             <button onClick={onClose} className="sb-modal-close">✕</button>
           </div>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {/* Bot Info */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--sb-bg-2)', borderRadius: 'var(--sb-radius-sm)', flexWrap: 'wrap' }}>
@@ -3260,7 +3257,7 @@ export default function SonicScalper() {
                 <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: 'var(--sb-text-3)' }}>{bot.subtitle}</p>
               </div>
             </div>
-            
+
             {/* Details Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
               <div className="sb-history-detail-row">
@@ -3290,7 +3287,7 @@ export default function SonicScalper() {
                 <span className="sb-history-detail-value">{bot.signalSymbol}</span>
               </div>
             </div>
-            
+
             {/* Performance Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
               <div style={{ textAlign: 'center', padding: '8px', background: 'var(--sb-bg-2)', borderRadius: 'var(--sb-radius-sm)' }}>
@@ -3306,7 +3303,7 @@ export default function SonicScalper() {
                 <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--sb-amber)', margin: '4px 0 0 0' }}>{bot.traders}</p>
               </div>
             </div>
-            
+
             {/* Action Button */}
             <button
               className="sb-modal-submit"
@@ -3364,10 +3361,10 @@ export default function SonicScalper() {
                 History
               </button>
             </div>
-            
-           
-            
-            
+
+
+
+
             <div className="sb-header-wallet">
               <span className="sb-header-wallet-text">Wallet: ${walletBalance.toLocaleString()}</span>
             </div>
@@ -3382,9 +3379,9 @@ export default function SonicScalper() {
           <div className="sb-section">
             <div className="sb-grid">
               {bots.map((bot) => (
-                <BotCard 
-                  key={bot.name} 
-                  bot={bot} 
+                <BotCard
+                  key={bot.name}
+                  bot={bot}
                   marketPrices={marketPrices}
                   lastUpdate={lastUpdate}
                   chartData={chartData}
@@ -3396,7 +3393,7 @@ export default function SonicScalper() {
               ))}
             </div>
 
-           
+
           </div>
         ) : (
           <InvestmentHistory />
@@ -3435,7 +3432,7 @@ export default function SonicScalper() {
             <div className="sb-success-icon">🎉</div>
             <h3 className="sb-success-title">Congratulations!</h3>
             <p className="sb-success-subtitle">Your AI bot investment is now live and running.</p>
-            
+
             <div className="sb-success-details">
               {[
                 { label: "Order ID", value: inv.id },

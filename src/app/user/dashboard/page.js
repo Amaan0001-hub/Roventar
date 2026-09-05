@@ -1325,12 +1325,12 @@ export default function DashboardPage() {
                       <div className="dx-orb">🤖</div>
                       {shouldBotBeActive && <span className="dx-orb-pulse"></span>}
                     </div>
-                    <div>
+                    {/* <div> */}
                       <div className="dx-card-title">Roventar AI Engine</div>
-                      <div className="d-flex align-items-center gap-2 small dx-muted flex-wrap">
+                      {/* <div className="d-flex align-items-center gap-2 small dx-muted flex-wrap">
                         <span>Uptime {formatElapsedTime(elapsedSeconds)}</span>
-                      </div>
-                    </div>
+                      </div> */}
+                    {/* </div> */}
                   </div>
                   <span className={shouldBotBeActive ? "dx-pill-active" : "dx-pill-active off"}>
                     <span className={`dx-status-dot ${shouldBotBeActive ? 'on' : 'off'}`}></span>

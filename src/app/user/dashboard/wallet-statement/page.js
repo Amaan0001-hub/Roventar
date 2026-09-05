@@ -149,7 +149,7 @@ const WalletStatement = () => {
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
-              className={`tab-btn ${activeTab === tab ? "active-tab" : ""}`}
+              className={`tab-btn ${activeTab === tab ? "active" : ""}`}
             >
               {tab}
             </button>
@@ -259,7 +259,7 @@ const WalletStatement = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="no-data">
+                  <td colSpan="8" className="no-data">
                     No records found.
                   </td>
                 </tr>

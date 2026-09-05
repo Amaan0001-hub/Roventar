@@ -591,7 +591,7 @@ export default function ArbionEngine() {
                 <div className="card-title-section">
                   <div className="card-title">Roventar Engine</div>
                   <div className="card-subtitle">
-                    AI MEV + cross-chain arb · 24/7 autonomous — Auto-updates every 2 minutes
+                    AI MEV + cross-chain arb · 24/7 autonomous — Auto-updates
                   </div>
                 </div>
                 <label className="toggle">

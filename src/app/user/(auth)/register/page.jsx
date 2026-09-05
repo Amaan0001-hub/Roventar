@@ -331,10 +331,10 @@ function ImagePuzzleCaptcha({ verified, onVerify, onReset }) {
           {isImageLoading
             ? "Loading puzzle..."
             : verified
-            ? "Verified"
-            : failed
-            ? "Not quite — try again"
-            : "Drag the piece to match the puzzle"}
+              ? "Verified"
+              : failed
+                ? "Not quite — try again"
+                : "Drag the piece to match the puzzle"}
         </span>
       </div>
 
@@ -382,10 +382,13 @@ export default function SignupPage() {
   const [referralLoading, setReferralLoading] = useState(false)
   const [referralError, setReferralError] = useState("")
   const [referralBlurCalled, setReferralBlurCalled] = useState(!!initialReferralId)
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpValue, setOtpValue] = useState("")
+  const [otpLoading, setOtpLoading] = useState(false)
 
   const [errors, setErrors] = useState({
     firstName: "", lastName: "", email: "",
-    password: "", phoneNo: "", countryId: "", captcha: "", referralId: "",
+    password: "", phoneNo: "", countryId: "", captcha: "", referralId: "", otp: "",
   })
 
   // const introSideOptions = [
@@ -610,6 +613,8 @@ export default function SignupPage() {
     setReferralBlurCalled(false)
     setReferralData(null)
     setReferralError("")
+    setOtpSent(false)
+    setOtpValue("")
 
     if (value.trim()) {
       setTypingTimer(
@@ -621,6 +626,33 @@ export default function SignupPage() {
     } else {
       setErrors(prev => ({ ...prev, referralId: "" }))
     }
+  }
+
+  const handleSendOtp = async () => {
+    if (!referralData || referralError) {
+      toast.error("Please enter a valid referral ID first")
+      return
+    }
+
+    setOtpLoading(true)
+    try {
+      // Simulate OTP sending - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      setOtpSent(true)
+      toast.success("OTP sent successfully!")
+    } catch (err) {
+      toast.error("Failed to send OTP")
+    } finally {
+      setOtpLoading(false)
+    }
+  }
+
+  const handleOtpChange = (e) => {
+    const { value } = e.target
+    if (!/^\d*$/.test(value)) return
+    if (value.length > 6) return
+    setOtpValue(value)
+    if (errors.otp) setErrors(prev => ({ ...prev, otp: "" }))
   }
 
   const handleChange = (e) => {
@@ -657,7 +689,7 @@ export default function SignupPage() {
   }
 
   const validateForm = () => {
-    let newErrors = { firstName: "", lastName: "", email: "", password: "", phoneNo: "", countryId: "", captcha: "", referralId: "" }
+    let newErrors = { firstName: "", lastName: "", email: "", password: "", phoneNo: "", countryId: "", captcha: "", referralId: "", otp: "" }
 
     if (!formData.firstName?.trim()) newErrors.firstName = "First name is required"
     else if (formData.firstName.trim().length < 2) newErrors.firstName = "At least 2 characters"
@@ -680,6 +712,10 @@ export default function SignupPage() {
     else if (referralError) newErrors.referralId = referralError
 
     if (!captchaVerified) newErrors.captcha = "Please complete the puzzle captcha"
+
+    if (!otpSent) newErrors.otp = "Please send OTP first"
+    else if (!otpValue.trim()) newErrors.otp = "OTP is required"
+    else if (otpValue.length < 6) newErrors.otp = "OTP must be 6 digits"
 
     setErrors(newErrors)
     return !Object.values(newErrors).some(error => error !== "")
@@ -712,7 +748,7 @@ export default function SignupPage() {
         countryId: parseInt(formData.countryId),
         address: "",
         introSide: formData.introSide || "L",
-        otPregpage: ""
+        otPregpage: otpValue || ""
       }
 
       const res = await dispatch(userRegistration(payload)).unwrap()
@@ -736,6 +772,8 @@ export default function SignupPage() {
       })
       setReferralData(null)
       setCaptchaVerified(false)
+      setOtpSent(false)
+      setOtpValue("")
       setTimeout(() => router.push("/user/welcome"), 1500)
     } catch (err) {
       console.error("Registration error:", err)
@@ -876,7 +914,7 @@ export default function SignupPage() {
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
       <link rel="stylesheet" href="/assets/css/login.css" />
 
-     <Toaster
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 4000,
@@ -1063,7 +1101,51 @@ export default function SignupPage() {
                 )}
               </div>
 
-              
+              <div className="col-12 col-sm-6">
+                <label className="login-label">OTP</label>
+                {!otpSent ? (
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={!referralData || referralError || otpLoading}
+                    className="btn w-100 d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase login-submit"
+                    style={{
+                      height: "48px",
+                      background: !referralData || referralError
+                        ? "rgba(140,180,200,0.2)"
+                        : "linear-gradient(135deg, #22e8d4, #17b8a8)",
+                      border: "1px solid rgba(34,232,212,0.25)",
+                      color: "#fff",
+                      cursor: (!referralData || referralError) ? "not-allowed" : "pointer",
+                      opacity: (!referralData || referralError) ? 0.5 : 1,
+                    }}
+                  >
+                    {otpLoading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm spinner-white" />
+                        Sending OTP...
+                      </>
+                    ) : (
+                      "Send OTP"
+                    )}
+                  </button>
+                ) : (
+                  <div className="position-relative">
+                    <span style={iconStyle}><Lock size={15} /></span>
+                    <input
+                      type="text"
+                      placeholder="Enter 6-digit OTP"
+                      value={otpValue}
+                      onChange={handleOtpChange}
+                      className={`form-control pe-5 login-input  ${errors.otp ? 'login-input-error' : ''}`}
+                      onFocus={handleFocus}
+                      onBlur={(e) => handleBlurStyle(e, errors.otp)}
+                      maxLength={6}
+                    />
+                  </div>
+                )}
+                {errors.otp && <div className="error-message" style={errorStyle}>{errors.otp}</div>}
+              </div>
             </div>
 
             <div className="row g-3 mb-4">

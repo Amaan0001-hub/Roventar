@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Select from "react-select"
-import { userRegistration, getAllCountry, getReferralDataByLoginId } from "@/app/redux/slices/authSlice"
+import { userRegistration, getAllCountry, getReferralDataByLoginId, sendOtpForUserRegistration } from "@/app/redux/slices/authSlice"
 import { Toaster, toast } from 'react-hot-toast'
 import { useDispatch } from 'react-redux'
 import { useSearchParams } from "next/navigation"
@@ -634,14 +634,24 @@ export default function SignupPage() {
       return
     }
 
+    if (!formData.email?.trim()) {
+      toast.error("Please enter your email first")
+      return
+    }
+
     setOtpLoading(true)
     try {
-      // Simulate OTP sending - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      setOtpSent(true)
-      toast.success("OTP sent successfully!")
+      const res = await dispatch(sendOtpForUserRegistration(formData.email)).unwrap()
+
+      if (res?.statusCode === 200) {
+        setOtpSent(true)
+        setErrors(prev => ({ ...prev, otp: "" }))
+        toast.success("OTP sent successfully!")
+      } else {
+        toast.error(res?.message || "Failed to send OTP")
+      }
     } catch (err) {
-      toast.error("Failed to send OTP")
+      toast.error(err?.message || "Failed to send OTP")
     } finally {
       setOtpLoading(false)
     }
@@ -1107,17 +1117,17 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={handleSendOtp}
-                    disabled={!referralData || referralError || otpLoading}
+                    disabled={otpLoading}
                     className="btn w-100 d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase login-submit"
                     style={{
                       height: "48px",
-                      background: !referralData || referralError
+                      background: otpLoading
                         ? "rgba(140,180,200,0.2)"
                         : "linear-gradient(135deg, #22e8d4, #17b8a8)",
                       border: "1px solid rgba(34,232,212,0.25)",
                       color: "#fff",
-                      cursor: (!referralData || referralError) ? "not-allowed" : "pointer",
-                      opacity: (!referralData || referralError) ? 0.5 : 1,
+                      cursor: otpLoading ? "not-allowed" : "pointer",
+                      opacity: otpLoading ? 0.5 : 1,
                     }}
                   >
                     {otpLoading ? (
@@ -1162,7 +1172,7 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !otpSent}
               className={`btn w-100 d-flex align-items-center justify-content-center gap-2 fw-bold text-uppercase mt-2 login-submit ${loading ? 'login-submit-loading' : ''}`}
             >
               {loading && (

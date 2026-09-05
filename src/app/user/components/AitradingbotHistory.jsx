@@ -819,7 +819,7 @@ function HistoryCard({ transaction, index }) {
 
 
         <div className="sb-history-detail-row">
-          <span className="sb-history-detail-label">limit Package</span>
+          <span className="sb-history-detail-label"> Package Limit</span>
           <span>
             <span className={`sb-package-badge ${getPackageColor(transaction.PackageName)}`}>
               {transaction.PackageName || 'Basic'}

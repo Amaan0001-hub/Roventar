@@ -1443,3 +1443,24 @@ html .topbar { z-index: 100 !important; }
 html .topbar .tb-r { position: relative; z-index: 10001; }
 
 /* ==== AKCELPE x ROVENTAR THEME PATCH — END ==== */
+.ecosystem-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ecosystem-link:hover span {
+  text-decoration: underline;
+}
+
+.redirect-icon {
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+.ecosystem-link:hover .redirect-icon {
+  transform: translate(2px, -2px);
+}
